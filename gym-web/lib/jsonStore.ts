@@ -2,6 +2,7 @@
  * Lectura/escritura atómica y serializada de JSON en disco.
  * Evita que dos requests concurrentes se pisen (read-modify-write).
  */
+import { randomBytes } from "crypto";
 import fs from "fs";
 import path from "path";
 
@@ -22,17 +23,20 @@ function enqueue<T>(file: string, job: () => T): Promise<T> {
 
 function atomicWrite(file: string, contents: string) {
   fs.mkdirSync(path.dirname(file), { recursive: true });
-  const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
+  const tmp = `${file}.${process.pid}.${Date.now()}.${randomBytes(6).toString("hex")}.tmp`;
   fs.writeFileSync(tmp, contents, "utf-8");
   try {
     fs.renameSync(tmp, file);
   } catch {
     // Windows: rename falla si el destino existe.
-    fs.copyFileSync(tmp, file);
     try {
-      fs.unlinkSync(tmp);
-    } catch {
-      /* ignore */
+      fs.copyFileSync(tmp, file);
+    } finally {
+      try {
+        fs.unlinkSync(tmp);
+      } catch {
+        /* ignore */
+      }
     }
   }
 }

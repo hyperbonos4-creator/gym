@@ -214,7 +214,11 @@ export async function setDoorUntil(
   validUntil: string,
   schedule?: { days?: number[]; from?: string; to?: string } | null,
 ): Promise<number> {
-  const points = await listPoints();
+  // No usar listPoints() aquí: ese helper traga errores y devolvería [] 
+  // haciendo creer que la sincronización fue bien cuando access está caído.
+  const raw = await accessApi<any>("GET", "/access/points");
+  const points = Array.isArray(raw) ? raw : raw?.items ?? [];
+  if (!Array.isArray(points)) throw new Error("points_invalidos");
   for (const p of points) {
     if (!p?.id) continue;
     const body: Record<string, unknown> = { subjectId, accessPointId: p.id, validUntil };
