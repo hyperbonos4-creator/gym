@@ -1,0 +1,26 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Build
+dist/
+**/dist/
+
+# Entorno / secretos
+.env
+**/.env
+!**/.env.example
+
+# Python (vision)
+__pycache__/
+**/__pycache__/
+.pytest_cache/
+**/.pytest_cache/
+*.pyc
+
+# Modelos ONNX (pesados; se montan/descargan)
+vision/models/*
+!vision/models/.gitkeep
+
+# Logs
+*.log

@@ -1,0 +1,21 @@
+{
+  "cloudflare": {
+    "accountId": "",
+    "apiToken": "",
+    "embedModel": "@cf/baai/bge-m3",
+    "chatModel": "@cf/zai-org/glm-5.2"
+  },
+  "roots": [],
+  "includeExt": [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".py", ".md", ".html", ".css", ".yml", ".yaml", ".sql"],
+  "excludeDirs": ["node_modules", ".git", "dist", "build", ".next", "coverage", "venv", "__pycache__", "models", "data"],
+  "secretFileNames": [".env", "secrets.h"],
+  "maxFileBytes": 400000,
+  "chunkLines": 110,
+  "chunkOverlap": 18,
+  "maxChunksPerFile": 45,
+  "maxChunksTotal": 9000,
+  "embedBatch": 50,
+  "port": 8799,
+  "topK": 14,
+  "maxTokens": 1300
+}

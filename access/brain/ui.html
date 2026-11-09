@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cerebro VisionYX</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{--cy:#22d3ee;--bl:#3b82f6;--vi:#a855f7;--bg:#070b16;--pan:#0f1a30;--txt:#eaf1fb;--mut:#a6b6d4;--bd:rgba(120,160,220,.16)}
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Exo 2",system-ui,sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column}
+    header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--bd);background:linear-gradient(120deg,rgba(34,211,238,.12),rgba(168,85,247,.14))}
+    .av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--cy),var(--vi));color:#04121a;font-family:"Orbitron";font-weight:800}
+    header h1{font-family:"Orbitron";font-size:1.05rem;letter-spacing:.5px}
+    header p{font-size:.76rem;color:var(--mut)}
+    #chat{flex:1;overflow-y:auto;padding:24px;max-width:900px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+    .msg{padding:14px 18px;border-radius:14px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word}
+    .user{align-self:flex-end;max-width:80%;background:linear-gradient(120deg,var(--cy),var(--bl));color:#04121a;font-weight:600;border-bottom-right-radius:4px}
+    .bot{align-self:flex-start;max-width:92%;background:var(--pan);border:1px solid var(--bd);border-bottom-left-radius:4px}
+    .bot code{background:rgba(34,211,238,.12);padding:1px 6px;border-radius:5px;font-family:ui-monospace,monospace;font-size:.9em;color:#bdf3ff}
+    .bot pre{background:#060c1a;border:1px solid var(--bd);border-radius:10px;padding:12px;overflow-x:auto;margin:10px 0}
+    .bot pre code{background:none;padding:0}
+    .sources{align-self:flex-start;max-width:92%;font-size:.78rem;color:var(--mut);display:flex;flex-wrap:wrap;gap:6px;margin-top:-8px}
+    .src{border:1px solid var(--bd);border-radius:999px;padding:4px 10px;font-family:ui-monospace,monospace}
+    .typing{align-self:flex-start;display:flex;gap:5px;padding:14px}
+    .typing i{width:8px;height:8px;border-radius:50%;background:var(--mut);animation:b 1.2s infinite}
+    .typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+    @keyframes b{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-5px);opacity:1}}
+    footer{border-top:1px solid var(--bd);padding:14px;background:var(--pan)}
+    .bar{max-width:900px;margin:0 auto;display:flex;gap:10px}
+    textarea{flex:1;background:var(--bg);border:1px solid var(--bd);border-radius:12px;padding:12px 14px;color:var(--txt);font-family:inherit;font-size:.98rem;resize:none;max-height:140px;outline:none}
+    textarea:focus{border-color:var(--cy)}
+    button{flex:none;padding:0 22px;border:0;border-radius:12px;cursor:pointer;color:#04121a;font-weight:700;background:linear-gradient(120deg,var(--cy),var(--bl))}
+    button:disabled{opacity:.5}
+    .hint{max-width:900px;margin:8px auto 0;font-size:.72rem;color:var(--mut);text-align:center}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="av">🧠</div>
+    <div><h1>Cerebro VisionYX</h1><p>Conoce todos tus proyectos · privado y local</p></div>
+  </header>
+  <div id="chat"></div>
+  <footer>
+    <div class="bar">
+      <textarea id="q" rows="1" placeholder="Escribe tu pregunta…"></textarea>
+      <button id="send">Preguntar</button>
+    </div>
+    <div class="hint">GLM-5.2 · responde solo lo que preguntas. Privado y local.</div>
+  </footer>
+  <script>
+    var chat = document.getElementById('q'), send = document.getElementById('send'), box = document.getElementById('chat');
+    var convo = [], busy = false;
+    function esc(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});}
+    function md(s){
+      s = esc(s);
+      s = s.replace(/```([\s\S]*?)```/g,function(_,c){return '<pre><code>'+c.trim()+'</code></pre>';});
+      s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
+      s = s.replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
+      return s;
+    }
+    function add(text, who){var d=document.createElement('div');d.className='msg '+who;d.innerHTML=who==='bot'?md(text):esc(text);box.appendChild(d);box.scrollTop=box.scrollHeight;return d;}
+    function addSources(srcs){if(!srcs||!srcs.length)return;var d=document.createElement('div');d.className='sources';d.innerHTML=srcs.map(function(s){return '<span class="src">'+esc(s.file)+':'+s.range+'</span>';}).join('');box.appendChild(d);box.scrollTop=box.scrollHeight;}
+    function typing(){var d=document.createElement('div');d.className='typing';d.id='t';d.innerHTML='<i></i><i></i><i></i>';box.appendChild(d);box.scrollTop=box.scrollHeight;}
+    function untyping(){var t=document.getElementById('t');if(t)t.remove();}
+    add('Hola 👋 Soy tu cerebro técnico. Tengo indexados tus proyectos. Pregúntame por arquitectura, dónde está algo, cómo funciona X, o pídeme comparar o mejorar código.','bot');
+    function ask(){
+      var q=chat.value.trim(); if(!q||busy)return; busy=true; send.disabled=true;
+      add(q,'user'); convo.push({role:'user',content:q}); chat.value=''; chat.style.height='auto'; typing();
+      doFetch(q,false);
+    }
+    function doFetch(q, retried){
+      fetch('/ask',{method:'POST',headers:{'Content-Type':'application/json','x-brain-token':localStorage.getItem('vxbrain_key')||''},body:JSON.stringify({question:q,history:convo})})
+        .then(function(r){
+          if(r.status===401){
+            if(retried){throw new Error('Clave incorrecta.');}
+            var k=prompt('Clave de acceso del Cerebro:'); if(k){localStorage.setItem('vxbrain_key',k); return doFetch(q,true);} 
+            throw new Error('Se requiere clave de acceso.');
+          }
+          return r.json();
+        })
+        .then(function(d){ if(!d) return; untyping(); if(d.error){add('⚠ '+d.error,'bot');return;} add(d.answer,'bot'); convo.push({role:'assistant',content:d.answer});})
+        .catch(function(e){untyping(); add('⚠ Error: '+e.message,'bot');})
+        .finally(function(){busy=false;send.disabled=false;chat.focus();});
+    }
+    send.onclick=ask;
+    chat.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask();}});
+    chat.addEventListener('input',function(){chat.style.height='auto';chat.style.height=Math.min(140,chat.scrollHeight)+'px';});
+  </script>
+</body>
+</html>

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GYM · Registrar socio</title>
+  <style>
+    :root { --bg:#0b0f1a; --card:#131a2b; --line:#233048; --fg:#e8eefc; --muted:#8ea0c0;
+            --grad:linear-gradient(90deg,#22d3ee,#7c3aed); --ok:#10b981; --err:#ef4444; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--fg); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+           min-height:100vh; display:flex; align-items:flex-start; justify-content:center; padding:22px; }
+    .card { width:100%; max-width:440px; background:var(--card); border:1px solid var(--line); border-radius:18px;
+            padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+    .brand { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+    .brand b { font-size:22px; letter-spacing:1px; }
+    .brand .yx { background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .sub { color:var(--muted); font-size:14px; margin-bottom:18px; }
+    .status { display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:18px;
+              padding:8px 12px; border:1px solid var(--line); border-radius:10px; background:#0e1524; }
+    .dot { width:9px; height:9px; border-radius:50%; background:var(--muted); }
+    .dot.ok { background:var(--ok); box-shadow:0 0 8px var(--ok); }
+    .dot.err { background:var(--err); }
+    label { display:block; font-size:13px; color:var(--muted); margin:14px 0 6px; }
+    input { width:100%; padding:13px 14px; border-radius:11px; border:1px solid var(--line);
+            background:#0e1524; color:var(--fg); font-size:16px; outline:none; }
+    input:focus { border-color:#3b82f6; }
+    button { width:100%; margin-top:20px; padding:15px; border:0; border-radius:12px; cursor:pointer;
+             font-size:16px; font-weight:700; color:#fff; background:var(--grad); }
+    button:disabled { opacity:.6; cursor:default; }
+    .result { margin-top:18px; padding:14px; border-radius:12px; border:1px solid var(--line); background:#0e1524;
+              font-size:14px; display:none; }
+    .result.show { display:block; }
+    .result.ok { border-color:var(--ok); }
+    .result.err { border-color:var(--err); }
+    .result a { color:#7dd3fc; word-break:break-all; }
+    .foot { margin-top:16px; font-size:12px; color:var(--muted); text-align:center; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="brand"><b>GYM<span class="yx"> ACCESS</span></b></div>
+    <div class="sub">Registrar socio y enviar el enrolamiento facial por WhatsApp.</div>
+
+    <div class="status">
+      <span class="dot" id="wa-dot"></span>
+      <span id="wa-text">Comprobando WhatsApp…</span>
+    </div>
+
+    <form id="form">
+      <label for="nombre">Nombre completo</label>
+      <input id="nombre" name="nombre" autocomplete="name" placeholder="Ej. Laura Gómez" required />
+
+      <label for="telefono">WhatsApp (celular)</label>
+      <input id="telefono" name="telefono" inputmode="tel" placeholder="Ej. 3001234567" required />
+
+      <label for="codigo">Código de socio (opcional)</label>
+      <input id="codigo" name="codigo" placeholder="Ej. SOC-014" />
+
+      <button id="btn" type="submit">Registrar y enviar link</button>
+    </form>
+
+    <div class="result" id="result"></div>
+    <div class="foot">El socio recibe un enlace; lo abre en su celular y hace el registro facial en vivo.</div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    async function refreshStatus() {
+      try {
+        const r = await fetch('/wa/api/status', { headers: { 'ngrok-skip-browser-warning': '1' } });
+        const d = await r.json();
+        if (d.connected) { $('wa-dot').className = 'dot ok'; $('wa-text').textContent = 'WhatsApp conectado'; }
+        else { $('wa-dot').className = 'dot err'; $('wa-text').textContent = 'WhatsApp NO conectado (' + d.whatsapp + ')'; }
+      } catch { $('wa-dot').className = 'dot err'; $('wa-text').textContent = 'Sin conexión con el servidor'; }
+    }
+    refreshStatus(); setInterval(refreshStatus, 8000);
+
+    $('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('btn'); const res = $('result');
+      btn.disabled = true; btn.textContent = 'Enviando…'; res.className = 'result';
+      try {
+        const body = { nombre: $('nombre').value, telefono: $('telefono').value, codigo: $('codigo').value };
+        const r = await fetch('/wa/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': '1' },
+          body: JSON.stringify(body),
+        });
+        const d = await r.json();
+        if (d.ok && d.wa && d.wa.ok) {
+          res.className = 'result show ok';
+          res.innerHTML = '✅ <b>Enviado a WhatsApp</b> (' + d.wa.numero + ').<br>El socio ya recibió el enlace de enrolamiento.';
+          $('form').reset();
+        } else if (d.ok) {
+          res.className = 'result show err';
+          res.innerHTML = '⚠️ Socio creado, pero <b>WhatsApp no se envió</b> (' + ((d.wa && d.wa.error) || 'desconocido') +
+                          ').<br>Enlace manual:<br><a href="' + d.link + '">' + d.link + '</a>';
+        } else {
+          res.className = 'result show err';
+          res.textContent = '❌ Error: ' + (d.error || 'no se pudo registrar');
+        }
+      } catch (err) {
+        res.className = 'result show err';
+        res.textContent = '❌ Error de red: ' + err.message;
+      } finally {
+        btn.disabled = false; btn.textContent = 'Registrar y enviar link';
+      }
+    });
+  </script>
+</body>
+</html>

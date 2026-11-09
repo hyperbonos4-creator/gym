@@ -1,0 +1,5 @@
+config.json
+.brain.env
+data/
+node_modules/
+*.log
