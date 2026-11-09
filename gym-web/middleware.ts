@@ -9,12 +9,17 @@ import { verifySessionTokenEdge } from "./lib/sessionTokenEdge";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isLogin = pathname.startsWith("/login");
+  const isApi = pathname.startsWith("/api/");
   const raw = req.cookies.get("gym_session")?.value || "";
   const claims = raw ? await verifySessionTokenEdge(raw) : null;
   const authed = Boolean(claims);
 
   const res = (() => {
     if (!authed && !isLogin) {
+      // Las APIs deben responder JSON 401 (no HTML de /login).
+      if (isApi) {
+        return NextResponse.json({ ok: false, error: "no_auth" }, { status: 401 });
+      }
       const url = req.nextUrl.clone();
       url.pathname = "/login";
       return NextResponse.redirect(url);
@@ -36,6 +41,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|brand|logo.svg|kiosk|atlas|demos|models|api/v1|api/e/|api/auth/|api/cuenta/registro|api/turnstiles/heartbeat|api/turnstiles/jobs|api/turnstiles/pulse|api/turnstiles/inbox|api/invitaciones|api/mobile|api/door-outbox|invitar|ingreso|instalar|registro|maniqui|e/|x/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|brand|logo.svg|kiosk|atlas|demos|models|api/v1|api/e/|api/auth/|api/cuenta/registro|api/turnstiles/heartbeat|api/turnstiles/jobs|api/turnstiles/pulse|api/turnstiles/inbox|api/invitaciones|api/mobile|invitar|ingreso|instalar|registro|maniqui|e/|x/).*)",
   ],
 };
