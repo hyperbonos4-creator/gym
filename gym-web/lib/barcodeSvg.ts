@@ -43,7 +43,7 @@ function isEan13(code: string): boolean {
   return checkDigit(code.slice(0, 12)) === Number(code[12]);
 }
 
-function barsFromBits(bits: string, module: number, quiet: number): string {
+function barsFromBits(bits: string, moduleWidth: number, quiet: number): string {
   let x = quiet;
   let out = "";
   let i = 0;
@@ -54,8 +54,8 @@ function barsFromBits(bits: string, module: number, quiet: number): string {
       w += 1;
       i += 1;
     }
-    if (on) out += `<rect x="${x}" y="0" width="${w * module}" height="70" fill="#000"/>`;
-    x += w * module;
+    if (on) out += `<rect x="${x}" y="0" width="${w * moduleWidth}" height="70" fill="#000"/>`;
+    x += w * moduleWidth;
   }
   return out;
 }
@@ -98,7 +98,7 @@ function code128Bits(code: string): string {
 export function barcodeSvg(raw: string, opts?: { digits?: boolean }): string {
   const code = String(raw || "").replace(/[\s-]/g, "");
   if (code.length < 4) return "";
-  const module = 2;
+  const moduleWidth = 2;
   const quiet = 20;
   let bits = "";
   try {
@@ -107,9 +107,9 @@ export function barcodeSvg(raw: string, opts?: { digits?: boolean }): string {
     return "";
   }
   const digits = opts?.digits !== false;
-  const width = bits.length * module + quiet * 2;
+  const width = bits.length * moduleWidth + quiet * 2;
   const alto = digits ? 86 : 70;
-  const bars = barsFromBits(bits, module, quiet);
+  const bars = barsFromBits(bits, moduleWidth, quiet);
   const texto = digits
     ? `<text x="${width / 2}" y="84" text-anchor="middle" font-family="ui-monospace,monospace" font-size="11" fill="#111">${code}</text>`
     : "";

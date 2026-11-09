@@ -76,6 +76,12 @@ export function MannequinClip({
     setGhost(false);
   }, [clipKey]);
 
+  const shot = useMemo(() => {
+    const fallback = { position: [0, 1.4, 3.2] as [number, number, number], target: [0, 1.0, 0] as [number, number, number] };
+    if (!model) return sceneCamera(fallback);
+    return sceneCamera(model.views[view]);
+  }, [model, view]);
+
   if (!model) {
     return (
       <div className="grid h-52 place-items-center rounded-2xl border border-dashed border-gym-border px-4 text-center text-sm text-gym-muted">
@@ -91,7 +97,6 @@ export function MannequinClip({
         ...cue.secondary.map((id) => ({ id, role: "Secundario" as const })),
       ]
     : [];
-  const shot = useMemo(() => sceneCamera(model.views[view]), [model, view]);
   const frame = frameClassName || (compact ? "h-52" : "h-80");
   const stepFrame = (direction: number) => {
     setPlaying(false);
