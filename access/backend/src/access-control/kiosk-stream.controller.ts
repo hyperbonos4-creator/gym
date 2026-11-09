@@ -84,11 +84,18 @@ export class KioskStreamController {
     return { token, name: `${u.firstName} ${u.lastName}`.trim(), role: u.role };
   }
 
-  /** Terminal de puerta: arranca sola, sin pedir usuario ni clave en la tablet. */
+  /**
+   * Legacy: arranque automatico con credenciales de entorno.
+   * Deshabilitado por defecto: usar vinculacion por codigo (POST /access/kiosk/pair).
+   */
   @Post('kiosk/auto')
   kioskAuto(): Promise<{ token: string; name: string; role: string }> {
-    const email = (process.env.SEED_ADMIN_EMAIL || process.env.KIOSK_AUTO_EMAIL || 'admin@office.local').trim();
+    if (process.env.KIOSK_AUTO_ENABLED !== 'true') {
+      throw new UnauthorizedException('kiosk_pairing_required');
+    }
+    const email = (process.env.SEED_ADMIN_EMAIL || process.env.KIOSK_AUTO_EMAIL || '').trim();
     const password = process.env.SEED_ADMIN_PASSWORD || process.env.KIOSK_AUTO_PASSWORD || '';
+    if (!email || !password) throw new UnauthorizedException('kiosk_auto_no_configurado');
     return this.kioskSession({ email, password });
   }
 

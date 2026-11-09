@@ -163,43 +163,39 @@ function bindEvents() {
 }
 
 /* ── Sesión ─────────────────────────────────────────────────────────────── */
-async function doLogin() {
-  const email = $('login-email').value.trim();
-  const password = $('login-pass').value;
-  if (!email || !password) return toast('Ingrese correo y contraseña', 'err');
-  $('btn-login').disabled = true;
-  primeAudio(); // gesto del usuario: desbloquea voz (clave en iPhone)
+/* ── Vinculación por código (sin contraseña de admin) ─────────────────────── */
+async function doPair() {
+  const code = ($('pair-code')?.value || '').replace(/\D/g, '');
+  const name = ($('pair-name')?.value || '').trim() || 'Kiosko';
+  if (code.length !== 6) return toast('Ingresa el código de 6 dígitos', 'err');
+  const btn = $('btn-pair');
+  if (btn) btn.disabled = true;
+  primeAudio();
   try {
-    const r = await api.post('/access/kiosk/session', { email, password });
+    const r = await api.post('/access/kiosk/pair', { code, deviceName: name });
     state.token = r.token;
     setToken(TOKEN_KEY, r.token);
+    if (r.accessPointId) {
+      state.pointId = r.accessPointId;
+      localStorage.setItem(POINT_KEY, r.accessPointId);
+    }
     hide('modal-login');
-    toast(`Terminal activada · ${r.name}`, 'ok');
+    toast('Tablet vinculada a esta sede', 'ok');
     await init();
   } catch (e) {
-    toast(e instanceof ApiError ? e.message : 'No se pudo iniciar sesión', 'err');
+    const msg =
+      e instanceof ApiError
+        ? e.status === 429
+          ? 'Demasiados intentos. Espera un minuto.'
+          : e.message || 'Código inválido'
+        : 'No se pudo vincular';
+    toast(msg, 'err');
   } finally {
-    $('btn-login').disabled = false;
+    if (btn) btn.disabled = false;
   }
 }
 
-async function autoStart() {
-  showOpening();
-  try {
-    const r = await api.post('/access/kiosk/auto', {});
-    state.token = r.token;
-    setToken(TOKEN_KEY, r.token);
-    hide('modal-login');
-    await init();
-  } catch (e) {
-    overlayPreviewMessage(
-      'Terminal de acceso',
-      'No se pudo abrir la terminal. Recarga la página o avisa al administrador.',
-    );
-  }
-}
-
-function showOpening() {
+function showPairing() {
   const modal = $('modal-login');
   if (!modal) return;
   modal.classList.remove('hidden');
@@ -207,8 +203,33 @@ function showOpening() {
   if (!card) return;
   card.innerHTML =
     '<div class="brand" style="justify-content:center;margin-bottom:16px">' +
-    '<div class="wordmark"><b>FUERZA ÉLITE</b><span>Terminal de acceso</span></div></div>' +
-    '<p class="muted center" style="text-align:center">Abriendo…</p>';
+    '<div class="wordmark"><b>FUERZA ÉLITE</b><span>Vincular tablet</span></div></div>' +
+    '<p class="muted center" style="text-align:center;margin-bottom:14px;line-height:1.45">' +
+    'Pide en el panel un código de <b>Vincular kiosko</b> (válido 10 minutos) e ingrésalo aquí. No uses contraseñas de administrador.</p>' +
+    '<label class="field"><span>Código de 6 dígitos</span>' +
+    '<input id="pair-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="letter-spacing:0.35em;font-size:1.4rem;text-align:center" /></label>' +
+    '<label class="field"><span>Nombre de esta tablet (opcional)</span>' +
+    '<input id="pair-name" type="text" maxlength="80" placeholder="Recepción" /></label>' +
+    '<button id="btn-pair" class="btn" style="width:100%;margin-top:8px">Vincular</button>';
+  const codeInput = $('pair-code');
+  if (codeInput) {
+    codeInput.focus();
+    codeInput.addEventListener('keydown', (e) => e.key === 'Enter' && doPair());
+    codeInput.addEventListener('input', () => {
+      codeInput.value = codeInput.value.replace(/\D/g, '').slice(0, 6);
+    });
+  }
+  const pairBtn = $('btn-pair');
+  if (pairBtn) pairBtn.onclick = doPair;
+}
+
+async function autoStart() {
+  // Demo/preview: adopta token de URL o admin_token con claim ds (flujo demo).
+  if (PREVIEW) {
+    showPairing();
+    return;
+  }
+  showPairing();
 }
 
 function logout() {
@@ -218,7 +239,7 @@ function logout() {
   setToken(TOKEN_KEY, '');
   state.token = '';
   hide('modal-settings');
-  autoStart();
+  showPairing();
 }
 
 /* ── Inicialización ─────────────────────────────────────────────────────── */
@@ -231,6 +252,11 @@ async function init() {
     }
     setConn('down', 'Backend no disponible');
     return toast('No se pudieron cargar los puntos de acceso', 'err');
+  }
+  const claimedPoint = tokenClaims(state.token)?.accessPointId;
+  if (claimedPoint) {
+    state.pointId = claimedPoint;
+    localStorage.setItem(POINT_KEY, claimedPoint);
   }
   const valid = state.points.find((p) => p.id === state.pointId);
   if (!valid) {

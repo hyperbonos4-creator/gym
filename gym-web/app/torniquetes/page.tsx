@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import GymShell from "../../components/GymShell";
+import KioskPairingPanel from "../../components/KioskPairingPanel";
 import { getActiveGymId } from "../../lib/session";
 
 const AGENT = "http://127.0.0.1:3190";
@@ -504,7 +505,9 @@ export default function TorniquetesPage() {
           . Una cara desconocida es un evento; solo se vuelve incidencia si se repite.
         </p>
 
-        <section className="mb-5 space-y-2">
+                <KioskPairingPanel gymId={gymId} points={points} />
+
+<section className="mb-5 space-y-2">
           {offline.map((d) => (
             <div key={d.id} className="rounded-2xl border border-status-warn/40 bg-status-warn/10 px-4 py-3">
               <div className="text-sm font-bold text-status-warn">Torniquete sin comunicación</div>

@@ -96,3 +96,12 @@ Si falta GYM_TUNNEL_SERVER o GYM_CAMERA_HOST, el script imprime error y sale.
 - Rotar `EVOLUTION_KEY`: cambia `EVOLUTION_KEY` (raiz) y `EVOLUTION_API_KEY` (evolution/.env), recrea `evolution-api` y luego `gym-web`. La sesion de WhatsApp se conserva (se guarda en la base de Evolution).
 - Rotar `DB_PASSWORD`: `ALTER USER access WITH PASSWORD ...`, actualiza `access/backend/.env` y `access/.env`, recrea `backend`.
 - Antes de cada cambio: copia de los `.env`, `pg_dump -Fc` de `access_control` y etiqueta de las imagenes actuales (`:pre-<fecha>`) para poder volver atras.
+
+## Kiosko / tablets
+
+Ver `docs/KIOSKO.md`. Resumen:
+
+- Vinculación por código de 6 dígitos (hash + TTL 10 min + un uso + rate limit).
+- Token de dispositivo `purpose=kiosk` acotado a `gymId` + `accessPointId`, revocable.
+- Guard `KioskScopeGuard` en el backend de access; la UI del kiosko ya no pide password de admin.
+- `KIOSK_AUTO_ENABLED` debe permanecer apagado en producción.

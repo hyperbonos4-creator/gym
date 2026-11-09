@@ -4,7 +4,7 @@
  * (obtenido con las credenciales del kiosko) y lo renueva ante 401.
  *
  * Endpoints (prefijo global /api/v1, controller `access`):
- *  - POST   /access/kiosk/session         { email, password } → { token }
+ *  - POST   /auth/login                   { email, password } → { token }
  *  - POST   /access/subjects              { fullName, employeeCode? } → subject
  *  - POST   /access/subjects/:id/consent  { purpose, policyVersion }
  *  - GET    /access/points                → puntos de acceso (kioscos/puertas)
@@ -30,7 +30,7 @@ let cachedToken: string | null = null;
 async function getToken(force = false): Promise<string> {
   if (cachedToken && !force) return cachedToken;
   const { email, password } = requiredAccessCreds();
-  const res = await fetch(`${ACCESS_URL}/api/v1/access/kiosk/session`, {
+  const res = await fetch(`${ACCESS_URL}/api/v1/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -303,4 +303,35 @@ export async function fetchPortrait(subjectId: string): Promise<Buffer | null> {
   if (res.status === 404) return null;
   if (!res.ok) throw new Error(`portrait_${res.status}`);
   return Buffer.from(await res.arrayBuffer());
+}
+
+
+/** Genera codigo de vinculacion de tablet (admin access). */
+export async function createKioskPairingCode(input: {
+  gymId: string;
+  accessPointId: string;
+  deviceName?: string;
+}) {
+  return accessApi<{
+    code: string;
+    expiresAt: string;
+    gymId: string;
+    accessPointId: string;
+    deviceName: string;
+  }>("POST", "/access/kiosk/pairing-codes", input);
+}
+
+export async function listKioskDevices(gymId: string, includeRevoked = false) {
+  const q = new URLSearchParams({ gymId });
+  if (includeRevoked) q.set("includeRevoked", "1");
+  try {
+    const rows = await accessApi<any[]>("GET", `/access/kiosk/devices?${q.toString()}`);
+    return Array.isArray(rows) ? rows : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function revokeKioskDevice(deviceId: string, gymId: string) {
+  return accessApi("DELETE", `/access/kiosk/devices/${encodeURIComponent(deviceId)}?gymId=${encodeURIComponent(gymId)}`);
 }

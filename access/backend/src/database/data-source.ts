@@ -11,6 +11,8 @@ import { FaceTemplate } from '../access-control/entities/face-template.entity';
 import { SubjectAuthorization } from '../access-control/entities/subject-authorization.entity';
 import { BiometricConsent } from '../access-control/entities/biometric-consent.entity';
 import { DemoSession } from '../access-control/entities/demo-session.entity';
+import { KioskDevice } from '../access-control/entities/kiosk-device.entity';
+import { KioskPairingCode } from '../access-control/entities/kiosk-pairing-code.entity';
 
 loadEnv();
 
@@ -35,6 +37,8 @@ export const AppDataSource = new DataSource({
     SubjectAuthorization,
     BiometricConsent,
     DemoSession,
+    KioskDevice,
+    KioskPairingCode,
   ],
   migrations: ['src/database/migrations/*{.ts,.js}'],
   migrationsTableName: 'typeorm_migrations',

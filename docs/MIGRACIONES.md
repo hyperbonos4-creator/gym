@@ -63,3 +63,8 @@ npm run typeorm -- migration:show
 ## Rollback
 
 `npm run migration:revert` revierte la última entrada de `typeorm_migrations`. El `down` de InitialSchema hace DROP de todas las tablas — **no lo uses en producción con datos**.
+
+## Migraciones posteriores
+
+- `1794200000001-KioskPairing.ts` — tablas `kiosk_devices` y `kiosk_pairing_codes`.
+  En prod (ya baselined InitialSchema): `cd access/backend && npm run migration:run`.

@@ -6,7 +6,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { Repository } from 'typeorm';
 
 import { getJwtAccessSecret } from '../config/jwt.config';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 
 interface JwtPayload {
   sub: string;
@@ -14,6 +14,9 @@ interface JwtPayload {
   role: string;
   purpose?: string;
   enrollSubjectId?: string;
+  deviceId?: string;
+  gymId?: string;
+  accessPointId?: string;
   jti?: string;
 }
 
@@ -35,13 +38,22 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<User & { enrollSubjectId?: string; tokenPurpose?: string; jti?: string }> {
+  async validate(payload: JwtPayload): Promise<User & { enrollSubjectId?: string; tokenPurpose?: string; jti?: string; kioskDeviceId?: string; kioskGymId?: string; kioskAccessPointId?: string }> {
     const user = await this.users.findOne({ where: { id: payload.sub, isActive: true } });
     if (!user) throw new UnauthorizedException('usuario_invalido');
-    const enriched = user as User & { enrollSubjectId?: string; tokenPurpose?: string; jti?: string };
+    const enriched = user as User & { enrollSubjectId?: string; tokenPurpose?: string; jti?: string; kioskDeviceId?: string; kioskGymId?: string; kioskAccessPointId?: string };
     if (payload.purpose === 'enroll' && payload.enrollSubjectId) {
       enriched.enrollSubjectId = payload.enrollSubjectId;
       enriched.tokenPurpose = 'enroll';
+      enriched.jti = payload.jti;
+    }
+    if (payload.purpose === 'kiosk' && payload.deviceId && payload.accessPointId && payload.gymId && payload.jti) {
+      // Nunca heredar privilegios ADMIN del emisor: el kiosko es OPERATOR acotado.
+      enriched.role = UserRole.OPERATOR;
+      enriched.tokenPurpose = 'kiosk';
+      enriched.kioskDeviceId = payload.deviceId;
+      enriched.kioskGymId = payload.gymId;
+      enriched.kioskAccessPointId = payload.accessPointId;
       enriched.jti = payload.jti;
     }
     return enriched;

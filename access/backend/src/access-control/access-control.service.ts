@@ -239,7 +239,13 @@ export class AccessControlService {
     return true;
   }
 
-  /** Apertura manual por un operador tras una denegación (auditada). */
+  async getEvent(accessEventId: string): Promise<AccessEvent | null> {
+    return this.accessEvents.findOne({
+      where: { id: accessEventId, demoSessionId: this.tenant.scopeValue() },
+    });
+  }
+
+    /** Apertura manual por un operador tras una denegación (auditada). */
   async manualOpen(accessEventId: string, actorId: string): Promise<AccessEvent> {
     const denied = await this.accessEvents.findOne({
       where: { id: accessEventId, demoSessionId: this.tenant.scopeValue() },

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Ip,
   Param,
@@ -18,6 +19,7 @@ import { JwtService } from '@nestjs/jwt';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { EnrollScopeGuard } from '../auth/guards/enroll-scope.guard';
+import { KioskScopeGuard } from './guards/kiosk-scope.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { AuthService } from '../auth/auth.service';
@@ -53,7 +55,7 @@ import {
  */
 @ApiTags('Access Control')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard, EnrollScopeGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, EnrollScopeGuard, KioskScopeGuard)
 @Controller('access')
 export class AccessControlController {
   constructor(
@@ -223,8 +225,12 @@ export class AccessControlController {
   @Get('points')
   @Roles(UserRole.ADMIN, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Lista los puntos de acceso (sin secretos).' })
-  listPoints() {
-    return this.accessPoints.list();
+  async listPoints(@CurrentUser() user: User & { tokenPurpose?: string; kioskAccessPointId?: string }) {
+    const rows = await this.accessPoints.list();
+    if (user?.tokenPurpose === 'kiosk' && user.kioskAccessPointId) {
+      return rows.filter((p) => p.id === user.kioskAccessPointId);
+    }
+    return rows;
   }
 
   @Patch('points/:id')
@@ -317,7 +323,16 @@ export class AccessControlController {
   @Post('events/:id/manual-open')
   @Roles(UserRole.ADMIN, UserRole.OPERATOR)
   @ApiOperation({ summary: 'Apertura manual del operador tras una denegación (auditada).' })
-  manualOpen(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: User) {
+  async manualOpen(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: User & { tokenPurpose?: string; kioskAccessPointId?: string },
+  ) {
+    if (user?.tokenPurpose === 'kiosk' && user.kioskAccessPointId) {
+      const ev = await this.access.getEvent(id);
+      if (!ev || ev.accessPointId !== user.kioskAccessPointId) {
+        throw new ForbiddenException('kiosk_scope_event');
+      }
+    }
     return this.access.manualOpen(id, user.id);
   }
 

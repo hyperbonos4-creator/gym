@@ -134,4 +134,51 @@ test("facial webhook auth header check (logic)", () => {
   assert.notEqual("wrong", expected);
 });
 
+
+
+// --- Kiosk scope allowlist (espejo del KioskScopeGuard) ---
+function kioskAllowed(method, url, accessPointId, queryPoint) {
+  const u = String(url || "").split("?")[0];
+  const own = (suffix) => u.endsWith(`/access/points/${accessPointId}${suffix}`);
+  if (method === "GET" && u.endsWith("/access/points")) return true;
+  if (method === "POST" && (own("/recognize") || own("/recognize-image"))) return true;
+  if (method === "GET" && (own("/snapshot") || own("/stream-token") || own("/door-status"))) return true;
+  if (method === "GET" && u.endsWith("/access/events")) {
+    if (queryPoint && queryPoint !== accessPointId) return false;
+    return true;
+  }
+  if (method === "POST" && /\/access\/events\/[^/]+\/manual-open$/.test(u)) return true;
+  if (method === "GET" && u.endsWith("/auth/me")) return true;
+  if (method === "POST" && /\/access\/kiosk\/devices\/[^/]+\/heartbeat$/.test(u)) return true;
+  return false;
+}
+
+test("kiosk scope allowlist recognize own point", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  assert.equal(kioskAllowed("POST", `/api/v1/access/points/${id}/recognize`, id), true);
+});
+
+test("kiosk scope denies other point recognize", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const other = "22222222-2222-2222-2222-222222222222";
+  assert.equal(kioskAllowed("POST", `/api/v1/access/points/${other}/recognize`, id), false);
+});
+
+test("kiosk scope denies admin subjects list", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  assert.equal(kioskAllowed("GET", "/api/v1/access/subjects", id), false);
+});
+
+test("kiosk scope denies events of other point via query", () => {
+  const id = "11111111-1111-1111-1111-111111111111";
+  const other = "22222222-2222-2222-2222-222222222222";
+  assert.equal(kioskAllowed("GET", "/api/v1/access/events", id, other), false);
+});
+
+test("kiosk pairing code is 6 digits shape", () => {
+  const code = String(42).padStart(6, "0");
+  assert.equal(code.length, 6);
+  assert.match(code, /^\d{6}$/);
+});
+
 console.log(`\n${passed} tests passed`);

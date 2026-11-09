@@ -67,7 +67,7 @@ export default function AccesoPage() {
 
         <div className="mt-4 flex items-center justify-between gap-3 px-1 text-xs text-gym-muted">
           <span>Terminal de acceso · {ov?.backend && ov?.vision ? "● Disponible" : ov ? "○ No disponible" : "Revisando"}</span>
-          <a href="/kiosk/index.html?source=webcam" target="_blank" rel="noopener" className="font-semibold text-gym-silver hover:text-white">Abrir kiosco</a>
+          <a href="/kiosk/index.html?source=webcam" target="_blank" rel="noopener" className="font-semibold text-gym-silver hover:text-white">Abrir kiosco (vincular en Torniquetes)</a>
         </div>
       </div>
     </GymShell>
