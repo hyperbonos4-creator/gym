@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { registrarCuenta } from "../../../../lib/cuentas";
 import { clientIp, rateLimit } from "../../../../lib/rateLimit";
-import { mintSessionTokenSync, serializeSessionCookie, sessionTtlMs } from "../../../../lib/sessionToken";
+import { cookieSecureFromRequest, mintSessionTokenSync, serializeSessionCookie, sessionTtlMs } from "../../../../lib/sessionToken";
 import { getUserByUsername, toSession } from "../../../../lib/usersStore";
 
 export const runtime = "nodejs";
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       gym,
       cuenta: { id: cuenta.id, plan: cuenta.plan, trialEndsAt: cuenta.trialEndsAt },
     });
-    res.headers.append("Set-Cookie", serializeSessionCookie(token, Math.floor(sessionTtlMs() / 1000)));
+    res.headers.append("Set-Cookie", serializeSessionCookie(token, Math.floor(sessionTtlMs() / 1000), cookieSecureFromRequest(req)));
     return res;
   } catch (error) {
     const code = error instanceof Error ? error.message : "no_se_pudo";

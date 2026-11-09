@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { userFromRequest } from "../../../../lib/authServer";
-import { clearSessionCookie } from "../../../../lib/sessionToken";
+import { clearSessionCookie, cookieSecureFromRequest } from "../../../../lib/sessionToken";
 import { bumpSessionVersion } from "../../../../lib/usersStore";
 
 export const runtime = "nodejs";
@@ -16,6 +16,6 @@ export async function POST(req: Request) {
     }
   }
   const res = NextResponse.json({ ok: true });
-  res.headers.append("Set-Cookie", clearSessionCookie());
+  res.headers.append("Set-Cookie", clearSessionCookie(cookieSecureFromRequest(req)));
   return res;
 }

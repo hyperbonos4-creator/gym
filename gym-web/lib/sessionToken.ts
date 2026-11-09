@@ -74,8 +74,21 @@ export function verifySessionTokenSync(token: string): SessionClaims | null {
   }
 }
 
-export function serializeSessionCookie(token: string, maxAgeSec: number): string {
-  const secure = process.env.NODE_ENV === "production";
+/** Secure solo si el request es HTTPS (o COOKIE_SECURE=true). Evita cookies inútiles en http://localhost. */
+export function cookieSecureFromRequest(req?: Request): boolean {
+  if (String(process.env.COOKIE_SECURE || "").toLowerCase() === "true") return true;
+  if (String(process.env.COOKIE_SECURE || "").toLowerCase() === "false") return false;
+  if (!req) return false;
+  const xf = (req.headers.get("x-forwarded-proto") || "").split(",")[0]?.trim().toLowerCase();
+  if (xf === "https") return true;
+  try {
+    return new URL(req.url).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export function serializeSessionCookie(token: string, maxAgeSec: number, secure = false): string {
   const parts = [
     `gym_session=${encodeURIComponent(token)}`,
     "Path=/",
@@ -87,7 +100,7 @@ export function serializeSessionCookie(token: string, maxAgeSec: number): string
   return parts.join("; ");
 }
 
-export function clearSessionCookie(): string {
-  const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  return `gym_session=; Path=/; Max-Age=0; SameSite=Lax; HttpOnly${secure}`;
+export function clearSessionCookie(secure = false): string {
+  const sec = secure ? "; Secure" : "";
+  return `gym_session=; Path=/; Max-Age=0; SameSite=Lax; HttpOnly${sec}`;
 }
