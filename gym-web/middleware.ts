@@ -1,29 +1,41 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { verifySessionTokenEdge } from "./lib/sessionTokenEdge";
 
 /**
- * Protege toda la app salvo /login y estáticos. La sesión se marca con la
- * cookie `gym_session` (ver lib/session.ts). Cuando exista backend real, aquí
- * se validará el JWT.
+ * Protege páginas del panel. Valida firma HMAC de gym_session (Edge-safe).
+ * Las rutas API sensibles también deben llamar guardGym/requireRoles.
  */
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const isLogin = pathname.startsWith("/login");
-  const authed = req.cookies.get("gym_session")?.value;
+  const raw = req.cookies.get("gym_session")?.value || "";
+  const claims = raw ? await verifySessionTokenEdge(raw) : null;
+  const authed = Boolean(claims);
 
-  if (!authed && !isLogin) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-  if (authed && isLogin) {
-    const url = req.nextUrl.clone();
-    url.pathname = "/";
-    return NextResponse.redirect(url);
-  }
-  return NextResponse.next();
+  const res = (() => {
+    if (!authed && !isLogin) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    if (authed && isLogin) {
+      const url = req.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  })();
+
+  res.headers.set("X-Content-Type-Options", "nosniff");
+  res.headers.set("X-Frame-Options", "DENY");
+  res.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.headers.set("Permissions-Policy", "camera=(self), microphone=(), geolocation=()");
+  return res;
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icon.png|brand|logo.svg|kiosk|atlas|demos|models|api/v1|api/e/|api/auth/|api/cuenta/registro|api/turnstiles/heartbeat|api/turnstiles/jobs|api/turnstiles/pulse|api/turnstiles/inbox|api/invitaciones|api/mobile|invitar|ingreso|instalar|registro|maniqui|e/|x/).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|brand|logo.svg|kiosk|atlas|demos|models|api/v1|api/e/|api/auth/|api/cuenta/registro|api/turnstiles/heartbeat|api/turnstiles/jobs|api/turnstiles/pulse|api/turnstiles/inbox|api/invitaciones|api/mobile|api/door-outbox|invitar|ingreso|instalar|registro|maniqui|e/|x/).*)",
+  ],
 };

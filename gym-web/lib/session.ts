@@ -1,6 +1,6 @@
 /**
  * Sesión de UI. El login real vive en POST /api/auth/login
- * (cookie gym_session = username). localStorage solo pinta el shell.
+ * (cookie HttpOnly firmada). localStorage solo pinta el shell.
  */
 
 const SESSION_KEY = "gym_session";
@@ -27,8 +27,12 @@ export function applySession(user: SessionUser) {
 export function logout() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(SESSION_KEY);
-  document.cookie = `${SESSION_KEY}=; path=/; max-age=0`;
-  window.location.assign("/login");
+  // Invalida sesión firmada en el servidor (HttpOnly); el JS no puede borrar esa cookie a ciegas.
+  fetch("/api/auth/logout", { method: "POST", credentials: "same-origin" })
+    .catch(() => undefined)
+    .finally(() => {
+      window.location.assign("/login");
+    });
 }
 
 export function getUser(): SessionUser | null {
