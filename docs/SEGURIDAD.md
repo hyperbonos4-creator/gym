@@ -8,6 +8,7 @@ Configúralas en `.env` (raíz) y/o `gym-web` / `access/backend` según correspo
 |---|---|---|
 | `SESSION_SECRET` | gym-web | ≥32 caracteres. Sin ella el panel no arranca en production. |
 | `SESSION_TTL_HOURS` | gym-web | Opcional (default 24). |
+| `COOKIE_SECURE` | gym-web | `true` fuerza Secure; `false` lo apaga. Por defecto: solo si el request es HTTPS. |
 | `GYM_BOOTSTRAP_ADMIN_USER` | gym-web | Solo para crear el primer admin si no existe `data/users.json`. |
 | `GYM_BOOTSTRAP_ADMIN_PASSWORD` | gym-web | ≥8 caracteres. Solo bootstrap. |
 | `GYM_BOOTSTRAP_ADMIN_NAME` | gym-web | Opcional. |
