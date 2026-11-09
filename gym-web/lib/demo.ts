@@ -13,6 +13,8 @@ const BLOCKED_PREFIXES = [
   "/api/whatsapp",
   "/api/wompi",
   "/api/dian",
+  "/api/facturacion/venta",
+  "/api/facturacion/dian",
   "/api/turnstiles/pulse",
   "/api/access/test-open",
 ];
