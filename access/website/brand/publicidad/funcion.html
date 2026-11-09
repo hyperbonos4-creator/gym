@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>VisionYX · cómo funciona</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1080px; height: 1350px; overflow: hidden; background: #070b14; color: #eaf1fb; font-family: "Exo 2", "Segoe UI", sans-serif; }
+    .ad { position: relative; width: 1080px; height: 1350px; padding: 52px 64px 48px; display: flex; flex-direction: column; overflow: hidden; }
+    .glow { position: absolute; inset: 0; pointer-events: none; background:
+      radial-gradient(700px 420px at 100% 0%, rgba(168,85,247,.28), transparent 60%),
+      radial-gradient(640px 480px at 0% 100%, rgba(34,211,238,.14), transparent 55%); }
+    .top, .kicker, h1, .lead, .panel, .rule { position: relative; z-index: 1; }
+    .top { display: flex; align-items: center; justify-content: space-between; }
+    .brand { display: flex; align-items: center; gap: 14px; font-family: Orbitron, sans-serif; font-weight: 800; letter-spacing: .12em; font-size: 24px; }
+    .brand img { width: 64px; height: 46px; object-fit: contain; }
+    .brand span { background: linear-gradient(90deg,#22d3ee,#a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .chip { font-size: 15px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: #041018; background: linear-gradient(90deg,#22d3ee,#3ee0a2); border-radius: 999px; padding: 8px 14px; }
+    .kicker { margin-top: 36px; color: #22d3ee; font-weight: 700; letter-spacing: .26em; text-transform: uppercase; font-size: 18px; }
+    h1 { margin-top: 12px; font-family: Orbitron, sans-serif; font-weight: 800; font-size: 58px; line-height: 1.05; max-width: 16ch; }
+    .lead { margin-top: 14px; font-size: 28px; line-height: 1.3; color: #c5d4ea; max-width: 28em; }
+    .panel { margin-top: 32px; flex: 1; border-radius: 28px; border: 1px solid rgba(127,230,255,.24); background: linear-gradient(180deg, rgba(14,24,44,.92), rgba(7,12,24,.92)); padding: 32px; display: flex; flex-direction: column; gap: 16px; }
+    .now { font-family: Orbitron, sans-serif; font-size: 28px; letter-spacing: .04em; color: #3ee0a2; }
+    .row { flex: 1; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-radius: 18px; border: 1px solid rgba(127,230,255,.16); background: rgba(6,12,24,.55); padding: 0 28px; }
+    .row b { display: block; font-family: Orbitron, sans-serif; font-size: 15px; letter-spacing: .16em; color: #22d3ee; font-weight: 700; }
+    .row strong { display: block; margin-top: 4px; font-size: 30px; font-weight: 700; }
+    .row em { font-style: normal; text-align: right; font-size: 22px; color: #9eb0cc; max-width: 16em; }
+    .row.on { border-color: rgba(62,224,162,.55); background: rgba(16,48,36,.45); }
+    .row.on em { color: #b7f3d4; }
+    .rule { margin-top: 26px; font-size: 24px; line-height: 1.35; color: #d5e2f4; }
+  </style>
+</head>
+<body>
+  <article class="ad" id="ad">
+    <div class="glow"></div>
+    <div class="top">
+      <div class="brand"><img src="marca-v.png" alt="" />VISION<span>YX</span></div>
+      <div class="chip">En funcionamiento</div>
+    </div>
+    <div class="kicker" id="kicker"></div>
+    <h1 id="title"></h1>
+    <p class="lead" id="lead"></p>
+    <div class="panel" id="panel"></div>
+    <p class="rule" id="rule"></p>
+  </article>
+  <script>
+    const A = {
+      dashboard: ["Operación", "El día de la sede, junto.", "Ventas, puerta y quién puede entrar.", "Así lee la sede", [
+        ["Hoy", "Ventas cobradas", "Según los pagos registrados"],
+        ["Puerta", "Intentos de acceso", "Aprobados y rechazados"],
+        ["Autorización", "Socio habilitado", "Plan vigente y rostro", true]
+      ], "No basta con tener la ficha. El importe cobrado no es la utilidad."],
+      torniquetes: ["Operación", "La puerta identifica al socio.", "Cada puerta, en cualquier red, siempre identificada.", "Cuando llega alguien", [
+        ["Controlador", "En línea", "Avisa desde la puerta"],
+        ["Reconocimiento", "Sabe quién es", "Sin esto, la puerta no identifica"],
+        ["Brazo", "Abre", "Solo si todo está en regla", true]
+      ], "Si el reconocimiento no responde, la puerta no sabe quién llega."],
+      accesos: ["Operación", "Cada intento queda escrito.", "Quién llegó, si el plan cubría ese día y si se ordenó abrir.", "Lo que guarda la auditoría", [
+        ["Quién", "Cliente o invitado", "También si no fue reconocido"],
+        ["Plan", "Cubría ese día", "El que tenía la ficha"],
+        ["Resultado", "Se ordenó abrir", "O no", true]
+      ], "La puerta no guarda una foto del plan. Guarda el resultado del intento."],
+      acceso: ["Operación", "Primero la ficha. Luego el rostro.", "Recepción crea al cliente y el acceso sigue bloqueado.", "Alta de un socio", [
+        ["1 Datos", "Ficha creada", "Documento, nombre y WhatsApp"],
+        ["2 Rostro", "Pendiente", "Hasta la prueba de vida"],
+        ["3 Acceso", "Bloqueado", "Falta el plan y el rostro", true]
+      ], "Enviar el enlace no es enrolar. La puerta abre con rostro, plan vigente y sede autorizada."],
+      clientes: ["Gimnasio", "Una ficha por persona.", "Ahí viven la identidad, el rostro y si puede entrar.", "La ficha", [
+        ["Buscar", "Nombre o documento", "También celular o código"],
+        ["Rostro", "En el enrolamiento", "No se guarda foto del documento"],
+        ["Entrada", "Se ve en la ficha", "Si hoy puede pasar", true]
+      ], "El registro facial no se hace en esta lista. Se hace en el enrolamiento."],
+      membresias: ["Gimnasio", "Aquí solo quien tiene plan.", "Quien no tiene membresía sigue en Clientes.", "El plan del socio", [
+        ["Vigente", "Sigue el ciclo", "Puede entrar si el rostro está"],
+        ["Vence hoy", "La sede lo ve", "Antes de que cierre"],
+        ["Sin plan", "No está en esta lista", "Sigue en Clientes", true]
+      ], "Entrar también depende del rostro, la sede y las reglas del plan."],
+      planes: ["Gimnasio", "El plan decide cuándo se entra.", "Qué puede comprar, cuánto cuesta y cuándo usa el gimnasio.", "Condición de acceso", [
+        ["Tarifa", "La define la sede", "Beneficios y precio"],
+        ["Uso", "Según el plan vigente", "El acceso se calcula solo"],
+        ["Invitado", "Por rostro", "Si no puede, un PIN de un solo uso", true]
+      ], "El invitado no entra con el plan del titular si no se identifica."],
+      rutinas: ["Gimnasio", "Se publica una versión y se asigna.", "La semana del profesor queda en la ficha del socio.", "Programación", [
+        ["Diseño", "La semana", "La arma el profesor"],
+        ["Versión", "Se publica", "Esa es la que se asigna"],
+        ["Socio", "Recibe esa versión", "La posterior no se la cambia", true]
+      ], "Editar después no cambia lo que el socio ya tiene asignado."],
+      ejercicios: ["Gimnasio", "El ejercicio se ve.", "El ciclo 3D muestra el recorrido. No certifica la técnica.", "Atlas", [
+        ["Catálogo", "El movimiento", "Con su máquina o peso"],
+        ["Ciclo 3D", "El recorrido", "Vista de entrenador"],
+        ["Cliente", "Se le puede enviar", "La misma ejecución", true]
+      ], "Ver el ciclo no certifica que el ejercicio esté bien hecho."],
+      estudio: ["Gimnasio", "El profesor publica el movimiento.", "El maniquí reproduce el ejercicio del catálogo.", "Motion Studio", [
+        ["Ejercicio", "Sale del catálogo", "Los 43 tienen ciclo"],
+        ["Maniquí", "Lo reproduce", "El recorrido es una demostración"],
+        ["Publicación", "Queda el movimiento", "El editor de poses no lo reemplaza", true]
+      ], "Sirve para ver la estructura. No confirma que la técnica sea correcta."],
+      valoraciones: ["Gimnasio", "La medida queda en el expediente.", "Lo que no se midió no se guarda como cero.", "Valoración", [
+        ["Medidas", "Solo las tomadas", "Un vacío no es un cero"],
+        ["Pruebas", "Las que se hicieron", "Mismo ejercicio para comparar"],
+        ["Fotos", "Privadas", "No reconocen el rostro", true]
+      ], "Cerrar la valoración no cambia la rutina."],
+      nutricion: ["Gimnasio", "Se publica una versión del plan.", "Comidas, hábitos y seguimiento. No es una dieta clínica.", "Nutrición", [
+        ["Plan", "Comidas y versión", "Se asigna al cliente"],
+        ["Biblioteca", "Alimentos y recetas", "Si falta un dato, no se inventa"],
+        ["Seguimiento", "Hábitos y el día", "Sin puntuar bueno o malo", true]
+      ], "Editar el plan no cambia la versión que el cliente ya tiene."],
+      caja: ["Finanzas", "Sin turno no se cobra.", "El turno abre con el efectivo que hay en el cajón.", "Punto de venta", [
+        ["Fondo", "Efectivo inicial", "Lo que hay en caja"],
+        ["Turno", "Abierto", "Ya se puede vender", true],
+        ["Cierre", "Base + cobrado − egresos", "Eso es el efectivo esperado"]
+      ], "Una venta con tarjeta no entra en el efectivo del cajón."],
+      ventas: ["Finanzas", "El ticket queda. Hoy se puede anular.", "Número, medio de pago y, si hace falta, la anulación.", "Historial de ventas", [
+        ["Ticket", "Queda el número", "Medio y total"],
+        ["Día", "Se puede anular hoy", "Con un motivo"],
+        ["Stock", "Vuelve al gimnasio", "Si esa venta se anula", true]
+      ], "Una venta de un turno ya cerrado no se anula desde aquí."],
+      productos: ["Finanzas", "El producto nace con su código.", "Gimnasio, bodega y la etiqueta de la sede.", "Catálogo", [
+        ["Código", "Lo asigna el sistema", "Al crear el producto"],
+        ["Conteo", "Gimnasio y bodega", "Las unidades reales"],
+        ["Etiqueta", "Con el logo de la sede", "Sale al crearlo", true]
+      ], "Si el conteo se deja en blanco, se guarda cero."],
+      inventario: ["Finanzas", "Guardar reemplaza la cantidad.", "Lo que está en el gimnasio y lo que sigue en bodega.", "Inventario", [
+        ["Gimnasio", "Lo que está en sala", "Se cuenta aparte"],
+        ["Bodega", "Lo que no ha bajado", "Entra por un pedido"],
+        ["Guardar", "Reemplaza ese renglón", "Quedan las unidades escritas", true]
+      ], "No suma al conteo anterior. Lo sustituye."],
+      pedidos: ["Finanzas", "Lo recibido entra a bodega.", "La compra al proveedor no aparece en sala hasta bajarla.", "Pedido", [
+        ["Proveedor", "A quién se le compra", "Hace falta para el producto"],
+        ["Recibo", "Entra a bodega", "Ahí quedan las unidades", true],
+        ["Sala", "Se baja después", "Desde el catálogo"]
+      ], "Sin recibo, esas unidades no entran."],
+      proveedores: ["Finanzas", "Sin proveedor no hay producto.", "La razón social va con el NIT. Cada sede tiene los suyos.", "Proveedor", [
+        ["Razón social", "Con su NIT", "Así se da de alta"],
+        ["Sede", "Los ve esta sede", "Otra sede tiene los suyos"],
+        ["Producto", "Ya se puede cargar", "Porque el proveedor existe", true]
+      ], "Cada sede no comparte esta lista."],
+      facturacion: ["Finanzas", "La venta queda si la DIAN no sale.", "Cada sede factura con su NIT, su certificado y su resolución.", "Facturación DIAN", [
+        ["Envío", "Puede estar apagado", "No sale ningún documento"],
+        ["Venta", "Sigue en caja", "No se pierde", true],
+        ["Sede", "Su propio certificado", "Otra sede no firma con él"]
+      ], "Apagado, o sin NIT, no se llama a la DIAN."],
+      egresos: ["Finanzas", "Lo que sale de caja queda anotado.", "Gastos de esta sede, en el rango que se mire.", "Gastos", [
+        ["Salida", "Se registra", "De esta sede"],
+        ["Rango", "Suma el periodo", "Lo que salió"],
+        ["Turno", "Resta del efectivo", "Entra en el cierre", true]
+      ], "Un gasto de otra sede no aparece aquí."],
+      reportes: ["Finanzas", "Cobrado, medios, gastos y stock.", "El margen solo existe si el producto tiene costo.", "Reportes", [
+        ["Ventas", "Lo cobrado", "Y el medio de pago"],
+        ["Margen", "Si hay costo", "Sin costo, no se calcula"],
+        ["Stock", "Bajo el mínimo", "Lo que hay que reponer", true]
+      ], "Sin costo cargado, no hay margen que mostrar."],
+      gimnasios: ["Sistema", "Cada sede opera con lo suyo.", "Socios, caja y puertas no se mezclan.", "Sedes", [
+        ["Sede", "La suya", "Socios y puertas de esa sede"],
+        ["Usuario", "Entra a las suyas", "No a las de otra"],
+        ["Cuenta", "Puede faltar", "La sede sigue abierta", true]
+      ], "Una sede no muestra accesos, socios ni puertas de otra."],
+      cuenta: ["Sistema", "La sede tiene marca, equipo y plan.", "El nombre y el logo salen en el selector. La app del socio es la misma.", "Cuenta", [
+        ["Marca", "Nombre y logo", "De esta sede"],
+        ["Equipo", "Solo esta sede", "Esa persona no entra a otra"],
+        ["Plan", "Inicio, Operación o Red", "Una, tres o diez sedes", true]
+      ], "La copia de la sede no incluye certificados de la DIAN ni contraseñas."],
+      whatsapp: ["Sistema", "El aviso sale del número de la sede.", "Enrolamiento, recordatorios y avisos.", "WhatsApp", [
+        ["Vínculo", "Con el QR", "Una sola vez"],
+        ["Envía", "El enlace y los avisos", "Desde ese número", true],
+        ["Otra sede", "Otro número", "Se ve su propia conexión"]
+      ], "Al cambiar de sede no se ve el WhatsApp de la anterior."]
+    };
+    function paint() {
+      const id = (location.hash || "#dashboard").slice(1);
+      const row = A[id] || A.dashboard;
+      document.getElementById("kicker").textContent = row[0];
+      document.getElementById("title").textContent = row[1];
+      document.getElementById("lead").textContent = row[2];
+      document.getElementById("panel").innerHTML = `<div class="now">${row[3]}</div>` + row[4].map((r) =>
+        `<div class="row${r[3] ? " on" : ""}"><div><b>${r[0]}</b><strong>${r[1]}</strong></div><em>${r[2]}</em></div>`
+      ).join("");
+      document.getElementById("rule").textContent = row[5];
+    }
+    window.addEventListener("hashchange", paint);
+    paint();
+  </script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+﻿# Secrets and local env
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+!gym-web/**/*.example
+mobile.key
+**/data/mobile.key
+config.h
+**/config.h
+
+# Dependencies and virtualenvs
+node_modules/
+**/node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Build outputs
+.next/
+**/dist/
+esp32_torniquete_api/build/
+**/build/
+*.log
+logs/
+
+# Runtime / personal data (never commit)
+gym-web/data/
+**/data/*.json
+!**/data/.gitkeep
+facial_probe/
+platform-tools/
+ngrok/
+images/captures/
+*.qdrant
+
+# Serial / hardware captures (may contain device chatter)
+COM3_capture.txt
+COM3_capture_facial.txt
+*_capture*.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.cursor/

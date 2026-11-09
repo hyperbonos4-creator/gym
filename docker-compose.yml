@@ -1,0 +1,82 @@
+# Plataforma gym-web + túnel público fijo.
+# Access y WhatsApp se levantan con el mismo comando (start.ps1 / start.cmd).
+#
+#   start.cmd
+#   → http://localhost:3100
+#   → https://sappy-drool-monument.ngrok-free.dev
+
+name: gym-platform
+
+services:
+  dian:
+    build:
+      context: ./dian
+      dockerfile: Dockerfile.api
+    image: gym/dian:0.1.0
+    container_name: gym_dian
+    restart: unless-stopped
+    environment:
+      CERT_PASSWORD: ${DIAN_CERT_PASSWORD:-}
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./gym-web/data/dian:/app/certificados
+    ports:
+      - "127.0.0.1:8091:8000"
+    networks:
+      - default
+
+  gym-web:
+    build:
+      context: ./gym-web
+      dockerfile: Dockerfile
+    image: gym/web:0.1.0
+    container_name: gym_web
+    restart: unless-stopped
+    ports:
+      - "3100:3100"
+    environment:
+      ACCESS_URL: http://office_backend:3000
+      EVOLUTION_URL: http://gym-evolution:8080
+      EVOLUTION_KEY: ${EVOLUTION_KEY:-gym-evolution-key}
+      ENROLL_PUBLIC_BASE: ${ENROLL_PUBLIC_BASE:-https://sappy-drool-monument.ngrok-free.dev}
+      ESP_AGENT_KEY: ${ESP_AGENT_KEY:-}
+      WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
+      WOMPI_INTEGRITY_SECRET: ${WOMPI_INTEGRITY_SECRET:-}
+      WOMPI_EVENTS_SECRET: ${WOMPI_EVENTS_SECRET:-}
+      WOMPI_PRIVATE_KEY: ${WOMPI_PRIVATE_KEY:-}
+      DIAN_URL: http://dian:8000
+    volumes:
+      - ./gym-web/data:/app/data
+    depends_on:
+      - dian
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - default
+      - office_net
+      - gym_wa_net
+
+  ngrok:
+    image: ngrok/ngrok:3
+    container_name: gym_ngrok
+    restart: unless-stopped
+    depends_on:
+      - gym-web
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command:
+      - http
+      - http://gym-web:3100
+      - --url=${NGROK_DOMAIN:-sappy-drool-monument.ngrok-free.dev}
+    ports:
+      - "127.0.0.1:4040:4040"
+    networks:
+      - default
+
+networks:
+  office_net:
+    name: access_office_net
+    external: true
+  gym_wa_net:
+    name: gym-wa_gym-wa-net
+    external: true

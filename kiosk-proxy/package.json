@@ -1,0 +1,15 @@
+{
+  "name": "gym-kiosk-proxy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Proxy HTTPS para servir el kiosko de Access a la tablet por WiFi (contexto seguro para la camara).",
+  "type": "commonjs",
+  "scripts": {
+    "gen-cert": "node gen-cert.js",
+    "start": "node proxy.js"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1",
+    "node-forge": "^1.3.1"
+  }
+}

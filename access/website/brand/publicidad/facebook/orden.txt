@@ -1,0 +1,42 @@
+Cada pieza explica un apartado en uso. No muestra el menú ni el resto del panel.
+Tamaño 1080×1350. Súbelas como cuatro carruseles, en este orden.
+
+Operación
+visionyx-dashboard.png
+visionyx-torniquetes.png
+visionyx-accesos.png
+visionyx-acceso.png
+
+Gimnasio
+visionyx-clientes.png
+visionyx-membresias.png
+visionyx-planes.png
+visionyx-rutinas.png
+visionyx-ejercicios.png
+visionyx-estudio.png
+visionyx-valoraciones.png
+visionyx-nutricion.png
+
+Finanzas
+visionyx-caja.png
+visionyx-ventas.png
+visionyx-productos.png
+visionyx-inventario.png
+visionyx-pedidos.png
+visionyx-proveedores.png
+visionyx-facturacion.png
+visionyx-egresos.png
+visionyx-reportes.png
+
+Sistema
+visionyx-gimnasios.png
+visionyx-cuenta.png
+visionyx-whatsapp.png
+
+Texto
+VisionYX
+Así funciona cada parte del gimnasio.
+
+La puerta, la ficha, el plan, la caja y la factura. Cada pieza dice qué pasa cuando se usa.
+
+visionyx.lat

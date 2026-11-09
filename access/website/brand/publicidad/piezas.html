@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>VisionYX · publicidad gimnasios</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: #070b16; }
+    body { font-family: "Exo 2", "Segoe UI", sans-serif; color: #eaf1fb; }
+    .stage { display: none; position: relative; overflow: hidden; background: #070b16; }
+    .stage.on { display: flex; flex-direction: column; }
+    .feed { width: 1080px; height: 1350px; }
+    .sq { width: 1080px; height: 1080px; }
+    .story { width: 1080px; height: 1920px; }
+    .glow, .grid { position: absolute; inset: 0; pointer-events: none; }
+    .glow {
+      background:
+        radial-gradient(900px 560px at 92% -4%, rgba(168, 85, 247, 0.38), transparent 60%),
+        radial-gradient(760px 620px at -8% 108%, rgba(34, 211, 238, 0.2), transparent 58%),
+        radial-gradient(520px 420px at 50% 42%, rgba(37, 99, 235, 0.16), transparent 70%);
+    }
+    .grid {
+      background-image:
+        linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(circle at 50% 30%, #000 8%, transparent 76%);
+    }
+    .corner { position: absolute; width: 42px; height: 42px; z-index: 3; pointer-events: none; }
+    .corner.tl { top: 28px; left: 28px; border-top: 2px solid rgba(34, 211, 238, 0.7); border-left: 2px solid rgba(34, 211, 238, 0.7); }
+    .corner.tr { top: 28px; right: 28px; border-top: 2px solid rgba(168, 85, 247, 0.7); border-right: 2px solid rgba(168, 85, 247, 0.7); }
+    .corner.bl { bottom: 28px; left: 28px; border-bottom: 2px solid rgba(34, 211, 238, 0.45); border-left: 2px solid rgba(34, 211, 238, 0.45); }
+    .corner.br { bottom: 28px; right: 28px; border-bottom: 2px solid rgba(168, 85, 247, 0.45); border-right: 2px solid rgba(168, 85, 247, 0.45); }
+    .inner { position: relative; z-index: 1; height: 100%; display: flex; flex-direction: column; padding: 72px 76px 64px; }
+    .story .inner { padding: 108px 84px 88px; }
+    .brand { display: flex; align-items: center; gap: 18px; }
+    .brand img { width: 86px; height: 62px; object-fit: contain; filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.45)); }
+    .word { font-family: "Orbitron", "Segoe UI", sans-serif; font-weight: 800; font-size: 34px; letter-spacing: 0.18em; }
+    .word span { background: linear-gradient(90deg, #22d3ee, #3b82f6 45%, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .kicker {
+      margin-top: 28px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: #22d3ee;
+    }
+    h1 {
+      margin-top: 16px;
+      font-family: "Orbitron", "Segoe UI", sans-serif;
+      font-weight: 800;
+      font-size: 68px;
+      line-height: 1.06;
+      letter-spacing: -0.02em;
+      max-width: 14ch;
+    }
+    .story h1 { font-size: 76px; max-width: 16ch; }
+    .sq h1 { font-size: 52px; max-width: 18ch; }
+    .lead { margin-top: 20px; max-width: 18em; font-size: 30px; line-height: 1.35; color: #b7c6de; font-weight: 500; }
+    .v {
+      width: 820px;
+      height: auto;
+      align-self: center;
+      margin-top: 6px;
+      filter: drop-shadow(0 0 48px rgba(34, 211, 238, 0.28));
+    }
+    .sq .v { width: 620px; margin-top: 4px; }
+    .story .v { width: 860px; margin: 28px auto 8px; }
+    .ghost {
+      position: absolute;
+      right: -120px;
+      bottom: -40px;
+      width: 760px;
+      opacity: 0.34;
+      pointer-events: none;
+      z-index: 0;
+      filter: drop-shadow(0 0 40px rgba(34, 211, 238, 0.25));
+    }
+    .pills { margin-top: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sq .pills { margin-top: 28px; }
+    .pill {
+      border: 1px solid rgba(127, 230, 255, 0.28);
+      background: linear-gradient(180deg, rgba(16, 28, 52, 0.82), rgba(8, 14, 28, 0.72));
+      border-radius: 18px;
+      padding: 20px 24px 22px;
+      font-size: 28px;
+      font-weight: 650;
+    }
+    .pill span { display: block; margin-bottom: 6px; color: #22d3ee; font-family: "Orbitron", sans-serif; font-size: 13px; letter-spacing: 0.18em; }
+    .cards { margin-top: 36px; display: flex; flex-direction: column; gap: 16px; flex: 1; position: relative; z-index: 1; }
+    .card {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 26px;
+      padding: 0 32px;
+      border: 1px solid rgba(127, 230, 255, 0.22);
+      background: linear-gradient(90deg, rgba(12, 22, 42, 0.88), rgba(8, 14, 28, 0.42));
+      border-radius: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 4px;
+      background: linear-gradient(#22d3ee, #a855f7);
+    }
+    .card b {
+      font-family: "Orbitron", sans-serif;
+      font-size: 26px;
+      color: #22d3ee;
+      width: 70px;
+      flex: none;
+      font-weight: 700;
+    }
+    .card strong { display: block; font-size: 34px; font-weight: 700; letter-spacing: -0.01em; }
+    .card em { display: block; margin-top: 6px; font-style: normal; color: #9eb0cc; font-size: 22px; font-weight: 500; }
+    .story .rows { margin-top: 28px; flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; }
+    .story .row {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+      border-top: 1px solid rgba(127, 230, 255, 0.16);
+      padding: 26px 0;
+      font-size: 36px;
+      font-weight: 650;
+    }
+    .story .row b { font-family: "Orbitron", sans-serif; font-size: 22px; color: #a855f7; width: 64px; flex: none; }
+    .foot {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-top: 28px;
+      font-size: 20px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #8ea0bd;
+      position: relative;
+      z-index: 1;
+    }
+    .foot strong { color: #eaf1fb; font-weight: 700; letter-spacing: 0.14em; }
+    .line {
+      height: 3px;
+      width: 148px;
+      margin-top: 26px;
+      background: linear-gradient(90deg, #22d3ee, #a855f7);
+    }
+  </style>
+</head>
+<body>
+  <section class="stage feed" id="portada">
+    <div class="glow"></div><div class="grid"></div>
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="inner">
+      <div class="brand"><img src="marca-v.png?v=3" alt="" /><div class="word">VISION<span>YX</span></div></div>
+      <img class="v" src="marca-v.png?v=3" alt="" />
+      <p class="kicker">Sistema para gimnasios</p>
+      <h1>Todo el gimnasio, en una sola plataforma.</h1>
+      <p class="lead">Acceso, socios, caja y entrenamiento. Operado con VisionYX.</p>
+      <div class="pills">
+        <div class="pill"><span>01</span>Acceso facial</div>
+        <div class="pill"><span>02</span>Socios y planes</div>
+        <div class="pill"><span>03</span>Caja y DIAN</div>
+        <div class="pill"><span>04</span>Atlas 3D</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage feed" id="acceso">
+    <div class="glow"></div><div class="grid"></div>
+    <img class="ghost" src="marca-v.png?v=3" alt="" />
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="inner">
+      <div class="brand"><img src="marca-v.png?v=3" alt="" /><div class="word">VISION<span>YX</span></div></div>
+      <p class="kicker">Control de acceso</p>
+      <h1>El socio entra. El sistema lo sabe.</h1>
+      <div class="line"></div>
+      <div class="cards">
+        <div class="card"><b>01</b><div><strong>Rostro en la puerta</strong><em>Registro facial en la entrada.</em></div></div>
+        <div class="card"><b>02</b><div><strong>Torniquete identificado</strong><em>Cada puerta, siempre identificada.</em></div></div>
+        <div class="card"><b>03</b><div><strong>Historial de cada ingreso</strong><em>Auditoría de cada intento.</em></div></div>
+      </div>
+      <div class="foot"><strong>VisionYX</strong><span>Gimnasios</span></div>
+    </div>
+  </section>
+
+  <section class="stage feed" id="caja">
+    <div class="glow"></div><div class="grid"></div>
+    <img class="ghost" src="marca-v.png?v=3" alt="" />
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="inner">
+      <div class="brand"><img src="marca-v.png?v=3" alt="" /><div class="word">VISION<span>YX</span></div></div>
+      <p class="kicker">Operación y caja</p>
+      <h1>Del plan al cobro, en la misma sede.</h1>
+      <div class="line"></div>
+      <div class="cards">
+        <div class="card"><b>01</b><div><strong>Planes y membresías</strong><em>Tarifas y condiciones de acceso.</em></div></div>
+        <div class="card"><b>02</b><div><strong>Punto de venta</strong><em>Cobro, lector y ticket.</em></div></div>
+        <div class="card"><b>03</b><div><strong>Factura electrónica DIAN</strong><em>Documentos por sede.</em></div></div>
+        <div class="card"><b>04</b><div><strong>Varias sedes, una cuenta</strong><em>Cada gimnasio con lo suyo.</em></div></div>
+      </div>
+      <div class="foot"><strong>VisionYX</strong><span>Gimnasios</span></div>
+    </div>
+  </section>
+
+  <section class="stage feed" id="entrenamiento">
+    <div class="glow"></div><div class="grid"></div>
+    <img class="ghost" src="marca-v.png?v=3" alt="" />
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="inner">
+      <div class="brand"><img src="marca-v.png?v=3" alt="" /><div class="word">VISION<span>YX</span></div></div>
+      <p class="kicker">Entrenamiento</p>
+      <h1>El ejercicio se ve. La rutina se sigue.</h1>
+      <div class="line"></div>
+      <div class="cards">
+        <div class="card"><b>01</b><div><strong>Atlas de ejercicios en 3D</strong><em>Ejecución guiada del movimiento.</em></div></div>
+        <div class="card"><b>02</b><div><strong>Rutinas del profesor</strong><em>Versiones y asignación al socio.</em></div></div>
+        <div class="card"><b>03</b><div><strong>Valoración y nutrición</strong><em>Expediente, medidas y plan.</em></div></div>
+        <div class="card"><b>04</b><div><strong>Clases</strong><em>Grupales y horarios.</em></div></div>
+      </div>
+      <div class="foot"><strong>VisionYX</strong><span>Gimnasios</span></div>
+    </div>
+  </section>
+
+  <section class="stage sq" id="cuadrada">
+    <div class="glow"></div><div class="grid"></div>
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="inner">
+      <div class="brand"><img src="marca-v.png?v=3" alt="" /><div class="word">VISION<span>YX</span></div></div>
+      <img class="v" src="marca-v.png?v=3" alt="" />
+      <p class="kicker">Para gimnasios</p>
+      <h1>Acceso, socios, caja y entrenamiento.</h1>
+      <div class="pills">
+        <div class="pill"><span>01</span>Acceso facial</div>
+        <div class="pill"><span>02</span>Socios y planes</div>
+        <div class="pill"><span>03</span>Caja y DIAN</div>
+        <div class="pill"><span>04</span>Atlas 3D</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage story" id="historia">
+    <div class="glow"></div><div class="grid"></div>
+    <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+    <div class="inner">
+      <div class="brand"><img src="marca-v.png?v=3" alt="" /><div class="word">VISION<span>YX</span></div></div>
+      <img class="v" src="marca-v.png?v=3" alt="" />
+      <p class="kicker">Sistema para gimnasios</p>
+      <h1>La operación del gimnasio, en un solo lugar.</h1>
+      <div class="rows">
+        <div class="row"><b>01</b>Acceso facial</div>
+        <div class="row"><b>02</b>Socios y planes</div>
+        <div class="row"><b>03</b>Caja y factura DIAN</div>
+        <div class="row"><b>04</b>Atlas 3D y rutinas</div>
+      </div>
+      <div class="foot"><strong>visionyx.lat</strong><span>Medellín</span></div>
+    </div>
+  </section>
+  <script>
+    const id = (location.hash || "#portada").slice(1);
+    const el = document.getElementById(id) || document.getElementById("portada");
+    el.classList.add("on");
+    document.body.style.width = "1080px";
+    document.body.style.height = getComputedStyle(el).height;
+    document.body.style.overflow = "hidden";
+  </script>
+</body>
+</html>

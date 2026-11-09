@@ -1,0 +1,1048 @@
+Guiovannal1993@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_KChSsSnW7EqaeguGBI5NrQm4LnXrAzOlSMD0fu3S0710b9f8
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+2ea50f9bc34998b92c35cf807c4e5d91
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/2ea50f9bc34998b92c35cf807c4e5d91/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_KChSsSnW7EqaeguGBI5NrQm4LnXrAzOlSMD0fu3S0710b9f8" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_KChSsSnW7EqaeguGBI5NrQm4LnXrAzOlSMD0fu3S0710b9f8"         Estivennatillo@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_kv8kMFkn4hyNa16zZ5BxsP7e9fWn2Jljrn2CdRlyebf9776a
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+56a7d9f9a7e211cd16bb4823077ff7bc
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/56a7d9f9a7e211cd16bb4823077ff7bc/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_kv8kMFkn4hyNa16zZ5BxsP7e9fWn2Jljrn2CdRlyebf9776a" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_kv8kMFkn4hyNa16zZ5BxsP7e9fWn2Jljrn2CdRlyebf9776a"  Hyperbonos1@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_fQWKg0eOBGpKSecNbvESsEVoOekqCsFyHdjqRpSXfb7e2383
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+210445a2e8994a56bdc775b954826a07
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/210445a2e8994a56bdc775b954826a07/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_fQWKg0eOBGpKSecNbvESsEVoOekqCsFyHdjqRpSXfb7e2383" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_fQWKg0eOBGpKSecNbvESsEVoOekqCsFyHdjqRpSXfb7e2383" Hide87056@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_zcI8LACkPV8XgMlfqrVQjB2r7E9NtG4fZNmvbc351c6039dc
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+0689ba06e536861a88b22ca9c96e6787
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/0689ba06e536861a88b22ca9c96e6787/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_zcI8LACkPV8XgMlfqrVQjB2r7E9NtG4fZNmvbc351c6039dc" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_zcI8LACkPV8XgMlfqrVQjB2r7E9NtG4fZNmvbc351c6039dc"  Hyperbonos13@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_TYtv7TkvYQRWEoWrqlZdotmAWjThXsVn1d9GAQAj74259371
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+898c543f8f04a9b2fd0739fcb19642fb
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/898c543f8f04a9b2fd0739fcb19642fb/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_TYtv7TkvYQRWEoWrqlZdotmAWjThXsVn1d9GAQAj74259371" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_TYtv7TkvYQRWEoWrqlZdotmAWjThXsVn1d9GAQAj74259371"
+
+Hyperbonos8@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_JDJ5zv7ttZREOXYd63LKWJdivJc93UDcxAKlqp2J66704dba
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+07c6fc6feed5fae9af5996cb3458ac45
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/07c6fc6feed5fae9af5996cb3458ac45/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_JDJ5zv7ttZREOXYd63LKWJdivJc93UDcxAKlqp2J66704dba" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_JDJ5zv7ttZREOXYd63LKWJdivJc93UDcxAKlqp2J66704dba"
+
+  Estaeswq001@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_s4iRTyh831bh2gxlQmKYv6T1NGdxSznYDgYUPL0C3873f6eb
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+6a90992554de3823af2beeb5a0eea77c
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/6a90992554de3823af2beeb5a0eea77c/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_s4iRTyh831bh2gxlQmKYv6T1NGdxSznYDgYUPL0C3873f6eb" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_s4iRTyh831bh2gxlQmKYv6T1NGdxSznYDgYUPL0C3873f6eb"
+
+  Estaeswq002@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_t6zUwk21CkHfHxniMTt8kzBrC0fFqrKQe1agiLTbeca63f93
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+4d6745a5437f5ba151619ac480463ddb
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/4d6745a5437f5ba151619ac480463ddb/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_t6zUwk21CkHfHxniMTt8kzBrC0fFqrKQe1agiLTbeca63f93" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_t6zUwk21CkHfHxniMTt8kzBrC0fFqrKQe1agiLTbeca63f93" 
+
+  Cuenta de Dahianaagudelo19@gmail.com
+Página principal de la cuenta
+
+Recientes
+
+Dominios
+Observar
+
+Investigar
+
+Analítica
+Construir
+
+Calcular
+
+AI
+Modelos
+Trabajadores IA
+Puerta de enlace de IA
+Vectorizar
+Búsqueda de IA
+
+Almacenamiento y bases de datos
+
+Medios de comunicación
+Proteger y conectar
+
+Seguridad de la aplicación
+Confianza cero
+
+Redes de contactos
+
+Entrega y rendimiento
+
+Gestionar cuenta
+
+Atrás
+
+Uso de la API REST de Workers AI
+Llama a Workers AI desde cualquier lugar usando nuestra API.
+Documentación de la API REST de Workers AI
+Obtén el token de la API.
+Para usar Cloudflare AI con un cliente o la API REST, cree un token personalizado.
+
+Token de API creado
+Asegúrese de copiar su token de API ahora, ya que no volverá a mostrarse.
+
+cfut_mXEpCejicwVUpfqcUxjh11M0JPoKJ97JTYrBHgW20b52f552
+Prueba tu token de API con el siguiente comando CURL:
+
+Haz clic para copiar
+Gestionar tokens de API
+Obtener ID de cuenta
+Utilice este ID de cuenta para realizar llamadas a la API REST de Workers AI.
+
+ID de cuenta
+4f21b4697e315c61cb6947ef910081f7
+Haz clic para copiar
+Realiza tu primera llamada de inferencia
+Sustituye tu token de API de Workers AI en el ejemplo siguiente para realizar tu primera llamada a la API de Workers AI.
+
+rizoJavaScriptPitón
+curl \
+  https://api.cloudflare.com/client/v4/accounts/4f21b4697e315c61cb6947ef910081f7/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_mXEpCejicwVUpfqcUxjh11M0JPoKJ97JTYrBHgW20b52f552" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Haz clic para copiar
+Apoyo
+Estado del sistema
+Carreras profesionales
+Condiciones de uso
+Informar sobre problemas de seguridad
+política de privacidad
+Una pastilla azul y blanca con una marca de verificación y una X, que representan las opciones de privacidad.
+Preferencias de cookies
+© 2026 Cloudflare, Inc.
+Habilitar el acceso del agente Lee
+El agente Lee necesita un token de API de solo lectura para acceder a su cuenta.
+
+ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_mXEpCejicwVUpfqcUxjh11M0JPoKJ97JTYrBHgW20b52f552" 
+
+  Luisamesa2313@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_wYrjO9eEk6E3H8MtxJQYp7CW5FFhIvTu65tv00Ul079f0341
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+3cb68bc79c20ea70b881cbea1f7bcb00
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/3cb68bc79c20ea70b881cbea1f7bcb00/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_wYrjO9eEk6E3H8MtxJQYp7CW5FFhIvTu65tv00Ul079f0341" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_wYrjO9eEk6E3H8MtxJQYp7CW5FFhIvTu65tv00Ul079f0341" 
+
+  Luisamessa238@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_dNILXW9Q1OBJG2Qe7XFlSNAA1yX78N3cAsThy57o6cfb32d0
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+5056a9b992a9c1f3a3dd01406cc7d88a
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/5056a9b992a9c1f3a3dd01406cc7d88a/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_dNILXW9Q1OBJG2Qe7XFlSNAA1yX78N3cAsThy57o6cfb32d0" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_dNILXW9Q1OBJG2Qe7XFlSNAA1yX78N3cAsThy57o6cfb32d0"
+
+  Cuenta de Luisamesa238@gmail.com
+Página principal de la cuenta
+
+Recientes
+
+Dominios
+Observar
+
+Investigar
+
+Analítica
+Construir
+
+Calcular
+
+AI
+Modelos
+Trabajadores IA
+Puerta de enlace de IA
+Vectorizar
+Búsqueda de IA
+
+Almacenamiento y bases de datos
+
+Medios de comunicación
+Proteger y conectar
+
+Seguridad de la aplicación
+Confianza cero
+
+Redes de contactos
+
+Entrega y rendimiento
+
+Gestionar cuenta
+
+Atrás
+
+Uso de la API REST de Workers AI
+Llama a Workers AI desde cualquier lugar usando nuestra API.
+Documentación de la API REST de Workers AI
+Obtén el token de la API.
+Para usar Cloudflare AI con un cliente o la API REST, cree un token personalizado.
+
+Token de API creado
+Asegúrese de copiar su token de API ahora, ya que no volverá a mostrarse.
+
+cfut_wifDD14d6JMf0QKJD2qbbdWhx6i7f3sqLdwIUnxlf14196b7
+Prueba tu token de API con el siguiente comando CURL:
+
+Haz clic para copiar
+Gestionar tokens de API
+Obtener ID de cuenta
+Utilice este ID de cuenta para realizar llamadas a la API REST de Workers AI.
+
+ID de cuenta
+925c0b16db097af5027009d22c8c2672
+Haz clic para copiar
+Realiza tu primera llamada de inferencia
+Sustituye tu token de API de Workers AI en el ejemplo siguiente para realizar tu primera llamada a la API de Workers AI.
+
+rizoJavaScriptPitón
+curl \
+  https://api.cloudflare.com/client/v4/accounts/925c0b16db097af5027009d22c8c2672/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_wifDD14d6JMf0QKJD2qbbdWhx6i7f3sqLdwIUnxlf14196b7" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Haz clic para copiar
+Apoyo
+Estado del sistema
+Carreras profesionales
+Condiciones de uso
+Informar sobre problemas de seguridad
+política de privacidad
+Una pastilla azul y blanca con una marca de verificación y una X, que representan las opciones de privacidad.
+Preferencias de cookies
+© 2026 Cloudflare, Inc.
+Habilitar el acceso del agente Lee
+El agente Lee necesita un token de API de solo lectura para acceder a su cuenta.
+curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_wifDD14d6JMf0QKJD2qbbdWhx6i7f3sqLdwIUnxlf14196b7" 
+ 
+
+ Hyperbonos5@gmail.com's Account
+Account home
+
+Recents
+
+Domains
+Observe
+
+Investigate
+
+Analytics
+Build
+
+Compute
+
+AI
+Models
+Workers AI
+AI Gateway
+Vectorize
+AI Search
+
+Storage & databases
+
+Media
+Protect & Connect
+
+Application security
+Zero Trust
+
+Networking
+
+Delivery & performance
+
+Manage account
+
+Back
+
+Using Workers AI REST API
+Call Workers AI from anywhere using our API. 
+Workers AI REST API documentation
+Get API Token
+To use Cloudflare AI with a client or the REST API, create a custom token.
+
+API Token Created
+Make sure to copy your API token now, this will not be shown again.
+
+cfut_BQ7Bgtwpu19mVCcgOjlkx700cCpFV15DAaVCYEPUbc51ae8a
+Test your API token with the following CURL command:
+
+Click to copy
+Manage API tokens
+Get Account ID
+Use this account ID to make API calls to the Workers AI REST API.
+
+Account ID
+9cd6b73cb6e57b1cb87f30b90c4b40e8
+Click to copy
+Make your first inference call
+Substitute your Workers AI API token into the example below to make your first Worker AI API call.
+
+curlJavascriptPython
+curl \
+  https://api.cloudflare.com/client/v4/accounts/9cd6b73cb6e57b1cb87f30b90c4b40e8/ai/run/@cf/meta/llama-3-8b-instruct \
+  -H "Authorization: Bearer cfut_BQ7Bgtwpu19mVCcgOjlkx700cCpFV15DAaVCYEPUbc51ae8a" \
+  -d '{"messages":[{"role":"system","content":"You are a friendly assistant that helps write stories"},{"role":"user","content":"Write a short story about a llama that goes on a journey to find an orange cloud "}]}'
+Click to copy
+Support
+System status
+Careers
+Terms of Use
+Report Security Issues
+Privacy Policy
+A blue and white pill with a checkmark and an x, representing privacy choicesCookie Preferences
+© 2026 Cloudflare, Inc.
+Enable Agent Lee access
+Agent Lee needs a read-only API token to access your account.
+
+ curl "https://api.cloudflare.com/client/v4/user/tokens/verify" \
+  -H "Authorization: Bearer cfut_BQ7Bgtwpu19mVCcgOjlkx700cCpFV15DAaVCYEPUbc51ae8a"
+
+  

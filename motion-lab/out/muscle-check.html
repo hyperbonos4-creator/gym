@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<body style="margin:0;background:#0c1018">
+<canvas id="c" width="960" height="720"></canvas>
+<script type="importmap">
+{ "imports": { "three": "/gym-web/node_modules/three/build/three.module.js" } }
+</script>
+<script type="module">
+import * as THREE from "three";
+import { GLTFLoader } from "/gym-web/node_modules/three/examples/jsm/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "/gym-web/node_modules/three/examples/jsm/libs/meshopt_decoder.module.js";
+
+const canvas = document.getElementById("c");
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+renderer.setSize(960, 720, false);
+const scene = new THREE.Scene();
+scene.background = new THREE.Color("#0c1018");
+const camera = new THREE.PerspectiveCamera(36, 960 / 720, 0.1, 20);
+camera.up.set(0, 1, 0);
+camera.position.set(1.6, 1.15, 2.2);
+camera.lookAt(0, 0.7, 0);
+scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+const key = new THREE.DirectionalLight(0xffffff, 1.5);
+key.position.set(3, 5, 3);
+scene.add(key);
+
+const muscleUniform = new THREE.Vector3(1, 1, 1);
+function paint(root) {
+  root.traverse((node) => {
+    if (!node.isSkinnedMesh || !node.geometry.getAttribute("color")) return;
+    const next = node.material;
+    const colored = next.clone();
+    colored.vertexColors = true;
+    colored.color = new THREE.Color("#ffffff");
+    colored.emissive = new THREE.Color("#000000");
+    colored.onBeforeCompile = (shader) => {
+      shader.uniforms.muscleMask = { value: muscleUniform };
+      shader.fragmentShader = "uniform vec3 muscleMask;\n" + shader.fragmentShader
+        .replace("#include <color_fragment>",
+          "vec3 muscleHot = vec3(0.93, 0.18, 0.11); vec3 muscleSkin = vec3(0.74, 0.75, 0.78); float muscleHit = clamp(dot(vColor.rgb, muscleMask), 0.0, 1.0); diffuseColor.rgb = mix(muscleSkin, muscleHot, muscleHit);")
+        .replace("#include <emissivemap_fragment>",
+          "#include <emissivemap_fragment>\n totalEmissiveRadiance += vec3(0.72, 0.08, 0.04) * clamp(dot(vColor.rgb, muscleMask), 0.0, 1.0);");
+    };
+    colored.needsUpdate = true;
+    node.material = colored;
+    node.userData.painted = true;
+  });
+}
+
+const loader = new GLTFLoader();
+loader.setMeshoptDecoder(MeshoptDecoder);
+await MeshoptDecoder.ready;
+const gltf = await loader.loadAsync("/gym-web/public/models/motion-studio/estudio.glb");
+scene.add(gltf.scene);
+paint(gltf.scene);
+const show = new Set(["db_press-banca-mancuernas_l", "db_press-banca-mancuernas_r", "banco"]);
+gltf.scene.traverse((node) => {
+  if (!node.isMesh || node.isSkinnedMesh) return;
+  let owner = node;
+  while (owner.parent && owner.parent !== gltf.scene) owner = owner.parent;
+  node.visible = show.has(owner.name) || show.has(node.name);
+});
+const clip = gltf.animations.find((item) => item.name === "Press de banca con mancuernas");
+const mixer = new THREE.AnimationMixer(gltf.scene);
+const action = mixer.clipAction(clip);
+action.play();
+mixer.setTime(2.4);
+renderer.render(scene, camera);
+window.__ready = clip ? "ok" : "no-clip";
+</script>
+</body>
+</html>

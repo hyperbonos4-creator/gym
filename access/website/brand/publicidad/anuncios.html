@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>VisionYX · apartados</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1080px; height: 1350px; overflow: hidden; background: #070b14; }
+    body { font-family: "Exo 2", "Segoe UI", sans-serif; color: #eaf1fb; }
+    .ad { width: 1080px; height: 1350px; display: flex; flex-direction: column; background: #070b14; }
+    .head { height: 228px; padding: 28px 36px 16px; display: flex; flex-direction: column; justify-content: flex-end; }
+    .brand { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .brand b { font-family: Orbitron, sans-serif; font-size: 22px; letter-spacing: 0.14em; }
+    .brand b span { background: linear-gradient(90deg, #22d3ee, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .brand em { font-style: normal; font-size: 16px; letter-spacing: 0.22em; text-transform: uppercase; color: #22d3ee; font-weight: 700; }
+    h1 { font-family: Orbitron, sans-serif; font-size: 46px; line-height: 1.05; font-weight: 800; }
+    p { margin-top: 8px; font-size: 26px; line-height: 1.25; color: #c5d4ea; font-weight: 600; }
+    .shot { height: 1122px; overflow: hidden; border-top: 1px solid rgba(127, 230, 255, 0.18); }
+    .shot img { width: 1080px; height: 1100px; object-fit: cover; object-position: top left; display: block; }
+  </style>
+</head>
+<body>
+  <article class="ad">
+    <header class="head">
+      <div class="brand"><b>VISION<span>YX</span></b><em id="group"></em></div>
+      <h1 id="title"></h1>
+      <p id="sub"></p>
+    </header>
+    <div class="shot"><img id="shot" alt="" /></div>
+  </article>
+  <script>
+    const ITEMS = {
+      dashboard: ["Operación", "Dashboard", "Resumen del gimnasio"],
+      torniquetes: ["Operación", "Control de acceso", "Cada puerta. Cualquier red. Siempre identificada."],
+      accesos: ["Operación", "Historial de accesos", "Auditoría de cada intento en la puerta"],
+      acceso: ["Operación", "Enrolamiento", "Registro facial"],
+      clientes: ["Gimnasio", "Clientes", "Identidad, enrolamiento y acceso en un solo lugar"],
+      membresias: ["Gimnasio", "Con membresía", "Clientes con plan activo"],
+      planes: ["Gimnasio", "Planes", "Tarifas, beneficios y condiciones de acceso"],
+      rutinas: ["Gimnasio", "Rutinas", "Versiones y asignación"],
+      ejercicios: ["Gimnasio", "Ejercicios", "Atlas 3D · ejecución guiada"],
+      estudio: ["Gimnasio", "Motion Studio 3D", "El profesor crea y publica el movimiento"],
+      valoraciones: ["Gimnasio", "Valoraciones", "Expediente · medidas · evolución"],
+      nutricion: ["Gimnasio", "Nutrición", "Planificación alimentaria · Hábitos · Seguimiento"],
+      clases: ["Gimnasio", "Clases", "Grupales y horarios"],
+      caja: ["Finanzas", "Punto de venta", "Cobro, lector y ticket"],
+      ventas: ["Finanzas", "Historial de ventas", "Tickets, medios y anulaciones"],
+      productos: ["Finanzas", "Catálogo", "Gimnasio, bodega y códigos"],
+      inventario: ["Finanzas", "Inventario", "Conteo de gimnasio y bodega"],
+      pedidos: ["Finanzas", "Pedidos", "Compra al proveedor y entrada a bodega"],
+      proveedores: ["Finanzas", "Proveedores", "A quién se le compra"],
+      facturacion: ["Finanzas", "Facturación DIAN", "Documentos electrónicos por sede"],
+      egresos: ["Finanzas", "Gastos", "Salidas de caja"],
+      reportes: ["Finanzas", "Reportes", "Ventas, medios, margen y stock"],
+      gimnasios: ["Sistema", "Gimnasios", "Sedes y usuarios"],
+      cuenta: ["Sistema", "Cuenta", "Plan, marca y equipo de la sede"],
+      whatsapp: ["Sistema", "WhatsApp", "Vincular número (QR)"]
+    };
+    function paint() {
+      const id = (location.hash || "#dashboard").slice(1);
+      const row = ITEMS[id] || ITEMS.dashboard;
+      document.getElementById("group").textContent = row[0];
+      document.getElementById("title").textContent = row[1];
+      document.getElementById("sub").textContent = row[2];
+      document.getElementById("shot").src = "capturas/" + (ITEMS[id] ? id : "dashboard") + ".png";
+    }
+    window.addEventListener("hashchange", paint);
+    paint();
+  </script>
+</body>
+</html>

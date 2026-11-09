@@ -1,0 +1,24 @@
+Carrusel de Facebook (en este orden)
+1. visionyx-portada.png          1080×1350
+2. visionyx-acceso.png           1080×1350
+3. visionyx-caja.png             1080×1350
+4. visionyx-entrenamiento.png    1080×1350
+
+Feed cuadrado
+visionyx-cuadrada.png            1080×1080
+
+Historia
+visionyx-historia.png            1080×1920
+
+Texto del post
+VisionYX
+Todo el gimnasio, en una sola plataforma.
+
+El socio entra y el sistema lo sabe: rostro en la puerta, torniquete identificado e historial de cada ingreso.
+
+Del plan al cobro, en la misma sede: membresías, punto de venta y factura electrónica DIAN.
+
+El ejercicio se ve y la rutina se sigue: atlas 3D, rutinas del profesor, valoración, nutrición y clases.
+
+visionyx.lat
+Medellín

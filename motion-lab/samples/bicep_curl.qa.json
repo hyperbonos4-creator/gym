@@ -1,0 +1,613 @@
+{
+ "id": "bicep_curl",
+ "duration": 5.9,
+ "samples": 90,
+ "summary": {
+  "pass": true,
+  "fails": 0,
+  "critical_fails": 0
+ },
+ "thresholds": {
+  "bone_length_pct": 2.0,
+  "hinge_hyper_deg": 8.0,
+  "hinge_wrong_way": 0.3,
+  "hinge_min_deg": 25.0,
+  "spike_m": 0.06,
+  "twist_deg": 35.0,
+  "twist_flip_deg": 90.0,
+  "foot_slide_m": 0.03,
+  "prop_contact_m": 0.06,
+  "loop_m": 0.08,
+  "samples_per_sec": 15
+ },
+ "results": [
+  {
+   "check": "bone_length",
+   "joint": "upperarm01.L->upperarm02.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.072-0.072 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "upperarm02.L->lowerarm01.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.182-0.182 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerarm01.L->lowerarm02.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.135-0.135 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerarm02.L->wrist.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.132-0.132 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "upperarm01.R->upperarm02.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.072-0.072 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "upperarm02.R->lowerarm01.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.182-0.182 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerarm01.R->lowerarm02.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.135-0.135 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerarm02.R->wrist.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.132-0.132 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "upperleg01.L->upperleg02.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.099-0.099 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "upperleg02.L->lowerleg01.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.323-0.323 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerleg01.L->lowerleg02.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.215-0.215 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerleg02.L->foot.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.227-0.227 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "upperleg01.R->upperleg02.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.099-0.099 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "upperleg02.R->lowerleg01.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.323-0.323 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerleg01.R->lowerleg02.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.215-0.215 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "bone_length",
+   "joint": "lowerleg02.R->foot.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "length 0.227-0.227 m (0.0% drift)",
+   "value": 0.0,
+   "t": null
+  },
+  {
+   "check": "hinge",
+   "joint": "elbow.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "angle range 37-179 deg",
+   "value": [
+    36.8,
+    178.7
+   ],
+   "t": 3.978
+  },
+  {
+   "check": "hinge",
+   "joint": "elbow.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "angle range 38-180 deg",
+   "value": [
+    38.1,
+    180.0
+   ],
+   "t": 1.127
+  },
+  {
+   "check": "hinge",
+   "joint": "knee.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "angle range 159-163 deg",
+   "value": [
+    159.2,
+    163.4
+   ],
+   "t": 3.116
+  },
+  {
+   "check": "hinge",
+   "joint": "knee.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "angle range 162-166 deg",
+   "value": [
+    162.0,
+    165.9
+   ],
+   "t": 2.055
+  },
+  {
+   "check": "spike",
+   "joint": "root",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.0 cm",
+   "value": 0.0,
+   "t": 0.066
+  },
+  {
+   "check": "spike",
+   "joint": "spine03",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.0 cm",
+   "value": 0.0,
+   "t": 2.784
+  },
+  {
+   "check": "spike",
+   "joint": "spine01",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 1.193
+  },
+  {
+   "check": "spike",
+   "joint": "neck01",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 1.193
+  },
+  {
+   "check": "spike",
+   "joint": "head",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 4.044
+  },
+  {
+   "check": "spike",
+   "joint": "upperarm01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 4.044
+  },
+  {
+   "check": "spike",
+   "joint": "lowerarm01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.6 cm",
+   "value": 0.006,
+   "t": 4.044
+  },
+  {
+   "check": "spike",
+   "joint": "wrist.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.5 cm",
+   "value": 0.005,
+   "t": 4.11
+  },
+  {
+   "check": "spike",
+   "joint": "upperarm01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 1.26
+  },
+  {
+   "check": "spike",
+   "joint": "lowerarm01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.2 cm",
+   "value": 0.002,
+   "t": 0.066
+  },
+  {
+   "check": "spike",
+   "joint": "wrist.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 1.0 cm",
+   "value": 0.01,
+   "t": 0.663
+  },
+  {
+   "check": "spike",
+   "joint": "upperleg01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 2.784
+  },
+  {
+   "check": "spike",
+   "joint": "lowerleg01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 5.171
+  },
+  {
+   "check": "spike",
+   "joint": "foot.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 2.917
+  },
+  {
+   "check": "spike",
+   "joint": "upperleg01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 2.784
+  },
+  {
+   "check": "spike",
+   "joint": "lowerleg01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 2.784
+  },
+  {
+   "check": "spike",
+   "joint": "foot.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max unexplained travel/sample 0.1 cm",
+   "value": 0.001,
+   "t": 3.049
+  },
+  {
+   "check": "twist",
+   "joint": "spine03",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 0 deg",
+   "value": 0.3,
+   "t": 5.635
+  },
+  {
+   "check": "twist",
+   "joint": "spine01",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 1 deg",
+   "value": 1.1,
+   "t": 5.635
+  },
+  {
+   "check": "twist",
+   "joint": "neck01",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 1 deg",
+   "value": 0.5,
+   "t": 5.635
+  },
+  {
+   "check": "twist",
+   "joint": "head",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 2 deg",
+   "value": 2.3,
+   "t": 2.784
+  },
+  {
+   "check": "twist",
+   "joint": "upperarm01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 7 deg",
+   "value": 6.8,
+   "t": 3.182
+  },
+  {
+   "check": "twist",
+   "joint": "lowerarm01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 15 deg",
+   "value": 14.6,
+   "t": 4.243
+  },
+  {
+   "check": "twist",
+   "joint": "wrist.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 10 deg",
+   "value": 9.7,
+   "t": 3.381
+  },
+  {
+   "check": "twist",
+   "joint": "upperarm01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 5 deg",
+   "value": 4.7,
+   "t": 0.663
+  },
+  {
+   "check": "twist",
+   "joint": "lowerarm01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 18 deg",
+   "value": 18.1,
+   "t": 1.525
+  },
+  {
+   "check": "twist",
+   "joint": "wrist.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 16 deg",
+   "value": 16.1,
+   "t": 0.53
+  },
+  {
+   "check": "twist",
+   "joint": "upperleg01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 1 deg",
+   "value": 0.8,
+   "t": 2.784
+  },
+  {
+   "check": "twist",
+   "joint": "lowerleg01.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 1 deg",
+   "value": 1.5,
+   "t": 2.784
+  },
+  {
+   "check": "twist",
+   "joint": "foot.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 0 deg",
+   "value": 0.4,
+   "t": 2.784
+  },
+  {
+   "check": "twist",
+   "joint": "upperleg01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 1 deg",
+   "value": 0.6,
+   "t": 1.989
+  },
+  {
+   "check": "twist",
+   "joint": "lowerleg01.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 2 deg",
+   "value": 1.8,
+   "t": 2.784
+  },
+  {
+   "check": "twist",
+   "joint": "foot.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max local rotation/sample 0 deg",
+   "value": 0.4,
+   "t": 2.983
+  },
+  {
+   "check": "foot_slide",
+   "joint": "foot.L",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max planted travel/sample 0.2 cm",
+   "value": 0.002,
+   "t": 4.044
+  },
+  {
+   "check": "foot_slide",
+   "joint": "foot.R",
+   "status": "PASS",
+   "critical": false,
+   "detail": "max planted travel/sample 0.2 cm",
+   "value": 0.002,
+   "t": 2.784
+  },
+  {
+   "check": "prop_present",
+   "joint": "dumbbell",
+   "status": "PASS",
+   "critical": true,
+   "detail": "2 dumbbell object(s) in GLB: ['Dumbbell.L', 'Dumbbell.R']",
+   "value": null,
+   "t": null
+  },
+  {
+   "check": "prop_contact",
+   "joint": "Dumbbell.L",
+   "status": "PASS",
+   "critical": true,
+   "detail": "max hand-to-implement gap 3.6 cm",
+   "value": 0.036,
+   "t": 1.458
+  },
+  {
+   "check": "prop_contact",
+   "joint": "Dumbbell.R",
+   "status": "PASS",
+   "critical": true,
+   "detail": "max hand-to-implement gap 3.6 cm",
+   "value": 0.036,
+   "t": 0.0
+  },
+  {
+   "check": "loop",
+   "joint": "clip",
+   "status": "PASS",
+   "critical": false,
+   "detail": "first/last pose gap 0.00 m summed over 17 joints",
+   "value": 0.001,
+   "t": null
+  },
+  {
+   "check": "anatomy",
+   "joint": "curl:elbow_min_deg",
+   "status": "PASS",
+   "critical": true,
+   "detail": "elbow_min_deg = 36.795 (want ..70)",
+   "value": 36.795,
+   "t": 3.978
+  },
+  {
+   "check": "anatomy",
+   "joint": "curl:elbow_max_deg",
+   "status": "PASS",
+   "critical": true,
+   "detail": "elbow_max_deg = 180.0 (want 130..)",
+   "value": 180.0,
+   "t": 4.574
+  },
+  {
+   "check": "anatomy",
+   "joint": "curl:arm_elev_max_deg",
+   "status": "PASS",
+   "critical": true,
+   "detail": "arm_elev_max_deg = 45.732 (want ..60)",
+   "value": 45.732,
+   "t": 1.193
+  },
+  {
+   "check": "anatomy",
+   "joint": "curl:torso_lean_max_deg",
+   "status": "PASS",
+   "critical": true,
+   "detail": "torso_lean_max_deg = 5.991 (want ..20)",
+   "value": 5.991,
+   "t": 2.254
+  },
+  {
+   "check": "anatomy",
+   "joint": "curl:hip_drop_m",
+   "status": "PASS",
+   "critical": true,
+   "detail": "hip_drop_m = 0.002 (want ..0.1)",
+   "value": 0.002,
+   "t": 2.983
+  }
+ ]
+}

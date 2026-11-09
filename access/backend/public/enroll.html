@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <title>Registro facial</title>
+  <link rel="icon" href="assets/gym-logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Exo+2:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/theme.css?v=4" />
+  <link rel="stylesheet" href="assets/enroll.css?v=9" />
+</head>
+<body>
+  <header class="enroll-top">
+    <div class="brand">
+      <img class="logo gym-lockup" src="assets/gym-logo.png" alt="Fuerza Élite" />
+      <div class="wordmark"><b>FUERZA <span class="yx">ÉLITE</span></b><span>Registro facial</span></div>
+    </div>
+    <span class="who"><b id="who-name">—</b></span>
+  </header>
+
+  <div class="enroll-shell" id="shell">
+    <section class="idle-panel" id="idle-panel">
+      <div class="idle-icon" aria-hidden="true">◎</div>
+      <h1>Registra tu rostro</h1>
+      <p>La cámara de tu celular hace la prueba de vida. Cada gesto aparece cuando te toca.</p>
+      <div class="boot" id="boot">
+        <div class="boot-track" aria-hidden="true"><div class="boot-bar" id="boot-bar"></div></div>
+        <p id="boot-label">Comprobando tu acceso…</p>
+      </div>
+      <button id="btn-start" class="btn big-btn" type="button" disabled>Iniciar reconocimiento</button>
+      <button id="btn-retry" class="btn ghost big-btn hidden" type="button">Reintentar</button>
+    </section>
+
+    <section class="stage" id="stage">
+      <video id="video" autoplay playsinline muted class="view mirror hidden"></video>
+      <img id="ipview" class="view hidden" alt="" />
+      <canvas id="work" class="hidden"></canvas>
+
+      <div class="stage-status">
+        <span id="face-flag" class="face-flag">Listo</span>
+        <span id="timer" class="face-flag countdown hidden"></span>
+      </div>
+
+      <div class="guide" id="guide">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+          <circle class="ring-bg" cx="50" cy="50" r="38" />
+          <circle class="ring-fg" id="ring" cx="50" cy="50" r="38"
+                  stroke-dasharray="238.76" stroke-dashoffset="238.76"
+                  transform="rotate(-90 50 50)" />
+        </svg>
+      </div>
+
+      <div class="cue" id="cue">
+        <span class="icon" id="cue-icon">📷</span>
+        <div class="title" id="cue-title">Cámara de tu celular</div>
+        <div class="hint" id="cue-hint">Pulsa Iniciar y permite el acceso</div>
+      </div>
+    </section>
+
+    <div class="card hidden" id="result-card">
+      <div class="result" id="result">
+        <h4 id="result-title"></h4>
+        <img id="result-photo" class="result-photo hidden" alt="" />
+        <div class="detail" id="result-detail"></div>
+        <div class="scores hidden" id="result-scores">
+          <div class="s">Liveness pasivo<b id="score-passive">—</b></div>
+        </div>
+        <div class="result-actions hidden" id="result-actions"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/demo-banner.js?v=1"></script>
+  <script type="module" src="assets/enroll.js?v=17"></script>
+</body>
+</html>

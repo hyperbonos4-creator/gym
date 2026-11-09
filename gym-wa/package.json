@@ -1,0 +1,13 @@
+{
+  "name": "gym-wa",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Conector del gym: proxy al backend de acceso + registro de socios y envio del link de enrolamiento por WhatsApp (Evolution API).",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "http-proxy": "^1.18.1"
+  }
+}

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>VisionYX · Enrolamiento</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1080px; height: 1920px; overflow: hidden; background: #070b16; }
+    body { font-family: "Exo 2", "Segoe UI", sans-serif; color: #eaf1fb; }
+    #stage { position: relative; width: 1080px; height: 1920px; overflow: hidden; background: #070b16; }
+    .glow, .grid { position: absolute; inset: 0; pointer-events: none; }
+    .glow {
+      background:
+        radial-gradient(900px 700px at 80% 0%, rgba(168, 85, 247, 0.34), transparent 60%),
+        radial-gradient(800px 700px at 0% 100%, rgba(34, 211, 238, 0.16), transparent 55%);
+    }
+    .grid {
+      background-image:
+        linear-gradient(rgba(34, 211, 238, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 211, 238, 0.06) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(circle at 50% 40%, #000 10%, transparent 75%);
+    }
+    .top {
+      position: absolute; z-index: 5; left: 56px; right: 56px; top: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; font-family: Orbitron, sans-serif; font-weight: 800; letter-spacing: 0.06em; font-size: 26px; }
+    .brand img { width: 64px; height: 46px; object-fit: contain; }
+    .brand span { background: linear-gradient(90deg, #22d3ee, #a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .step { font-size: 18px; letter-spacing: 0.22em; text-transform: uppercase; color: #22d3ee; font-weight: 700; }
+    .scene { position: absolute; inset: 148px 64px 200px; opacity: 0; display: flex; align-items: center; }
+    .cap {
+      position: absolute; left: 56px; right: 56px; bottom: 64px; z-index: 5;
+      font-size: 32px; line-height: 1.25; color: #d5e2f4; font-weight: 600;
+    }
+    .cap b { display: block; margin-bottom: 6px; font-family: Orbitron, sans-serif; font-size: 15px; letter-spacing: 0.24em; color: #22d3ee; font-weight: 700; }
+    .rail { position: absolute; left: 28px; top: 240px; bottom: 280px; width: 4px; z-index: 4; display: flex; flex-direction: column; justify-content: space-between; }
+    .rail i { width: 10px; height: 10px; margin-left: -3px; border-radius: 50%; background: #1c2a44; box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.08); }
+    .rail i.on { background: #22d3ee; box-shadow: 0 0 16px #22d3ee; }
+
+    .intro { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 80px; }
+    .intro img { width: 520px; filter: drop-shadow(0 0 40px rgba(34, 211, 238, 0.35)); }
+    .intro h1 { margin-top: 28px; font-family: Orbitron, sans-serif; font-weight: 800; font-size: 64px; line-height: 1.08; }
+    .intro p { margin-top: 22px; font-size: 30px; color: #b7c6de; max-width: 16em; }
+
+    .win { width: 100%; border: 1px solid rgba(127, 230, 255, 0.22); border-radius: 28px; background: rgba(8, 14, 28, 0.88); padding: 36px 40px; display: flex; flex-direction: column; }
+    .kicker { font-size: 16px; letter-spacing: 0.28em; text-transform: uppercase; color: #22d3ee; font-weight: 700; }
+    h2 { margin-top: 8px; font-family: Orbitron, sans-serif; font-size: 42px; line-height: 1.1; font-weight: 800; }
+    .checks { display: flex; gap: 10px; margin-top: 22px; }
+    .checks span { flex: 1; border: 1px solid rgba(127, 230, 255, 0.2); border-radius: 14px; padding: 12px 12px; font-size: 16px; color: #9eb0cc; }
+    .checks span.ok { color: #3ee0a2; border-color: rgba(62, 224, 162, 0.4); }
+    .phases { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 18px; }
+    .phases div { border-radius: 14px; border: 1px solid rgba(127, 230, 255, 0.16); padding: 12px 14px; }
+    .phases b { display: block; font-size: 18px; }
+    .phases em { font-style: normal; font-size: 15px; color: #8ea0bd; }
+    .phases .now em { color: #22d3ee; }
+    label.f { display: block; margin-top: 16px; }
+    label.f span { display: block; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: #8ea0bd; margin-bottom: 6px; }
+    label.f div { height: 64px; border-radius: 14px; border: 1px solid rgba(127, 230, 255, 0.22); background: #0b1222; display: flex; align-items: center; padding: 0 18px; font-size: 28px; font-weight: 600; }
+    label.f div.on { border-color: rgba(34, 211, 238, 0.7); box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12); }
+    .btn { margin-top: 22px; height: 72px; border-radius: 16px; border: 0; background: linear-gradient(90deg, #22d3ee, #3b82f6 55%, #a855f7); color: #041018; font-family: Orbitron, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: 0.04em; display: grid; place-items: center; }
+    .btn.press { transform: scale(0.98); filter: brightness(1.15); }
+    .done h3 { margin-top: 12px; font-size: 40px; font-family: Orbitron, sans-serif; }
+    .done .sub { margin-top: 8px; color: #b7c6de; font-size: 22px; }
+    .done ul { margin-top: 22px; display: flex; flex-direction: column; gap: 12px; font-size: 26px; }
+    .done li.ok { color: #3ee0a2; }
+    .done li.wait { color: #f5c16c; }
+    .done li.stop { color: #ff8aa0; }
+    .consent { margin-top: 18px; font-size: 18px; color: #9eb0cc; }
+
+    .phone { width: 100%; border-radius: 42px; border: 1px solid rgba(127, 230, 255, 0.28); background: #070b14; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35); }
+    #s-face .cam { height: 820px; flex: none; }
+    .wa-top { padding: 28px 28px 16px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid rgba(127, 230, 255, 0.12); }
+    .wa-top b { font-size: 28px; }
+    .wa-top span { display: block; color: #3ee0a2; font-size: 16px; }
+    .bubble { margin: 22px 28px 0; background: #102033; border-radius: 8px 22px 22px 22px; padding: 20px 22px; font-size: 26px; line-height: 1.35; white-space: pre-wrap; }
+    .bubble u { text-decoration: none; color: #22d3ee; }
+
+    .en-top { padding: 26px 28px; display: flex; justify-content: space-between; align-items: center; }
+    .en-top b { font-family: Orbitron, sans-serif; letter-spacing: 0.12em; font-size: 22px; }
+    .en-top span { color: #9eb0cc; font-size: 20px; }
+    .idle { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 48px 40px; }
+    .idle h3 { font-family: Orbitron, sans-serif; font-size: 52px; line-height: 1.08; }
+    .idle p { margin-top: 16px; font-size: 26px; color: #b7c6de; }
+    .cam { flex: 1; position: relative; margin: 0 22px; border-radius: 28px; overflow: hidden; background: radial-gradient(circle at 50% 42%, #12304a, #070b14 68%); }
+    .mesh { position: absolute; inset: 0; width: 100%; height: 100%; }
+    .ring { position: absolute; inset: 8% 12%; }
+    .flag { position: absolute; top: 22px; left: 22px; border: 1px solid rgba(34, 211, 238, 0.45); border-radius: 999px; padding: 8px 14px; font-size: 18px; letter-spacing: 0.08em; color: #22d3ee; background: rgba(4, 10, 20, 0.55); z-index: 2; }
+    .scan { position: absolute; left: 30%; right: 30%; height: 2px; background: linear-gradient(90deg, transparent, #22d3ee, transparent); box-shadow: 0 0 16px #22d3ee; z-index: 2; }
+    .cue { padding: 26px 32px 32px; }
+    .cue strong { display: block; font-family: Orbitron, sans-serif; font-size: 36px; }
+    .cue em { display: block; margin-top: 6px; font-style: normal; font-size: 22px; color: #9eb0cc; }
+    .okbig { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(6, 16, 18, 0.72); text-align: center; }
+    .okbig b { font-family: Orbitron, sans-serif; font-size: 42px; color: #3ee0a2; }
+
+    .plan { width: 100%; display: flex; flex-direction: column; }
+    .plan h2 { font-size: 58px; }
+    .plan .card { margin-top: 28px; border-radius: 24px; border: 1px solid rgba(62, 224, 162, 0.35); background: rgba(12, 28, 24, 0.55); padding: 28px; }
+    .plan .card b { font-size: 34px; }
+    .plan .card p { margin-top: 8px; font-size: 24px; color: #b7e7cf; }
+    .meters { margin-top: 28px; display: flex; flex-direction: column; gap: 16px; }
+    .meters label { font-size: 18px; color: #9eb0cc; display: flex; justify-content: space-between; }
+    .bar { height: 10px; border-radius: 99px; background: #152033; margin-top: 8px; overflow: hidden; }
+    .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #22d3ee, #3ee0a2); }
+
+    .door { width: 100%; display: flex; flex-direction: column; }
+    .verdict { margin-top: 18px; border-radius: 28px; border: 1px solid rgba(127, 230, 255, 0.22); padding: 28px; background: rgba(8, 14, 28, 0.8); }
+    .verdict.granted { border-color: rgba(62, 224, 162, 0.55); box-shadow: 0 0 40px rgba(62, 224, 162, 0.12); }
+    .verdict h3 { font-family: Orbitron, sans-serif; font-size: 40px; }
+    .verdict p { margin-top: 8px; font-size: 24px; color: #b7c6de; }
+    .turn { margin-top: 22px; height: 520px; position: relative; overflow: hidden; border-radius: 28px; border: 1px solid rgba(127, 230, 255, 0.16); background: rgba(6, 12, 24, 0.65); }
+    .post { position: absolute; bottom: 70px; width: 26px; height: 300px; background: linear-gradient(#b7e7ff, #1d455c); border-radius: 8px; }
+    .post.l { left: 250px; }
+    .post.r { right: 250px; }
+    .arm { position: absolute; left: 262px; bottom: 250px; width: 470px; height: 16px; border-radius: 8px; background: linear-gradient(90deg, #ff4d6a, #ffd0d8); transform-origin: 8px 50%; box-shadow: 0 0 18px rgba(255, 77, 106, 0.4); }
+    .arm.open { background: linear-gradient(90deg, #3ee0a2, #d9ffe9); box-shadow: 0 0 18px rgba(62, 224, 162, 0.45); }
+    .state { position: absolute; right: 40px; top: 30px; font-family: Orbitron, sans-serif; letter-spacing: 0.14em; font-size: 20px; color: #ff8aa0; }
+    .state.open { color: #3ee0a2; }
+
+    .hist { width: 100%; display: flex; flex-direction: column; }
+    .row { margin-top: 22px; border-radius: 22px; border: 1px solid rgba(127, 230, 255, 0.22); padding: 26px 28px; background: rgba(10, 18, 34, 0.85); display: flex; justify-content: space-between; align-items: center; }
+    .row b { font-size: 32px; display: block; }
+    .row span { color: #9eb0cc; font-size: 20px; }
+    .tag { color: #3ee0a2; font-family: Orbitron, sans-serif; font-size: 18px; letter-spacing: 0.08em; }
+
+    .end { inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .end img { width: 460px; }
+    .end h2 { font-size: 52px; max-width: 14em; }
+    .end p { margin-top: 18px; font-size: 28px; color: #b7c6de; }
+    .end .url { margin-top: 28px; font-family: Orbitron, sans-serif; letter-spacing: 0.2em; color: #22d3ee; font-size: 24px; }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div class="glow"></div>
+    <div class="grid"></div>
+    <div class="top">
+      <div class="brand"><img src="marca-v.png" alt="" />VISION<span>YX</span></div>
+      <div class="step" id="step"></div>
+    </div>
+    <div class="rail" id="rail"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+
+    <section class="scene intro" id="s-intro">
+      <img src="marca-v.png" alt="" />
+      <h1>Así se enrola un socio.</h1>
+      <p>De la ficha en recepción hasta la puerta. El sistema real, paso a paso.</p>
+    </section>
+
+    <section class="scene" id="s-alta">
+      <div class="win" id="alta-form">
+        <div class="kicker">Recepción</div>
+        <h2>Alta de clientes</h2>
+        <div class="checks">
+          <span class="ok">✓ Registro</span>
+          <span class="ok">✓ WhatsApp</span>
+          <span class="ok">✓ Reconocimiento</span>
+        </div>
+        <div class="phases">
+          <div class="now"><b>1 Datos</b><em id="ph1">● Actual</em></div>
+          <div><b>2 Rostro</b><em>○ Pendiente</em></div>
+          <div><b>3 Membresía</b><em>○ Pendiente</em></div>
+          <div><b>4 Acceso</b><em>○ Bloqueado</em></div>
+        </div>
+        <label class="f"><span>Tipo de documento</span><div>Cédula de ciudadanía</div></label>
+        <label class="f"><span>Número de documento</span><div id="f-doc"></div></label>
+        <label class="f"><span>Nombre completo</span><div id="f-name"></div></label>
+        <label class="f"><span>WhatsApp</span><div id="f-tel"></div></label>
+        <div class="btn" id="alta-btn">Crear cliente y enviar enlace</div>
+      </div>
+      <div class="win done" id="alta-done" style="display:none">
+        <div class="kicker">Cliente creado</div>
+        <h3>Laura Gómez Restrepo</h3>
+        <p class="sub">CC 1032456789 · +57 300 123 4567</p>
+        <ul>
+          <li class="ok">✓ Ficha registrada</li>
+          <li class="ok">✓ Aviso enviado: entra por la app</li>
+          <li class="wait">○ Rostro pendiente</li>
+          <li class="wait">○ Membresía pendiente</li>
+          <li class="stop">⛔ Acceso todavía no autorizado</li>
+        </ul>
+        <p class="consent">Consentimiento para identificación facial · Registrado</p>
+      </div>
+    </section>
+
+    <section class="scene" id="s-wa">
+      <div class="phone">
+        <div class="wa-top"><div><b>La sede</b><span>en línea</span></div></div>
+        <div class="bubble" id="b1"></div>
+        <div class="bubble" id="b2"></div>
+      </div>
+    </section>
+
+    <section class="scene" id="s-face">
+      <div class="phone">
+        <div class="en-top"><b>VISION<span style="color:#22d3ee">YX</span></b><span>Laura Gómez</span></div>
+        <div class="idle" id="face-idle">
+          <div class="kicker">Registro facial</div>
+          <h3>Registra tu rostro</h3>
+          <p>La cámara de tu celular hace la prueba de vida. Cada gesto aparece cuando te toca.</p>
+          <div class="btn" id="face-btn" style="margin-top:36px">Iniciar reconocimiento</div>
+        </div>
+        <div class="cam" id="face-cam" style="display:none">
+          <svg class="mesh" id="mesh" viewBox="0 0 200 260"></svg>
+          <svg class="ring" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(127,230,255,0.18)" stroke-width="2.2"/>
+            <circle id="ring" cx="50" cy="50" r="38" fill="none" stroke="#22d3ee" stroke-width="2.4" stroke-linecap="round" stroke-dasharray="238.76" stroke-dashoffset="238.76" transform="rotate(-90 50 50)"/>
+          </svg>
+          <div class="scan" id="scan"></div>
+          <div class="flag" id="face-flag">Listo</div>
+          <div class="okbig" id="face-ok" style="display:none"><b>✔ Registro exitoso</b><p style="margin-top:12px;font-size:24px;color:#d7fff0">El rostro quedó en la ficha.</p></div>
+        </div>
+        <div class="cue" id="face-cue" style="display:none">
+          <strong id="cue-title">Mira al frente</strong>
+          <em id="cue-hint">Rostro recto, ojos a la cámara</em>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="s-plan">
+      <div class="plan">
+        <div class="kicker">Membresía</div>
+        <h2>Asignar plan</h2>
+        <div class="card">
+          <b>Plan de la sede · Vigente</b>
+          <p>Con el rostro registrado, la puerta ya puede identificar a Laura.</p>
+        </div>
+        <div class="meters">
+          <div><label><span>Ficha, rostro y membresía</span><b id="plan-pct">0%</b></label><div class="bar"><i id="plan-bar"></i></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="s-door">
+      <div class="door">
+        <div class="kicker">Terminal de acceso · Puerta principal</div>
+        <div class="verdict" id="verdict">
+          <h3 id="v-title">Acérquese a la cámara</h3>
+          <p id="v-sub">El sistema reconocerá su rostro automáticamente</p>
+          <div class="meters">
+            <div><label><span>Coincidencia</span><b id="m1v">0%</b></label><div class="bar"><i id="m1"></i></div></div>
+            <div><label><span>Prueba de vida</span><b id="m2v">0%</b></label><div class="bar"><i id="m2"></i></div></div>
+          </div>
+        </div>
+        <div class="turn">
+          <div class="state" id="door-state">CERRADO</div>
+          <div class="post l"></div>
+          <div class="post r"></div>
+          <div class="arm" id="arm"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene" id="s-hist">
+      <div class="hist">
+        <div class="kicker">Historial de accesos</div>
+        <h2>Quedó auditado.</h2>
+        <div class="row">
+          <div><b>Laura Gómez Restrepo</b><span>Ordenada por rostro · Puerta principal</span></div>
+          <div class="tag">ACCESO<br>CONCEDIDO</div>
+        </div>
+        <div class="row">
+          <div><b>Registro facial</b><span>Prueba de vida completada en el celular</span></div>
+          <div class="tag">ROSTRO<br>LISTO</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="scene end" id="s-end">
+      <img src="marca-v.png" alt="" />
+      <h2>De la ficha a la puerta, en un solo sistema.</h2>
+      <p>Acceso, socios, caja y entrenamiento.</p>
+      <div class="url">VISIONYX.LAT</div>
+    </section>
+
+    <div class="cap" id="cap"></div>
+  </div>
+  <script>
+    const DOC = "1032456789";
+    const NAME = "Laura Gómez Restrepo";
+    const TEL = "+57 300 123 4567";
+    const WELCOME = "Hola, Laura.\n\nBienvenido a la sede.\n\nTu ficha ya está en la aplicación. Ábrela y entra con tu documento y este WhatsApp.";
+    const ENROLL = "Hola, Laura.\n\nLa sede necesita tu rostro para la puerta.\n\nAbre este paso en el celular:\nvisionyx.lat/e/····\n\nListo en menos de un minuto.";
+    const CIRC = 238.76;
+    const $ = (id) => document.getElementById(id);
+
+    function smooth(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
+    function seg(t, a, b) { return smooth((t - a) / (b - a)); }
+    function fade(t, a, b, c, d) {
+      if (t <= a || t >= d) return 0;
+      if (t < b) return smooth((t - a) / (b - a));
+      if (t > c) return 1 - smooth((t - c) / (d - c));
+      return 1;
+    }
+    function type(text, t, a, b) {
+      const n = Math.round(text.length * seg(t, a, b));
+      return text.slice(0, n);
+    }
+    function setScene(id, o) {
+      const el = $(id);
+      el.style.opacity = String(o);
+      el.style.visibility = o > 0.01 ? "visible" : "hidden";
+    }
+
+    function mesh(yaw, blink) {
+      const svg = $("mesh");
+      const lean = yaw / 34;
+      const sx = 1 - Math.abs(lean) * 0.34;
+      const ox = lean * 26;
+      const dots = [];
+      for (let r = 0; r < 8; r++) {
+        const y = -78 + r * 22;
+        const wide = Math.sin((r + 0.4) / 7.4 * Math.PI) * 52 * sx;
+        for (let c = 0; c < 7; c++) {
+          const x = (c - 3) * (wide / 3) + ox;
+          dots.push([100 + x, 128 + y]);
+        }
+      }
+      const lid = Math.max(0.8, 9 * (1 - blink));
+      const eye = (side) => {
+        const x = 100 + side * 20 * sx + ox;
+        return `<ellipse cx="${x.toFixed(1)}" cy="112" rx="${(7 * sx).toFixed(1)}" ry="${lid.toFixed(1)}" fill="none" stroke="#eaf7ff" stroke-width="1.5"/>`;
+      };
+      svg.innerHTML =
+        dots.map((p) => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.15" fill="#7fe6ff" opacity="0.9"/>`).join("") +
+        eye(-1) + eye(1) +
+        `<path d="M${(100 - 10 * sx + ox).toFixed(1)} 148 H${(100 + 12 * sx + ox).toFixed(1)}" fill="none" stroke="#a855f7" stroke-width="1.4"/>`;
+    }
+
+    function render(t) {
+      const dots = $("rail").children;
+      const phases = [2.6, 7.9, 11.3, 22.3, 24.9, 29.3];
+      for (let i = 0; i < dots.length; i++) dots[i].className = t >= phases[i] ? "on" : "";
+
+      setScene("s-intro", fade(t, 0.05, 0.35, 2.35, 2.8));
+      setScene("s-alta", fade(t, 2.55, 2.9, 7.7, 8.15));
+      setScene("s-wa", fade(t, 7.9, 8.25, 11.15, 11.55));
+      setScene("s-face", fade(t, 11.3, 11.65, 22.15, 22.55));
+      setScene("s-plan", fade(t, 22.3, 22.6, 24.75, 25.15));
+      setScene("s-door", fade(t, 24.9, 25.25, 29.15, 29.55));
+      setScene("s-hist", fade(t, 29.3, 29.65, 31.9, 32.3));
+      setScene("s-end", fade(t, 32.05, 32.45, 35.2, 35.4));
+
+      const step = $("step");
+      const cap = $("cap");
+      const caps = [
+        [0, 2.6, "", ""],
+        [2.6, 6.5, "01  Alta", "Recepción crea la ficha. Documento, nombre y WhatsApp."],
+        [6.5, 8.1, "01  Alta", "La ficha queda. El aviso sale. El rostro sigue pendiente."],
+        [8.1, 11.5, "02  Aviso", "Primero la app. Después, el enlace para registrar el rostro."],
+        [11.5, 13.2, "03  Rostro", "El celular abre el registro facial."],
+        [13.2, 21.1, "03  Rostro", "La prueba de vida pide cada gesto cuando toca."],
+        [21.1, 22.5, "03  Rostro", "Registro exitoso. El rostro quedó en la ficha."],
+        [22.5, 25.1, "04  Plan", "Con el plan vigente, el acceso deja de estar bloqueado."],
+        [25.1, 27.2, "05  Puerta", "En el torniquete no hace falta el celular."],
+        [27.2, 29.5, "05  Puerta", "Acceso concedido. El brazo abre."],
+        [29.5, 32.2, "06  Historial", "Cada ingreso por rostro queda en la auditoría."],
+        [32.2, 40, "", ""],
+      ];
+      let label = "", text = "";
+      for (const c of caps) if (t >= c[0] && t < c[1]) { label = c[2]; text = c[3]; }
+      step.textContent = label;
+      cap.innerHTML = text ? `<b>${label}</b>${text}` : "";
+      cap.style.opacity = text ? "1" : "0";
+      $("top") && 0;
+      document.querySelector(".top").style.opacity = (t < 0.4 || (t > 32.1 && t < 32.5)) ? "0" : "1";
+      $("rail").style.opacity = t > 2.5 && t < 32.1 ? "1" : "0";
+
+      const showDone = t >= 6.55;
+      $("alta-form").style.display = showDone ? "none" : "flex";
+      $("alta-done").style.display = showDone ? "flex" : "none";
+      $("f-doc").textContent = type(DOC, t, 3.15, 4.05);
+      $("f-name").textContent = type(NAME, t, 4.15, 5.35);
+      $("f-tel").textContent = type(TEL, t, 5.45, 6.25);
+      $("alta-btn").className = "btn" + (t >= 6.35 && t < 6.55 ? " press" : "");
+
+      $("b1").textContent = type(WELCOME, t, 8.2, 9.3);
+      $("b2").textContent = type(ENROLL, t, 9.45, 10.9);
+      $("b2").style.opacity = t >= 9.4 ? "1" : "0";
+
+      const live = t >= 13.15 && t < 21.15;
+      const success = t >= 21.15;
+      $("face-idle").style.display = t < 13.15 ? "flex" : "none";
+      $("face-cam").style.display = t >= 13.15 ? "block" : "none";
+      $("face-cue").style.display = live ? "block" : "none";
+      $("face-btn").className = "btn" + (t >= 12.85 && t < 13.15 ? " press" : "");
+      $("face-ok").style.display = success ? "flex" : "none";
+
+      const cues = [
+        [13.15, 15.2, "Mira al frente", "Rostro recto, ojos a la cámara", 0],
+        [15.2, 17.3, "Gira a la izquierda", "Lleva el mentón hacia tu hombro izquierdo", -34],
+        [17.3, 19.3, "Gira a la derecha", "Lleva el mentón hacia tu hombro derecho", 34],
+        [19.3, 21.15, "Parpadea", "Cierra y abre los ojos con naturalidad", 0],
+      ];
+      let yaw = 0, blink = 0, ringP = 0, title = "", hint = "", flag = "Listo";
+      if (live) {
+        for (const c of cues) {
+          if (t >= c[0] && t < c[1]) {
+            const p = seg(t, c[0], c[0] + 0.45);
+            const prev = cues[cues.indexOf(c) - 1];
+            yaw = (prev ? prev[4] : 0) + (c[4] - (prev ? prev[4] : 0)) * p;
+            title = c[2]; hint = c[3];
+            const local = (t - c[0]) / (c[1] - c[0]);
+            ringP = (cues.indexOf(c) + local) / cues.length;
+            flag = local > 0.72 ? "Listo" : "Ahora";
+            if (c[2] === "Parpadea") {
+              const w = (t - 19.7) / 0.45;
+              blink = w > 0 && w < 1 ? Math.sin(Math.min(1, w) * Math.PI) : 0;
+            }
+          }
+        }
+      }
+      if (t >= 13.15) {
+        mesh(yaw, blink);
+        const sweep = ((t * 0.55) % 1);
+        $("scan").style.top = (18 + sweep * 64) + "%";
+      }
+      $("ring").setAttribute("stroke-dashoffset", String(CIRC * (1 - ringP)));
+      $("cue-title").textContent = title;
+      $("cue-hint").textContent = hint;
+      $("face-flag").textContent = success ? "Registrado" : flag;
+
+      const pp = seg(t, 22.7, 24.3);
+      $("plan-bar").style.width = (pp * 100) + "%";
+      $("plan-pct").textContent = Math.round(pp * 100) + "%";
+
+      const scan = seg(t, 25.4, 26.9);
+      const open = seg(t, 27.05, 28.1);
+      const granted = t >= 27.05;
+      $("v-title").textContent = granted ? "ACCESO CONCEDIDO" : "Acérquese a la cámara";
+      $("v-sub").textContent = granted ? "Bienvenido, Laura Gómez" : "El sistema reconocerá su rostro automáticamente";
+      $("verdict").className = "verdict" + (granted ? " granted" : "");
+      $("m1").style.width = ((granted ? 0.96 : scan * 0.4) * 100) + "%";
+      $("m2").style.width = ((granted ? 0.93 : scan * 0.35) * 100) + "%";
+      $("m1v").textContent = Math.round((granted ? 0.96 : scan * 0.4) * 100) + "%";
+      $("m2v").textContent = Math.round((granted ? 0.93 : scan * 0.35) * 100) + "%";
+      $("arm").style.transform = `rotate(${open * 92}deg)`;
+      $("arm").className = "arm" + (open > 0.6 ? " open" : "");
+      $("door-state").textContent = open > 0.55 ? "ABIERTO" : "CERRADO";
+      $("door-state").className = "state" + (open > 0.55 ? " open" : "");
+    }
+
+    window.renderAt = render;
+    window.FILM_DURATION = 35;
+    render(0);
+  </script>
+</body>
+</html>

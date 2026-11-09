@@ -1,0 +1,73 @@
+# ============================================================
+#  GYM · WhatsApp gateway (Evolution API) — stack de demo
+#
+#  Levanta Evolution API + su Postgres + Redis dedicados.
+#  Se expone SOLO en loopback (127.0.0.1:8080): el conector del gym
+#  (gym-wa) lo consume desde el host. No se expone a internet.
+#
+#  Uso:
+#    docker compose -f evolution/docker-compose.yml up -d
+# ============================================================
+name: gym-wa
+
+services:
+  evolution-api:
+    image: evoapicloud/evolution-api:v2.3.7
+    container_name: gym-evolution
+    restart: unless-stopped
+    depends_on:
+      - evolution-db
+      - evolution-redis
+    ports:
+      - "127.0.0.1:8080:8080"   # solo loopback
+    environment:
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-gym-evolution-key}
+      SERVER_URL: http://localhost:8080
+      DATABASE_ENABLED: "true"
+      DATABASE_PROVIDER: postgresql
+      DATABASE_CONNECTION_URI: postgresql://evolution:evolution@evolution-db:5432/evolution
+      DATABASE_SAVE_DATA_INSTANCE: "true"
+      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
+      DATABASE_SAVE_MESSAGE_UPDATE: "true"
+      DATABASE_SAVE_DATA_CONTACTS: "true"
+      DATABASE_SAVE_DATA_CHATS: "true"
+      CACHE_REDIS_ENABLED: "true"
+      CACHE_REDIS_URI: redis://evolution-redis:6379
+      CACHE_REDIS_PREFIX_KEY: evolution
+      CACHE_LOCAL_ENABLED: "false"
+      WEBHOOK_GLOBAL_ENABLED: "false"
+    volumes:
+      - evolution_instances:/evolution/instances
+    networks: [gym-wa-net]
+
+  evolution-db:
+    image: postgres:16-alpine
+    container_name: gym-evolution-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: evolution
+      POSTGRES_PASSWORD: evolution
+      POSTGRES_DB: evolution
+    volumes:
+      - evolution_pgdata:/var/lib/postgresql/data
+    networks: [gym-wa-net]
+
+  evolution-redis:
+    image: redis:7-alpine
+    container_name: gym-evolution-redis
+    restart: unless-stopped
+    volumes:
+      - evolution_redis:/data
+    networks: [gym-wa-net]
+
+volumes:
+  evolution_instances:
+    name: gym-wa_evolution_instances
+  evolution_pgdata:
+    name: gym-wa_evolution_pgdata
+  evolution_redis:
+    name: gym-wa_evolution_redis
+
+networks:
+  gym-wa-net:
+    driver: bridge

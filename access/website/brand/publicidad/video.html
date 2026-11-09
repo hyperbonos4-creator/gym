@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>VisionYX · video</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 1080px; height: 1920px; overflow: hidden; background: #070b14; color: #eaf1fb; font-family: "Exo 2", "Segoe UI", sans-serif; }
+    .frame { width: 1080px; height: 1920px; display: flex; flex-direction: column; padding: 48px 40px 36px; }
+    .brand { display: flex; align-items: center; gap: 14px; font-family: Orbitron, sans-serif; font-weight: 800; letter-spacing: .06em; font-size: 28px; }
+    .brand img { width: 72px; height: 52px; object-fit: contain; }
+    .brand span { background: linear-gradient(90deg,#22d3ee,#a855f7); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .kicker { margin-top: 28px; color: #22d3ee; font-weight: 700; letter-spacing: .22em; text-transform: uppercase; font-size: 20px; }
+    h1 { margin-top: 8px; font-family: Orbitron, sans-serif; font-size: 54px; line-height: 1.05; font-weight: 800; }
+    .say { margin-top: 14px; font-size: 30px; line-height: 1.28; color: #d5e2f4; min-height: 2.6em; }
+    .shot { margin-top: 22px; flex: 1; min-height: 0; display: flex; align-items: flex-start; justify-content: center; }
+    .shot img { width: 100%; max-height: 100%; object-fit: contain; object-position: center top; border-radius: 22px; border: 1px solid rgba(127,230,255,.18); }
+    .end { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+    .end img { width: 520px; }
+    .end h1 { max-width: 14em; margin-top: 28px; }
+    .end p { margin-top: 18px; font-size: 30px; color: #c5d4ea; }
+    .url { margin-top: 28px; font-family: Orbitron, sans-serif; letter-spacing: .18em; color: #22d3ee; font-size: 26px; }
+  </style>
+</head>
+<body>
+  <div class="frame" id="root"></div>
+  <script>
+    const S = {
+      intro: { end: true, title: "Así funciona el software del gimnasio.", lead: "Apartado por apartado, y qué pasa cuando se usa." },
+      outro: { end: true, title: "De la ficha a la puerta.", lead: "En un solo lugar.", url: "VISIONYX.LAT" },
+      dashboard: ["Operación", "El día de la sede", "Lo cobrado, la puerta y quién puede entrar."],
+      torniquetes: ["Operación", "La puerta identifica", "El brazo abre solo si todo está en regla."],
+      accesos: ["Operación", "Cada intento queda escrito", "Quién llegó, si el plan cubría y si se abrió."],
+      acceso: ["Operación", "Primero la ficha", "El acceso sigue bloqueado hasta el rostro y el plan."],
+      clientes: ["Gimnasio", "Una ficha por persona", "El rostro se registra en el enrolamiento."],
+      membresias: ["Gimnasio", "Quien tiene plan", "Quien no tiene, sigue en Clientes."],
+      planes: ["Gimnasio", "El plan decide la entrada", "Qué puede comprar y cuándo entra."],
+      rutinas: ["Gimnasio", "Se publica y se asigna", "Editar después no cambia la versión ya asignada."],
+      ejercicios: ["Gimnasio", "El recorrido se ve", "El ciclo 3D no certifica la técnica."],
+      estudio: ["Gimnasio", "El profesor publica el movimiento", "El maniquí reproduce el ejercicio del catálogo."],
+      valoraciones: ["Gimnasio", "La medida queda en el expediente", "Lo que no se midió no se guarda como cero."],
+      nutricion: ["Gimnasio", "Se publica el plan de comidas", "No es una dieta clínica. Un dato que falta no se inventa."],
+      caja: ["Finanzas", "Sin turno no se cobra", "El turno abre con el efectivo del cajón."],
+      ventas: ["Finanzas", "El ticket queda", "Hoy se puede anular. Un turno cerrado, no."],
+      productos: ["Finanzas", "El producto nace con código", "La etiqueta sale con el logo de la sede."],
+      inventario: ["Finanzas", "El conteo reemplaza la cantidad", "Gimnasio y bodega, por separado."],
+      pedidos: ["Finanzas", "Lo recibido entra a bodega", "De ahí se baja al gimnasio."],
+      proveedores: ["Finanzas", "Sin proveedor no hay producto", "Cada sede tiene los suyos."],
+      facturacion: ["Finanzas", "La venta queda si la DIAN no sale", "Cada sede usa su NIT y su certificado."],
+      egresos: ["Finanzas", "Lo que sale de caja queda anotado", "Resta en el cierre del turno."],
+      reportes: ["Finanzas", "Cobrado, medios y stock", "El margen solo si el producto tiene costo."],
+      gimnasios: ["Sistema", "Cada sede ve lo suyo", "Socios, caja y puertas no se mezclan."],
+      cuenta: ["Sistema", "Marca, equipo y plan", "Quien se agrega solo entra a esta sede."],
+      whatsapp: ["Sistema", "El aviso sale de esta sede", "Se vincula el número con un código QR."]
+    };
+    function paint() {
+      const id = (location.hash || "#intro").slice(1);
+      const row = S[id] || S.intro;
+      const root = document.getElementById("root");
+      if (row.end) {
+        root.innerHTML = `<div class="end"><img src="marca-v.png" alt="" /><h1>${row.title}</h1><p>${row.lead}</p>${row.url ? `<div class="url">${row.url}</div>` : ""}</div>`;
+        return;
+      }
+      root.innerHTML = `<div class="brand"><img src="marca-v.png" alt="" />VISION<span>YX</span></div><div class="kicker">${row[0]}</div><h1>${row[1]}</h1><p class="say">${row[2]}</p><div class="shot"><img src="recortes/${id}.png" alt="" /></div>`;
+    }
+    window.addEventListener("hashchange", paint);
+    paint();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1706 @@
+[
+  {
+    "ejercicio": "sentadilla-barra",
+    "fotogramas": 120,
+    "fps": 24,
+    "deslizamiento_pie_izq_m": 0.0,
+    "deslizamiento_pie_der_m": 0.0,
+    "cadera_z_min": 0.559,
+    "cadera_z_max": 0.899,
+    "rodilla_grados": [
+      73.6,
+      173.1
+    ],
+    "codo_grados": [
+      43.3,
+      44.7
+    ],
+    "cierre_cadera_m": 0.0,
+    "planta_max_deg": 10.9,
+    "planta_variacion_deg": 0.0,
+    "agarre_max_m": 0.087,
+    "muestras": [
+      {
+        "frame": 1,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 44.7,
+        "hand_l": [
+          0.366,
+          0.033,
+          1.325
+        ],
+        "hand_r": [
+          -0.366,
+          0.033,
+          1.325
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.046,
+          1.41
+        ],
+        "barra_sentadilla_gap_l": 0.376,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 9,
+        "hip_z": 0.887,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 159.7,
+        "knee_r_deg": 159.7,
+        "elbow_l_deg": 44.6,
+        "hand_l": [
+          0.366,
+          0.032,
+          1.313
+        ],
+        "hand_r": [
+          -0.366,
+          0.032,
+          1.313
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.044,
+          1.399
+        ],
+        "barra_sentadilla_gap_l": 0.376,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 17,
+        "hip_z": 0.856,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 142.6,
+        "knee_r_deg": 142.6,
+        "elbow_l_deg": 44.5,
+        "hand_l": [
+          0.365,
+          0.029,
+          1.281
+        ],
+        "hand_r": [
+          -0.365,
+          0.029,
+          1.281
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.039,
+          1.367
+        ],
+        "barra_sentadilla_gap_l": 0.375,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 25,
+        "hip_z": 0.811,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 126.6,
+        "knee_r_deg": 126.6,
+        "elbow_l_deg": 44.3,
+        "hand_l": [
+          0.365,
+          0.026,
+          1.234
+        ],
+        "hand_r": [
+          -0.365,
+          0.026,
+          1.234
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.033,
+          1.32
+        ],
+        "barra_sentadilla_gap_l": 0.375,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 33,
+        "hip_z": 0.757,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 112.2,
+        "knee_r_deg": 112.2,
+        "elbow_l_deg": 44.1,
+        "hand_l": [
+          0.364,
+          0.021,
+          1.178
+        ],
+        "hand_r": [
+          -0.364,
+          0.021,
+          1.178
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.024,
+          1.264
+        ],
+        "barra_sentadilla_gap_l": 0.374,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 41,
+        "hip_z": 0.7,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 99.6,
+        "knee_r_deg": 99.6,
+        "elbow_l_deg": 43.8,
+        "hand_l": [
+          0.364,
+          0.017,
+          1.118
+        ],
+        "hand_r": [
+          -0.364,
+          0.017,
+          1.118
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.016,
+          1.205
+        ],
+        "barra_sentadilla_gap_l": 0.374,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 49,
+        "hip_z": 0.647,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 89.0,
+        "knee_r_deg": 89.0,
+        "elbow_l_deg": 43.6,
+        "hand_l": [
+          0.363,
+          0.013,
+          1.061
+        ],
+        "hand_r": [
+          -0.363,
+          0.013,
+          1.061
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.008,
+          1.148
+        ],
+        "barra_sentadilla_gap_l": 0.373,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 57,
+        "hip_z": 0.602,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 80.8,
+        "knee_r_deg": 80.8,
+        "elbow_l_deg": 43.5,
+        "hand_l": [
+          0.363,
+          0.009,
+          1.013
+        ],
+        "hand_r": [
+          -0.363,
+          0.009,
+          1.013
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.001,
+          1.099
+        ],
+        "barra_sentadilla_gap_l": 0.373,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 65,
+        "hip_z": 0.57,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 75.5,
+        "knee_r_deg": 75.5,
+        "elbow_l_deg": 43.4,
+        "hand_l": [
+          0.363,
+          0.007,
+          0.98
+        ],
+        "hand_r": [
+          -0.363,
+          0.007,
+          0.98
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          -0.003,
+          1.066
+        ],
+        "barra_sentadilla_gap_l": 0.373,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 73,
+        "hip_z": 0.559,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 73.6,
+        "knee_r_deg": 73.6,
+        "elbow_l_deg": 43.3,
+        "hand_l": [
+          0.362,
+          0.006,
+          0.967
+        ],
+        "hand_r": [
+          -0.362,
+          0.006,
+          0.967
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          -0.005,
+          1.053
+        ],
+        "barra_sentadilla_gap_l": 0.373,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 81,
+        "hip_z": 0.566,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 74.8,
+        "knee_r_deg": 74.8,
+        "elbow_l_deg": 43.4,
+        "hand_l": [
+          0.363,
+          0.007,
+          0.975
+        ],
+        "hand_r": [
+          -0.363,
+          0.007,
+          0.975
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          -0.004,
+          1.061
+        ],
+        "barra_sentadilla_gap_l": 0.373,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 89,
+        "hip_z": 0.637,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 87.1,
+        "knee_r_deg": 87.1,
+        "elbow_l_deg": 43.6,
+        "hand_l": [
+          0.363,
+          0.012,
+          1.051
+        ],
+        "hand_r": [
+          -0.363,
+          0.012,
+          1.051
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.007,
+          1.137
+        ],
+        "barra_sentadilla_gap_l": 0.373,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 97,
+        "hip_z": 0.746,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 109.5,
+        "knee_r_deg": 109.5,
+        "elbow_l_deg": 44.0,
+        "hand_l": [
+          0.364,
+          0.02,
+          1.166
+        ],
+        "hand_r": [
+          -0.364,
+          0.02,
+          1.166
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.023,
+          1.252
+        ],
+        "barra_sentadilla_gap_l": 0.374,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 105,
+        "hip_z": 0.848,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 139.3,
+        "knee_r_deg": 139.3,
+        "elbow_l_deg": 44.4,
+        "hand_l": [
+          0.365,
+          0.029,
+          1.272
+        ],
+        "hand_r": [
+          -0.365,
+          0.029,
+          1.272
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.038,
+          1.358
+        ],
+        "barra_sentadilla_gap_l": 0.375,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 113,
+        "hip_z": 0.898,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 172.0,
+        "knee_r_deg": 172.0,
+        "elbow_l_deg": 44.7,
+        "hand_l": [
+          0.366,
+          0.033,
+          1.324
+        ],
+        "hand_r": [
+          -0.366,
+          0.033,
+          1.324
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_sentadilla": [
+          0.0,
+          0.046,
+          1.41
+        ],
+        "barra_sentadilla_gap_l": 0.376,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      }
+    ]
+  },
+  {
+    "ejercicio": "curl-mancuernas",
+    "fotogramas": 120,
+    "fps": 24,
+    "deslizamiento_pie_izq_m": 0.0,
+    "deslizamiento_pie_der_m": 0.0,
+    "cadera_z_min": 0.899,
+    "cadera_z_max": 0.899,
+    "rodilla_grados": [
+      173.1,
+      173.1
+    ],
+    "codo_grados": [
+      31.2,
+      134.3
+    ],
+    "cierre_cadera_m": 0.0,
+    "planta_max_deg": 10.9,
+    "planta_variacion_deg": 0.0,
+    "agarre_max_m": null,
+    "muestras": [
+      {
+        "frame": 1,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 134.3,
+        "hand_l": [
+          0.189,
+          -0.057,
+          0.885
+        ],
+        "hand_r": [
+          -0.189,
+          -0.057,
+          0.885
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.191,
+          -0.104,
+          0.803
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 9,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 134.3,
+        "hand_l": [
+          0.189,
+          -0.062,
+          0.885
+        ],
+        "hand_r": [
+          -0.189,
+          -0.062,
+          0.885
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.191,
+          -0.109,
+          0.804
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 17,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 133.9,
+        "hand_l": [
+          0.189,
+          -0.077,
+          0.887
+        ],
+        "hand_r": [
+          -0.189,
+          -0.077,
+          0.887
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.191,
+          -0.127,
+          0.808
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 25,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 131.9,
+        "hand_l": [
+          0.189,
+          -0.113,
+          0.897
+        ],
+        "hand_r": [
+          -0.189,
+          -0.113,
+          0.897
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.191,
+          -0.171,
+          0.823
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 33,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 117.8,
+        "hand_l": [
+          0.189,
+          -0.203,
+          0.958
+        ],
+        "hand_r": [
+          -0.189,
+          -0.203,
+          0.958
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.192,
+          -0.283,
+          0.909
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 41,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 69.8,
+        "hand_l": [
+          0.19,
+          -0.244,
+          1.168
+        ],
+        "hand_r": [
+          -0.19,
+          -0.244,
+          1.168
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.193,
+          -0.333,
+          1.198
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 49,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 44.2,
+        "hand_l": [
+          0.191,
+          -0.185,
+          1.254
+        ],
+        "hand_r": [
+          -0.191,
+          -0.185,
+          1.254
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.194,
+          -0.256,
+          1.315
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 57,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 35.6,
+        "hand_l": [
+          0.191,
+          -0.156,
+          1.275
+        ],
+        "hand_r": [
+          -0.191,
+          -0.156,
+          1.275
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.194,
+          -0.221,
+          1.342
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 65,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 32.2,
+        "hand_l": [
+          0.191,
+          -0.143,
+          1.281
+        ],
+        "hand_r": [
+          -0.191,
+          -0.143,
+          1.281
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.194,
+          -0.206,
+          1.35
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 73,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 31.2,
+        "hand_l": [
+          0.191,
+          -0.14,
+          1.283
+        ],
+        "hand_r": [
+          -0.191,
+          -0.14,
+          1.283
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.194,
+          -0.202,
+          1.353
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 81,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 31.8,
+        "hand_l": [
+          0.191,
+          -0.142,
+          1.282
+        ],
+        "hand_r": [
+          -0.191,
+          -0.142,
+          1.282
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.194,
+          -0.205,
+          1.351
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 89,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 41.8,
+        "hand_l": [
+          0.191,
+          -0.177,
+          1.26
+        ],
+        "hand_r": [
+          -0.191,
+          -0.177,
+          1.26
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.194,
+          -0.246,
+          1.323
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 97,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 110.3,
+        "hand_l": [
+          0.19,
+          -0.227,
+          0.99
+        ],
+        "hand_r": [
+          -0.19,
+          -0.227,
+          0.99
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.192,
+          -0.314,
+          0.955
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 105,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 133.8,
+        "hand_l": [
+          0.189,
+          -0.082,
+          0.888
+        ],
+        "hand_r": [
+          -0.189,
+          -0.082,
+          0.888
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.191,
+          -0.133,
+          0.81
+        ],
+        "mancuerna_l_gap_l": 0.093
+      },
+      {
+        "frame": 113,
+        "hip_z": 0.899,
+        "ankle_l": [
+          0.191,
+          -0.016,
+          0.069
+        ],
+        "ankle_r": [
+          -0.191,
+          -0.016,
+          0.069
+        ],
+        "knee_l_deg": 173.1,
+        "knee_r_deg": 173.1,
+        "elbow_l_deg": 134.3,
+        "hand_l": [
+          0.189,
+          -0.058,
+          0.885
+        ],
+        "hand_r": [
+          -0.189,
+          -0.058,
+          0.885
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "mancuerna_l": [
+          0.191,
+          -0.104,
+          0.803
+        ],
+        "mancuerna_l_gap_l": 0.093
+      }
+    ]
+  },
+  {
+    "ejercicio": "press-banca",
+    "fotogramas": 120,
+    "fps": 24,
+    "deslizamiento_pie_izq_m": 0.0,
+    "deslizamiento_pie_der_m": 0.0,
+    "cadera_z_min": 0.491,
+    "cadera_z_max": 0.491,
+    "rodilla_grados": [
+      101.9,
+      101.9
+    ],
+    "codo_grados": [
+      46.8,
+      120.2
+    ],
+    "cierre_cadera_m": 0.0,
+    "planta_max_deg": 10.9,
+    "planta_variacion_deg": 0.0,
+    "agarre_max_m": 0.087,
+    "muestras": [
+      {
+        "frame": 1,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 48.0,
+        "hand_l": [
+          0.289,
+          1.167,
+          0.515
+        ],
+        "hand_r": [
+          -0.289,
+          1.167,
+          0.515
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.146,
+          0.599
+        ],
+        "barra_press_gap_l": 0.301,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 9,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 47.3,
+        "hand_l": [
+          0.29,
+          1.172,
+          0.529
+        ],
+        "hand_r": [
+          -0.29,
+          1.172,
+          0.529
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.157,
+          0.614
+        ],
+        "barra_press_gap_l": 0.303,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 17,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 46.9,
+        "hand_l": [
+          0.294,
+          1.188,
+          0.569
+        ],
+        "hand_r": [
+          -0.294,
+          1.188,
+          0.569
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.187,
+          0.655
+        ],
+        "barra_press_gap_l": 0.307,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 25,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 50.4,
+        "hand_l": [
+          0.3,
+          1.212,
+          0.628
+        ],
+        "hand_r": [
+          -0.3,
+          1.212,
+          0.628
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.227,
+          0.713
+        ],
+        "barra_press_gap_l": 0.312,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 33,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 59.3,
+        "hand_l": [
+          0.304,
+          1.242,
+          0.696
+        ],
+        "hand_r": [
+          -0.304,
+          1.242,
+          0.696
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.267,
+          0.779
+        ],
+        "barra_press_gap_l": 0.316,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 41,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 72.6,
+        "hand_l": [
+          0.304,
+          1.27,
+          0.764
+        ],
+        "hand_r": [
+          -0.304,
+          1.27,
+          0.764
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          0.0,
+          1.297,
+          0.846
+        ],
+        "barra_press_gap_l": 0.316,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 49,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 87.9,
+        "hand_l": [
+          0.302,
+          1.291,
+          0.824
+        ],
+        "hand_r": [
+          -0.302,
+          1.291,
+          0.824
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          0.0,
+          1.316,
+          0.907
+        ],
+        "barra_press_gap_l": 0.315,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 57,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 103.0,
+        "hand_l": [
+          0.299,
+          1.306,
+          0.874
+        ],
+        "hand_r": [
+          -0.299,
+          1.306,
+          0.874
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          0.0,
+          1.326,
+          0.958
+        ],
+        "barra_press_gap_l": 0.311,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 65,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 115.1,
+        "hand_l": [
+          0.296,
+          1.316,
+          0.907
+        ],
+        "hand_r": [
+          -0.296,
+          1.316,
+          0.907
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          0.0,
+          1.331,
+          0.992
+        ],
+        "barra_press_gap_l": 0.308,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 73,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 120.2,
+        "hand_l": [
+          0.294,
+          1.319,
+          0.92
+        ],
+        "hand_r": [
+          -0.294,
+          1.319,
+          0.92
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          0.0,
+          1.333,
+          1.005
+        ],
+        "barra_press_gap_l": 0.307,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 81,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 116.9,
+        "hand_l": [
+          0.295,
+          1.317,
+          0.911
+        ],
+        "hand_r": [
+          -0.295,
+          1.317,
+          0.911
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          0.0,
+          1.332,
+          0.997
+        ],
+        "barra_press_gap_l": 0.308,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 89,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 91.0,
+        "hand_l": [
+          0.302,
+          1.294,
+          0.835
+        ],
+        "hand_r": [
+          -0.302,
+          1.294,
+          0.835
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          0.0,
+          1.319,
+          0.918
+        ],
+        "barra_press_gap_l": 0.314,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 97,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 61.7,
+        "hand_l": [
+          0.304,
+          1.248,
+          0.71
+        ],
+        "hand_r": [
+          -0.304,
+          1.248,
+          0.71
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.274,
+          0.793
+        ],
+        "barra_press_gap_l": 0.316,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 105,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 47.2,
+        "hand_l": [
+          0.295,
+          1.192,
+          0.579
+        ],
+        "hand_r": [
+          -0.295,
+          1.192,
+          0.579
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.194,
+          0.666
+        ],
+        "barra_press_gap_l": 0.308,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      },
+      {
+        "frame": 113,
+        "hip_z": 0.491,
+        "ankle_l": [
+          0.173,
+          0.437,
+          0.03
+        ],
+        "ankle_r": [
+          -0.173,
+          0.437,
+          0.03
+        ],
+        "knee_l_deg": 101.9,
+        "knee_r_deg": 101.9,
+        "elbow_l_deg": 48.0,
+        "hand_l": [
+          0.289,
+          1.167,
+          0.515
+        ],
+        "hand_r": [
+          -0.289,
+          1.167,
+          0.515
+        ],
+        "planta_izq_deg": 10.9,
+        "planta_der_deg": 10.9,
+        "barra_press": [
+          -0.0,
+          1.146,
+          0.6
+        ],
+        "barra_press_gap_l": 0.301,
+        "barra_eje_l": 0.087,
+        "barra_eje_r": 0.087
+      }
+    ]
+  }
+]

@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #05070d;
+  color: #e8eefc;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .glass {
+    @apply bg-gym-panel/70 backdrop-blur-xl border border-gym-border/80 rounded-2xl shadow-panel;
+  }
+  .glass-soft {
+    @apply bg-gym-panel/50 backdrop-blur-md border border-gym-border/60 rounded-xl;
+  }
+  /* Texto degradado: cian → violeta */
+  .gym-gradient-text {
+    background: linear-gradient(95deg, #7fd7ff 0%, #38bdf8 45%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .btn-gym {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold
+           text-white transition-all duration-200;
+    background: linear-gradient(95deg, #2563eb, #7c3aed);
+    box-shadow: 0 0 18px rgba(56, 189, 248, 0.35);
+  }
+  .btn-gym:hover {
+    box-shadow: 0 0 28px rgba(124, 58, 237, 0.6);
+    transform: translateY(-1px);
+  }
+  .login-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    max-width: 28rem;
+  }
+  .login-card {
+    padding: 1.5rem 1.75rem;
+  }
+  .login-card-head {
+    margin-bottom: 1.1rem;
+  }
+  .brand-hero {
+    position: relative;
+    margin-left: auto;
+    margin-right: auto;
+    overflow: hidden;
+    width: min(220px, 46vw);
+    flex: 0 0 auto;
+    animation: brandFloat 5.5s ease-in-out infinite, brandGlow 3.6s ease-in-out infinite;
+  }
+  .brand-hero-img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    max-height: min(240px, 32vh);
+    height: auto;
+    object-fit: contain;
+    user-select: none;
+  }
+  .brand-shine {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -33%;
+    z-index: 2;
+    width: 33%;
+    background: linear-gradient(
+      105deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 35%,
+      rgba(255, 255, 255, 0.38) 50%,
+      rgba(255, 255, 255, 0.08) 65%,
+      transparent 100%
+    );
+    animation: brandShine 4.2s ease-in-out infinite;
+  }
+  .login-hex {
+    background-image:
+      linear-gradient(rgba(56, 189, 248, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(56, 189, 248, 0.04) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(ellipse at center, black 35%, transparent 78%);
+  }
+}
+
+@media (max-height: 820px) {
+  .brand-hero { width: min(160px, 34vw); }
+  .brand-hero-img { max-height: min(150px, 24vh); }
+  .login-card { padding: 1.15rem 1.25rem; }
+  .login-card-head { margin-bottom: 0.75rem; }
+  .login-stack { gap: 0.75rem; }
+}
+
+@media (max-height: 720px) and (min-width: 860px) {
+  .login-stack {
+    flex-direction: row;
+    align-items: center;
+    max-width: 52rem;
+    gap: 2rem;
+  }
+  .brand-hero { width: min(200px, 28vw); }
+  .brand-hero-img { max-height: min(280px, 70vh); }
+}
+
+@keyframes brandFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes brandGlow {
+  0%, 100% { filter: drop-shadow(0 0 18px rgba(56, 189, 248, 0.22)); }
+  50% { filter: drop-shadow(0 0 36px rgba(167, 139, 250, 0.45)); }
+}
+@keyframes brandShine {
+  0%, 18% { transform: translateX(-130%); }
+  52%, 100% { transform: translateX(130%); }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e2a44;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2563eb;
+}
