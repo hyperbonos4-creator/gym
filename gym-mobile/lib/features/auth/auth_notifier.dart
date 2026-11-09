@@ -151,12 +151,29 @@ class AuthNotifier extends Notifier<AuthState> {
     state = state.copyWith(ready: true);
   }
 
-  Future<bool> login(String doc, String phone) async {
+  /// Paso 1: pide OTP por WhatsApp. Devuelve `otp` si hay que mostrar el campo de código.
+  /// Paso 2: con [code] verifica y guarda el token.
+  Future<String?> login(String doc, String phone, {String? code}) async {
     state = state.copyWith(loading: true, clearError: true);
     try {
-      final res = await _api.dio.post('/api/mobile/login', data: {'doc': doc, 'phone': phone});
+      final payload = <String, dynamic>{'doc': doc, 'phone': phone};
+      if (code != null && code.isNotEmpty) {
+        payload['action'] = 'verify';
+        payload['code'] = code;
+      } else {
+        payload['action'] = 'request';
+      }
+      final res = await _api.dio.post('/api/mobile/login', data: payload);
       final data = Map<String, dynamic>.from(res.data as Map);
+      if (data['otpSent'] == true && (data['token'] == null || '${data['token']}'.isEmpty)) {
+        state = state.copyWith(loading: false, ready: true);
+        return 'otp';
+      }
       final token = '${data['token'] ?? ''}';
+      if (token.isEmpty) {
+        state = state.copyWith(loading: false, ready: true, error: 'No se recibió sesión.');
+        return null;
+      }
       await _storage.saveToken(token);
       state = state.copyWith(
         loading: false,
@@ -170,14 +187,14 @@ class AuthNotifier extends Notifier<AuthState> {
         apartados: (data['apartados'] as num?)?.toInt() ?? 0,
       );
       await refresh();
-      return true;
+      return 'ok';
     } on DioException catch (e) {
       final msg = e.response?.data is Map ? '${(e.response!.data as Map)['error'] ?? ''}' : '';
       state = state.copyWith(loading: false, ready: true, error: msg.isEmpty ? 'No se pudo entrar.' : msg);
-      return false;
+      return null;
     } catch (_) {
       state = state.copyWith(loading: false, ready: true, error: 'No hubo respuesta del sistema.');
-      return false;
+      return null;
     }
   }
 
