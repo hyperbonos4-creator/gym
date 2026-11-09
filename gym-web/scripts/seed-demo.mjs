@@ -215,22 +215,80 @@ const plans = planeDefs.flatMap((p) =>
   })),
 );
 
+function demoDays(exerciseIds, reps, sets) {
+  const mkItem = (exerciseId) => ({
+    id: uuid(),
+    exerciseId,
+    sets,
+    reps,
+    restSec: 90,
+    load: "",
+    effort: "",
+    tempo: "",
+    alternativeId: "",
+    note: "",
+  });
+  const mkDay = (label, title, ids, rest) => ({
+    id: uuid(),
+    label,
+    title,
+    rest: Boolean(rest),
+    blocks: rest
+      ? []
+      : ids.map((exerciseId) => ({
+          id: uuid(),
+          kind: "ejercicio",
+          items: [mkItem(exerciseId)],
+        })),
+  });
+  return [
+    mkDay("Lunes", "Sesion A", exerciseIds.slice(0, Math.ceil(exerciseIds.length / 2)), false),
+    mkDay("Miercoles", "Sesion B", exerciseIds.slice(Math.ceil(exerciseIds.length / 2)), false),
+    mkDay("Viernes", "Descanso", [], true),
+  ];
+}
+
+const nowIso = new Date().toISOString();
 const routines = [
   {
     id: "rut-full",
     gymId: "visionyx-norte",
-    nombre: "Full body principiante",
-    nivel: "inicio",
-    dias: ["L", "M", "V"],
-    bloques: ejercicios.slice(0, 5).map((e) => ({ ejercicioId: e.id, series: 3, reps: "10-12" })),
+    name: "Full body principiante",
+    goal: "Hipertrofia",
+    level: "Inicio",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+    createdBy: "demo",
+    versions: [
+      {
+        id: "ver-full-1",
+        number: 1,
+        status: "publicada",
+        createdAt: nowIso,
+        publishedAt: nowIso,
+        days: demoDays(["sentadilla", "press-banca", "remo-barra", "plancha", "zancadas"], "10-12", 3),
+      },
+    ],
   },
   {
     id: "rut-fuerza",
     gymId: "visionyx-centro",
-    nombre: "Fuerza intermedia",
-    nivel: "medio",
-    dias: ["L", "X", "V"],
-    bloques: ejercicios.slice(0, 6).map((e) => ({ ejercicioId: e.id, series: 4, reps: "6-8" })),
+    name: "Fuerza intermedia",
+    goal: "Fuerza",
+    level: "Intermedio",
+    createdAt: nowIso,
+    updatedAt: nowIso,
+    createdBy: "demo",
+    versions: [
+      {
+        id: "ver-fuerza-1",
+        number: 1,
+        status: "publicada",
+        createdAt: nowIso,
+        publishedAt: nowIso,
+        days: demoDays(["sentadilla", "press-banca", "peso-muerto-rumano", "press-militar", "remo-barra", "fondos"], "6-8", 4),
+      },
+    ],
   },
 ];
 
@@ -257,12 +315,24 @@ const files = {
   "socios.json": socios,
   "memberships.json": { plans, memberships: membershipRows },
   "routines.json": routines,
-  "routine-assignments.json": socios.slice(0, 20).map((s, i) => ({
-    id: uuid(),
-    socioId: s.id,
-    gymId: s.gymId,
-    routineId: routines[i % routines.length].id,
-  })),
+  "routine-assignments.json": socios.slice(0, 20).map((s, i) => {
+    const tpl = routines[i % routines.length];
+    const ver = tpl.versions[0];
+    return {
+      id: uuid(),
+      gymId: s.gymId,
+      socioId: s.id,
+      templateId: tpl.id,
+      versionId: ver.id,
+      versionNumber: ver.number,
+      startDate: new Date().toISOString().slice(0, 10),
+      status: "vigente",
+      note: "Asignacion demo",
+      assignedAt: new Date().toISOString(),
+      assignedBy: "demo",
+      closedAt: null,
+    };
+  }),
   "exercise-assignments.json": [],
   "ejercicios.json": ejercicios,
   "retail.json": retail,

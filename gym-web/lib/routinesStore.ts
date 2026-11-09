@@ -10,10 +10,125 @@ const LEVELS: RoutineLevel[] = ["Inicio", "Intermedio", "Avanzado"];
 const KINDS: BlockKind[] = ["ejercicio", "superserie", "circuito", "calentamiento"];
 const known = new Set(EXERCISES.map((e) => e.id));
 
+
+const LEVEL_ALIASES: Record<string, RoutineLevel> = {
+  inicio: "Inicio",
+  principiante: "Inicio",
+  intermedio: "Intermedio",
+  medio: "Intermedio",
+  avanzado: "Avanzado",
+};
+
+const LEGACY_EXERCISE: Record<string, string> = {
+  "ex-sentadilla": "sentadilla",
+  "ex-press": "press-banca",
+  "ex-remo": "remo-barra",
+  "ex-peso": "peso-muerto-rumano",
+  "ex-pressm": "press-militar",
+  "ex-dominada": "dominadas-supino",
+  "ex-fondo": "fondos",
+  "ex-curl": "curl-mancuernas",
+};
+
+function mapLevel(raw: unknown): RoutineLevel {
+  const s = String(raw ?? "").trim();
+  if (LEVELS.includes(s as RoutineLevel)) return s as RoutineLevel;
+  return LEVEL_ALIASES[s.toLowerCase()] || "Intermedio";
+}
+
+function normalizeVersion(raw: any, fallbackNumber: number): RoutineVersion | null {
+  if (!raw || typeof raw !== "object") return null;
+  const status = raw.status === "publicada" ? "publicada" : "borrador";
+  const number = Math.max(1, Math.round(Number(raw.number) || fallbackNumber));
+  return {
+    id: text(raw.id, 80) || randomUUID(),
+    number,
+    status,
+    createdAt: text(raw.createdAt, 40) || new Date().toISOString(),
+    publishedAt: status === "publicada" ? text(raw.publishedAt, 40) || new Date().toISOString() : null,
+    days: sanitizeDays(raw.days),
+  };
+}
+
+/** Garantiza RoutineTemplate con versions:[] aunque el JSON sea legado o incompleto. */
+export function normalizeTemplate(raw: any): RoutineTemplate | null {
+  if (!raw || typeof raw !== "object") return null;
+  const id = text(raw.id, 80);
+  const gymId = text(raw.gymId, 80);
+  if (!id || !gymId) return null;
+  const now = new Date().toISOString();
+  let versions: RoutineVersion[] = [];
+  if (Array.isArray(raw.versions)) {
+    versions = raw.versions
+      .map((v: any, i: number) => normalizeVersion(v, i + 1))
+      .filter(Boolean) as RoutineVersion[];
+  } else if (Array.isArray(raw.bloques) || Array.isArray(raw.dias) || raw.nombre || raw.name) {
+    const legacyBlocks = Array.isArray(raw.bloques) ? raw.bloques : [];
+    const items = legacyBlocks
+      .map((b: any) => {
+        const eid = LEGACY_EXERCISE[text(b?.ejercicioId || b?.exerciseId, 80)] || text(b?.ejercicioId || b?.exerciseId, 80);
+        return exercise({
+          exerciseId: eid,
+          sets: b?.series ?? b?.sets ?? 3,
+          reps: b?.reps || "8-12",
+          restSec: b?.restSec ?? 90,
+        });
+      })
+      .filter(Boolean);
+    // Build days via sanitizeDays with proper block shape
+    const dayRaw = Array.isArray(raw.dias) && raw.dias.length
+      ? raw.dias.map((d: any, i: number) => ({
+          label: String(d),
+          title: i === 0 ? "Sesion" : `Dia ${i + 1}`,
+          rest: false,
+          blocks: i === 0 && items.length
+            ? items.map((it: any) => ({ kind: "ejercicio", items: [it] }))
+            : [],
+        }))
+      : [{
+          label: "Dia 1",
+          title: "Sesion",
+          rest: false,
+          blocks: items.map((it: any) => ({ kind: "ejercicio", items: [it] })),
+        }];
+    versions = [{
+      id: randomUUID(),
+      number: 1,
+      status: "publicada",
+      createdAt: now,
+      publishedAt: now,
+      days: sanitizeDays(dayRaw),
+    }];
+  }
+  return {
+    id,
+    gymId,
+    name: text(raw.name || raw.nombre, 80) || "Sin nombre",
+    goal: text(raw.goal, 40) || "Hipertrofia",
+    level: mapLevel(raw.level || raw.nivel),
+    createdAt: text(raw.createdAt, 40) || now,
+    updatedAt: text(raw.updatedAt, 40) || now,
+    createdBy: text(raw.createdBy, 80) || "sistema",
+    versions,
+  };
+}
+
+
 function readAll(): RoutineTemplate[] {
   try {
     const raw = JSON.parse(fs.readFileSync(FILE, "utf-8"));
-    return Array.isArray(raw) ? raw : [];
+    if (!Array.isArray(raw)) return [];
+    let dirty = false;
+    const out: RoutineTemplate[] = [];
+    for (const row of raw) {
+      if (!Array.isArray((row as any)?.versions)) dirty = true;
+      const n = normalizeTemplate(row);
+      if (n) out.push(n);
+    }
+    if (dirty) {
+      try { writeAll(out); } catch { /* heal best-effort */ }
+    }
+    return out;
   } catch {
     return [];
   }
@@ -136,7 +251,7 @@ export function saveDraft(
   const rows = readAll();
   const i = rows.findIndex((t) => t.gymId === gymId && t.id === id);
   if (i < 0) throw new Error("rutina_no_encontrada");
-  const draft = rows[i].versions.findIndex((v) => v.status === "borrador");
+  const draft = (Array.isArray(rows[i].versions) ? rows[i].versions : []).findIndex((v) => v.status === "borrador");
   if (draft < 0) throw new Error("sin_borrador");
   const name = patch.name != null ? text(patch.name, 80) : rows[i].name;
   if (!name) throw new Error("nombre_requerido");
@@ -161,7 +276,7 @@ export function publishRoutine(gymId: string, id: string): RoutineTemplate {
   const rows = readAll();
   const i = rows.findIndex((t) => t.gymId === gymId && t.id === id);
   if (i < 0) throw new Error("rutina_no_encontrada");
-  const draft = rows[i].versions.findIndex((v) => v.status === "borrador");
+  const draft = (Array.isArray(rows[i].versions) ? rows[i].versions : []).findIndex((v) => v.status === "borrador");
   if (draft < 0) throw new Error("sin_borrador");
   const days = rows[i].versions[draft].days;
   const hasExercise = days.some((d) => d.blocks.some((b) => b.items.length));
@@ -177,8 +292,9 @@ export function openDraft(gymId: string, id: string): RoutineTemplate {
   const rows = readAll();
   const i = rows.findIndex((t) => t.gymId === gymId && t.id === id);
   if (i < 0) throw new Error("rutina_no_encontrada");
-  if (rows[i].versions.some((v) => v.status === "borrador")) return rows[i];
-  const source = [...rows[i].versions].reverse().find((v) => v.status === "publicada");
+  const vers = Array.isArray(rows[i].versions) ? rows[i].versions : [];
+  if (vers.some((v) => v.status === "borrador")) return rows[i];
+  const source = [...vers].reverse().find((v) => v.status === "publicada");
   if (!source) throw new Error("sin_version");
   const now = new Date().toISOString();
   const copy: RoutineVersion = {
@@ -189,7 +305,7 @@ export function openDraft(gymId: string, id: string): RoutineTemplate {
     publishedAt: null,
     days: JSON.parse(JSON.stringify(source.days)),
   };
-  rows[i] = { ...rows[i], updatedAt: now, versions: [...rows[i].versions, copy] };
+  rows[i] = { ...rows[i], updatedAt: now, versions: [...vers, copy] };
   writeAll(rows);
   return rows[i];
 }
@@ -200,7 +316,7 @@ export function appendExercise(gymId: string, id: string, exerciseId: string): R
   const rows = readAll();
   const i = rows.findIndex((t) => t.gymId === gymId && t.id === id);
   if (i < 0) throw new Error("rutina_no_encontrada");
-  const draft = rows[i].versions.findIndex((v) => v.status === "borrador");
+  const draft = (Array.isArray(rows[i].versions) ? rows[i].versions : []).findIndex((v) => v.status === "borrador");
   if (draft < 0) throw new Error("sin_borrador");
   const days = JSON.parse(JSON.stringify(rows[i].versions[draft].days)) as RoutineDay[];
   const day = days.find((d) => !d.rest);

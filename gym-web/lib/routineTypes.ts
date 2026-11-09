@@ -52,12 +52,16 @@ export type RoutineTemplate = {
 
 export const ROUTINE_GOALS = ["Hipertrofia", "Fuerza", "Resistencia", "Técnica", "Acondicionamiento"] as const;
 
+export function safeVersions(t: Pick<RoutineTemplate, "versions"> | null | undefined): RoutineVersion[] {
+  return Array.isArray(t?.versions) ? t.versions : [];
+}
+
 export function draftOf(t: RoutineTemplate) {
-  return t.versions.find((v) => v.status === "borrador") || null;
+  return safeVersions(t).find((v) => v.status === "borrador") || null;
 }
 
 export function latestPublished(t: RoutineTemplate) {
-  return [...t.versions].reverse().find((v) => v.status === "publicada") || null;
+  return [...safeVersions(t)].reverse().find((v) => v.status === "publicada") || null;
 }
 
 export function trainingDays(days: RoutineDay[]) {
