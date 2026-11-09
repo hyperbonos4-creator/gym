@@ -391,7 +391,30 @@ class FacialHandler(BaseHTTPRequestHandler):
         out.write_bytes(body)
         print(f"  guardado: {out.name}")
 
+    def _authorized(self) -> bool:
+        expected = (getattr(self, "webhook_token", None) or "").strip()
+        allow = getattr(self, "allow_ips", None) or []
+        if expected:
+            got = (self.headers.get("X-Webhook-Token") or self.headers.get("Authorization") or "").strip()
+            if got.lower().startswith("bearer "):
+                got = got[7:].strip()
+            if got != expected:
+                return False
+        if allow:
+            peer = self.client_address[0] if self.client_address else ""
+            if peer not in allow and peer not in ("127.0.0.1", "::1"):
+                return False
+        return True
+
     def _handle_post(self) -> None:
+        if not self._authorized():
+            self.send_response(401)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"ok":false,"error":"unauthorized"}')
+            print("  REJECTED: webhook no autorizado")
+            return
+
         body = self._read_body()
         path = self.path
         print(f"\n>>> POST {path} ({len(body)} bytes)")
@@ -400,10 +423,27 @@ class FacialHandler(BaseHTTPRequestHandler):
         if body:
             try:
                 payload = json.loads(body.decode("utf-8", errors="replace"))
-                print(json.dumps(payload, ensure_ascii=False, indent=2)[:1500])
+                safe = dict(payload)
+                # Nunca volcar imágenes / bases64 al log
+                for k in list(safe.keys()):
+                    if "image" in k.lower() or "photo" in k.lower() or "picture" in k.lower():
+                        safe[k] = f"<{type(safe[k]).__name__} redacted>"
+                info = safe.get("info")
+                if isinstance(info, dict):
+                    info = dict(info)
+                    for k in list(info.keys()):
+                        if "image" in k.lower() or "photo" in k.lower() or "picture" in k.lower() or "base64" in k.lower():
+                            info[k] = "<redacted>"
+                    safe["info"] = info
+                print(json.dumps(safe, ensure_ascii=False, indent=2)[:1500])
             except json.JSONDecodeError:
-                print(body[:500].decode("utf-8", errors="replace"))
-        self._save_log(path, body)
+                print("(body no-json, no se imprime)")
+        # Log metadatos sin imagen
+        try:
+            meta = {"path": path, "bytes": len(body), "operator": payload.get("operator")}
+            self._save_log(path, json.dumps(meta).encode("utf-8"))
+        except Exception:
+            pass
 
         # ── Heartbeat ──────────────────────────────────────────────────
         if "/heartbeat" in path.lower() or payload.get("operator") == "HeartBeat":
@@ -553,8 +593,9 @@ def _env(key: str, default: str = "") -> str:
 def main() -> int:
     load_env_file()
     parser = argparse.ArgumentParser(description="Webhook facial → access → torniquete")
-    parser.add_argument("--host", default="0.0.0.0")
-    parser.add_argument("--port", type=int, default=8787)
+    default_host = _env("FACIAL_WEBHOOK_HOST", "127.0.0.1")
+    parser.add_argument("--host", default=default_host)
+    parser.add_argument("--port", type=int, default=int(_env("FACIAL_WEBHOOK_PORT", "8787") or "8787"))
     parser.add_argument(
         "--dry-run",
         action="store_true",
@@ -563,10 +604,16 @@ def main() -> int:
     args = parser.parse_args()
 
     api_url      = _env("ACCESS_API_URL",      "http://localhost:3000")
-    api_email    = _env("ACCESS_API_EMAIL",     "admin@office.local")
-    api_password = _env("ACCESS_API_PASSWORD",  "ChangeMe123!")
+    api_email    = _env("ACCESS_API_EMAIL",     "")
+    api_password = _env("ACCESS_API_PASSWORD",  "")
     ap_id        = _env("ACCESS_POINT_ID",      "")
     ipcam_url    = _env("IP_CAM_URL",           "")
+
+    webhook_token = _env("FACIAL_WEBHOOK_TOKEN", "")
+    allow_raw = _env("FACIAL_WEBHOOK_ALLOW_IPS", "")
+    allow_ips = [x.strip() for x in allow_raw.split(",") if x.strip()]
+    if not webhook_token and not allow_ips:
+        print("AVISO: configura FACIAL_WEBHOOK_TOKEN y/o FACIAL_WEBHOOK_ALLOW_IPS")
 
     FacialHandler.dry_run        = args.dry_run
     FacialHandler.api_url        = api_url
@@ -574,13 +621,15 @@ def main() -> int:
     FacialHandler.api_password   = api_password
     FacialHandler.access_point_id = ap_id
     FacialHandler.ipcam_url      = ipcam_url
+    FacialHandler.webhook_token  = webhook_token
+    FacialHandler.allow_ips      = allow_ips
     FacialHandler.client         = None if args.dry_run else TurnstileClient.from_env()
 
     server = ThreadingHTTPServer((args.host, args.port), FacialHandler)
 
     print("=" * 65)
     print("FACIAL WEBHOOK  →  ACCESS API  →  TORNIQUETE")
-    print(f"Escuchando       http://0.0.0.0:{args.port}")
+    print(f"Escuchando       http://{args.host}:{args.port}")
     print(f"Facial debe POST a  Server Address: <IP de este PC>  Port: {args.port}")
     print(f"Access API       {api_url}")
     print(f"Access Point ID  {ap_id or '*** FALTA ACCESS_POINT_ID en .env ***'}")

@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-access}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-access}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME:-access_control}
     volumes:
       - pg_data:/var/lib/postgresql/data
@@ -91,7 +91,7 @@ services:
       PORT: 3000
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_SYNCHRONIZE: "true"
+      DB_SYNCHRONIZE: ${DB_SYNCHRONIZE:-false}
       VISION_SERVICE_URL: http://vision:8200
       # Pesos MiniFASNet en /models. Sin ellos el registro y la puerta quedan en 0%.
       LIVENESS_REQUIRE_PASSIVE: "true"

@@ -3,7 +3,7 @@
 #
 #   start.cmd
 #   → http://localhost:3100
-#   → https://sappy-drool-monument.ngrok-free.dev
+#   → https://<NGROK_DOMAIN>
 
 name: gym-platform
 
@@ -36,9 +36,14 @@ services:
       - "3100:3100"
     environment:
       ACCESS_URL: http://office_backend:3000
+      SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET}
+      ACCESS_ADMIN_EMAIL: ${ACCESS_ADMIN_EMAIL}
+      ACCESS_ADMIN_PASS: ${ACCESS_ADMIN_PASS}
+      ALLOW_PUBLIC_REGISTRO: ${ALLOW_PUBLIC_REGISTRO:-false}
+      MOBILE_OTP_REQUIRED: ${MOBILE_OTP_REQUIRED:-true}
       EVOLUTION_URL: http://gym-evolution:8080
-      EVOLUTION_KEY: ${EVOLUTION_KEY:-gym-evolution-key}
-      ENROLL_PUBLIC_BASE: ${ENROLL_PUBLIC_BASE:-https://sappy-drool-monument.ngrok-free.dev}
+      EVOLUTION_KEY: ${EVOLUTION_KEY:?Set EVOLUTION_KEY}
+      ENROLL_PUBLIC_BASE: ${ENROLL_PUBLIC_BASE:-https://<NGROK_DOMAIN>}
       ESP_AGENT_KEY: ${ESP_AGENT_KEY:-}
       WOMPI_PUBLIC_KEY: ${WOMPI_PUBLIC_KEY:-}
       WOMPI_INTEGRITY_SECRET: ${WOMPI_INTEGRITY_SECRET:-}
@@ -67,7 +72,7 @@ services:
     command:
       - http
       - http://gym-web:3100
-      - --url=${NGROK_DOMAIN:-sappy-drool-monument.ngrok-free.dev}
+      - --url=${NGROK_DOMAIN:-<NGROK_DOMAIN>}
     ports:
       - "127.0.0.1:4040:4040"
     networks:

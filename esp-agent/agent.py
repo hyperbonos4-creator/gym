@@ -36,9 +36,11 @@ BOOT_APP0 = os.environ.get(
     r"C:\Users\Hide\AppData\Local\Arduino15\packages\esp32\hardware\esp32\3.3.11\tools\partitions\boot_app0.bin",
 )
 BUILD = SKETCH / "build"
-HOST = "127.0.0.1"
-PORT = 3190
+HOST = os.environ.get("ESP_AGENT_HOST", "127.0.0.1")
+PORT = int(os.environ.get("ESP_AGENT_PORT", "3190"))
 BEACON_PORT = 42100
+AGENT_KEY = os.environ.get("ESP_AGENT_KEY", "").strip()
+CORS_ORIGIN = os.environ.get("ESP_AGENT_CORS_ORIGIN", "http://127.0.0.1:3100").strip()
 
 heard: dict[str, dict] = {}
 heard_lock = threading.Lock()
@@ -414,13 +416,14 @@ class Handler(BaseHTTPRequestHandler):
         return
 
     def _cors(self) -> None:
-        # El panel vive en https://gym... y el navegador trata 127.0.0.1 como
-        # red privada. Sin este encabezado Chrome bloquea la llamada y la
-        # pantalla dice "puente desconectado" aunque el cable esté puesto.
-        self.send_header("Access-Control-Allow-Origin", "*")
+        # Origen restringido. El panel en LAN/cloud debe listarse en ESP_AGENT_CORS_ORIGIN
+        # (lista separada por comas). Private Network Access sigue habilitado.
+        origin = CORS_ORIGIN.split(",")[0].strip() or "http://127.0.0.1:3100"
+        self.send_header("Access-Control-Allow-Origin", origin)
         self.send_header("Access-Control-Allow-Private-Network", "true")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Agent-Key")
+        self.send_header("Vary", "Origin")
 
     def _send(self, code: int, payload: dict) -> None:
         raw = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -431,6 +434,16 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(raw)
 
+
+    def _authorized(self) -> bool:
+        if not AGENT_KEY:
+            # Sin clave configurada solo se permite health en loopback.
+            return False
+        got = (self.headers.get("X-Agent-Key") or self.headers.get("Authorization") or "").strip()
+        if got.lower().startswith("bearer "):
+            got = got[7:].strip()
+        return got == AGENT_KEY
+
     def do_OPTIONS(self) -> None:
         self.send_response(204)
         self._cors()
@@ -439,7 +452,10 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self) -> None:
         url = urlparse(self.path)
         if url.path == "/health":
-            self._send(200, {"ok": True, "fw": "5.1.0"})
+            self._send(200, {"ok": True, "fw": "5.1.0", "auth": bool(AGENT_KEY)})
+            return
+        if not self._authorized():
+            self._send(401, {"ok": False, "error": "unauthorized"})
             return
         if url.path == "/ports":
             self._send(200, {"ok": True, "ports": ports()})
@@ -452,6 +468,9 @@ class Handler(BaseHTTPRequestHandler):
         self._send(404, {"ok": False})
 
     def do_POST(self) -> None:
+        if not self._authorized():
+            self._send(401, {"ok": False, "error": "unauthorized"})
+            return
         url = urlparse(self.path)
         length = int(self.headers.get("Content-Length") or 0)
         raw = self.rfile.read(length) if length else b"{}"
@@ -499,7 +518,15 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     load_env()
+    global HOST, PORT, AGENT_KEY, CORS_ORIGIN
+    HOST = os.environ.get("ESP_AGENT_HOST", HOST)
+    PORT = int(os.environ.get("ESP_AGENT_PORT", str(PORT)))
+    AGENT_KEY = os.environ.get("ESP_AGENT_KEY", AGENT_KEY).strip()
+    CORS_ORIGIN = os.environ.get("ESP_AGENT_CORS_ORIGIN", CORS_ORIGIN).strip()
+    if not AGENT_KEY:
+        print("AVISO: ESP_AGENT_KEY vacío — endpoints (salvo /health) rechazarán llamadas", flush=True)
     threading.Thread(target=beacon_loop, daemon=True).start()
+    threading.Thread(target=job_loop, daemon=True).start()
     httpd = ThreadingHTTPServer((HOST, PORT), Handler)
     print(f"puente torniquete en http://{HOST}:{PORT}", flush=True)
     httpd.serve_forever()
