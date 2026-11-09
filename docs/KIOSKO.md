@@ -10,8 +10,8 @@ atada a **esa sede** y a **su puerta** (`access_point`).
 
 1. En el panel: **Torniquetes → Vincular kiosko**.
 2. Elige la puerta de la sede (si no hay, se crea “Entrada principal”).
-3. Se muestra un código de 6 dígitos + QR (`gym-kiosk:######`), válido **10 minutos**, **un solo uso**.
-4. En la tablet abre `/kiosk/` (o el enlace del panel) e ingresa el código.
+3. Se muestra un código de 6 dígitos + QR. El QR apunta a la URL pública del kiosko con el código en el **fragmento** (`…/kiosk/index.html?source=webcam#code=######`), válido **10 minutos**, **un solo uso**. El fragmento no se envía al servidor ni queda en logs.
+4. Al escanear el QR, la tablet abre el kiosko, canjea el código sola, guarda el token y borra `#code=` del historial. También se puede escribir el código a mano.
 5. El backend guarda un dispositivo (`kiosk_devices`) y emite un JWT largo (`purpose=kiosk`)
    con `deviceId`, `gymId`, `accessPointId` y `jti`.
 6. La tablet guarda el token en `localStorage` (`kiosk_device_token`).
@@ -60,3 +60,8 @@ Tras baseline de InitialSchema: `npm run migration:run` en `access/backend`.
   pero la UI del kiosko **ya no lo ofrece**.
 - `POST /access/kiosk/auto` requiere `KIOSK_AUTO_ENABLED=true` (apagado por defecto).
 - El panel server-side usa `/auth/login` para hablar con access (no el token de kiosko).
+
+
+## URL pública del QR
+
+El panel arma el QR con `resolvePublicBase()` (prioridad `ENROLL_PUBLIC_BASE`). En producción debe ser la HTTPS pública (p. ej. `https://gym.198-199-82-161.sslip.io`), nunca `localhost`.

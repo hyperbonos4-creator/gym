@@ -10,6 +10,7 @@ import {
 } from "../../../lib/accessBackend";
 import { accessScope } from "../../../lib/accessScope";
 import { rateLimit } from "../../../lib/rateLimit";
+import { resolvePublicBase, isLocalBase } from "../../../lib/publicUrl";
 
 export const dynamic = "force-dynamic";
 
@@ -75,8 +76,19 @@ export async function POST(req: Request) {
       accessPointId: pointId,
       deviceName: String(body.deviceName || "Kiosko").trim() || "Kiosko",
     });
-    const qrPayload = `gym-kiosk:${pairing.code}`;
-    const qrDataUrl = await QRCode.toDataURL(qrPayload, { margin: 1, width: 240 });
+    const publicBase = await resolvePublicBase(req);
+    // Fragmento #code= no viaja al servidor ni queda en Referer/logs de access.
+    const pairUrl =
+      publicBase.replace(/\/$/, "") +
+      "/kiosk/index.html?source=webcam#code=" +
+      encodeURIComponent(pairing.code);
+    if (isLocalBase(publicBase) && process.env.NODE_ENV === "production") {
+      return NextResponse.json(
+        { ok: false, error: "public_base_localhost", hint: "Define ENROLL_PUBLIC_BASE con la URL HTTPS publica" },
+        { status: 500 },
+      );
+    }
+    const qrDataUrl = await QRCode.toDataURL(pairUrl, { margin: 1, width: 280, errorCorrectionLevel: "M" });
     return NextResponse.json({
       ok: true,
       code: pairing.code,
@@ -84,7 +96,8 @@ export async function POST(req: Request) {
       accessPointId: pairing.accessPointId,
       deviceName: pairing.deviceName,
       qrDataUrl,
-      pairUrl: `/kiosk/index.html?source=webcam`,
+      pairUrl,
+      publicBase,
     });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: String(e?.message || e) }, { status: 502 });

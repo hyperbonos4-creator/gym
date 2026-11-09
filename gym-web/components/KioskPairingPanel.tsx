@@ -18,6 +18,8 @@ type Pairing = {
   qrDataUrl: string;
   accessPointId: string;
   deviceName: string;
+  pairUrl?: string;
+  publicBase?: string;
 };
 
 function fmt(iso: string | null) {
@@ -111,8 +113,10 @@ export default function KioskPairingPanel({
           qrDataUrl: d.qrDataUrl,
           accessPointId: d.accessPointId,
           deviceName: d.deviceName,
+          pairUrl: d.pairUrl,
+          publicBase: d.publicBase,
         });
-        setMsg("Código listo. En la tablet abre el kiosko e ingresa estos 6 dígitos.");
+        setMsg("Código listo. Escanea el QR con la tablet (o escribe los 6 dígitos).");
       }
     } catch {
       setErr(true);
@@ -155,7 +159,7 @@ export default function KioskPairingPanel({
         <div>
           <h3 className="text-base font-extrabold text-white">Tablets / kiosko</h3>
           <p className="mt-1 text-xs text-gym-muted">
-            Vincula la tablet de la sede con un código de 6 dígitos (10 minutos, un solo uso). No uses la contraseña de administrador en la tablet.
+            Escanea el QR con la cámara de la tablet (se abre el kiosko y se vincula sola). Código de 6 dígitos, 10 minutos, un solo uso. Sin contraseña de administrador.
           </p>
         </div>
         <a
@@ -218,7 +222,7 @@ export default function KioskPairingPanel({
               Caduca en {Math.floor(left / 60)}:{String(left % 60).padStart(2, "0")} · un solo uso · puerta {pairing.accessPointId.slice(0, 8)}…
             </div>
             <p className="mt-2 max-w-sm text-xs text-gym-muted">
-              En la tablet: abre el kiosko e ingresa el código. El QR contiene el mismo código (`gym-kiosk:######`).
+              Escanea este QR con la tablet: abre el kiosko y la vincula sola. También puedes escribir el código a mano.
             </p>
           </div>
         </div>

@@ -66,6 +66,32 @@ if (isOneShotClosed()) {
  * bajo la MISMA sesión de demo donde se enroló el rostro, así el reconocimiento
  * mira la colección correcta y la puerta abre.
  */
+
+function readPairCodeFromUrl() {
+  try {
+    const fromHash = (location.hash || '').match(/(?:^|[#&])code=([^&]+)/);
+    if (fromHash) return decodeURIComponent(fromHash[1]).replace(/\D/g, '').slice(0, 6);
+    const q = new URLSearchParams(location.search).get('code');
+    return q ? String(q).replace(/\D/g, '').slice(0, 6) : '';
+  } catch {
+    return '';
+  }
+}
+
+function stripPairCodeFromUrl() {
+  try {
+    const url = new URL(location.href);
+    url.searchParams.delete('code');
+    url.hash = (url.hash || '')
+      .replace(/(?:^|[#&])code=[^&]*/, '')
+      .replace(/^#&/, '#');
+    if (url.hash === '#') url.hash = '';
+    history.replaceState(null, '', url.toString());
+  } catch {
+    /* no-op */
+  }
+}
+
 function adoptSession() {
   const urlTok = readUrlToken();
   if (urlTok) {
@@ -164,12 +190,16 @@ function bindEvents() {
 
 /* ── Sesión ─────────────────────────────────────────────────────────────── */
 /* ── Vinculación por código (sin contraseña de admin) ─────────────────────── */
-async function doPair() {
-  const code = ($('pair-code')?.value || '').replace(/\D/g, '');
-  const name = ($('pair-name')?.value || '').trim() || 'Kiosko';
-  if (code.length !== 6) return toast('Ingresa el código de 6 dígitos', 'err');
+async function pairWithCode(rawCode, opts = {}) {
+  const code = String(rawCode || '').replace(/\D/g, '');
+  const name = ($('pair-name')?.value || '').trim() || (opts.fromQr ? 'Tablet' : 'Kiosko');
+  if (code.length !== 6) {
+    showPairing(opts.fromQr ? 'El QR no trajo un código válido. Ingresa los 6 dígitos del panel.' : null);
+    return toast('Ingresa el código de 6 dígitos', 'err');
+  }
   const btn = $('btn-pair');
   if (btn) btn.disabled = true;
+  if (opts.fromQr) showPairingProgress('Vinculando esta tablet…');
   primeAudio();
   try {
     const r = await api.post('/access/kiosk/pair', { code, deviceName: name });
@@ -179,23 +209,34 @@ async function doPair() {
       state.pointId = r.accessPointId;
       localStorage.setItem(POINT_KEY, r.accessPointId);
     }
+    stripPairCodeFromUrl();
     hide('modal-login');
-    toast('Tablet vinculada a esta sede', 'ok');
+    toast(opts.fromQr ? 'Tablet vinculada con el QR' : 'Tablet vinculada a esta sede', 'ok');
     await init();
   } catch (e) {
-    const msg =
-      e instanceof ApiError
-        ? e.status === 429
-          ? 'Demasiados intentos. Espera un minuto.'
-          : e.message || 'Código inválido'
-        : 'No se pudo vincular';
+    stripPairCodeFromUrl();
+    let msg = 'No se pudo vincular';
+    if (e instanceof ApiError) {
+      const bodyMsg = String((e.body && (e.body.message || e.body.error)) || e.message || '');
+      if (e.status === 429 || /rate|bloqueado/i.test(bodyMsg)) msg = 'Demasiados intentos. Espera un minuto e inténtalo de nuevo.';
+      else if (/expirad/i.test(bodyMsg)) msg = 'El código ya expiró. Genera uno nuevo en el panel (Vincular kiosko).';
+      else if (/usado/i.test(bodyMsg)) msg = 'Este código ya se usó. Genera uno nuevo en el panel.';
+      else if (/invalid/i.test(bodyMsg) || e.status === 401) msg = 'Código inválido o vencido. Pide uno nuevo en el panel.';
+      else msg = bodyMsg || msg;
+    }
+    showPairing(msg);
     toast(msg, 'err');
   } finally {
     if (btn) btn.disabled = false;
   }
 }
 
-function showPairing() {
+async function doPair() {
+  const code = ($('pair-code')?.value || '').replace(/\D/g, '');
+  await pairWithCode(code, { fromQr: false });
+}
+
+function showPairingProgress(text) {
   const modal = $('modal-login');
   if (!modal) return;
   modal.classList.remove('hidden');
@@ -204,8 +245,24 @@ function showPairing() {
   card.innerHTML =
     '<div class="brand" style="justify-content:center;margin-bottom:16px">' +
     '<div class="wordmark"><b>FUERZA ÉLITE</b><span>Vincular tablet</span></div></div>' +
+    '<p class="muted center" style="text-align:center">' + (text || 'Vinculando…') + '</p>';
+}
+
+function showPairing(errorMsg) {
+  const modal = $('modal-login');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+  const card = modal.querySelector('.modal');
+  if (!card) return;
+  const errHtml = errorMsg
+    ? '<p class="center" style="text-align:center;color:#f59e0b;margin-bottom:12px;line-height:1.4">' + errorMsg + '</p>'
+    : '';
+  card.innerHTML =
+    '<div class="brand" style="justify-content:center;margin-bottom:16px">' +
+    '<div class="wordmark"><b>FUERZA ÉLITE</b><span>Vincular tablet</span></div></div>' +
+    errHtml +
     '<p class="muted center" style="text-align:center;margin-bottom:14px;line-height:1.45">' +
-    'Pide en el panel un código de <b>Vincular kiosko</b> (válido 10 minutos) e ingrésalo aquí. No uses contraseñas de administrador.</p>' +
+    'Escanea el QR de <b>Vincular kiosko</b> en el panel, o ingresa el código de 6 dígitos. No uses contraseñas de administrador.</p>' +
     '<label class="field"><span>Código de 6 dígitos</span>' +
     '<input id="pair-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" style="letter-spacing:0.35em;font-size:1.4rem;text-align:center" /></label>' +
     '<label class="field"><span>Nombre de esta tablet (opcional)</span>' +
@@ -224,9 +281,9 @@ function showPairing() {
 }
 
 async function autoStart() {
-  // Demo/preview: adopta token de URL o admin_token con claim ds (flujo demo).
-  if (PREVIEW) {
-    showPairing();
+  const urlCode = readPairCodeFromUrl();
+  if (urlCode && urlCode.length === 6) {
+    await pairWithCode(urlCode, { fromQr: true });
     return;
   }
   showPairing();

@@ -181,4 +181,22 @@ test("kiosk pairing code is 6 digits shape", () => {
   assert.match(code, /^\d{6}$/);
 });
 
+
+
+test("kiosk qr fragment keeps code off server path", () => {
+  const base = "https://gym.example.sslip.io";
+  const code = "123456";
+  const pairUrl = `${base}/kiosk/index.html?source=webcam#code=${encodeURIComponent(code)}`;
+  const u = new URL(pairUrl);
+  assert.equal(u.pathname.includes("123456"), false);
+  assert.equal(u.search.includes("123456"), false);
+  assert.match(u.hash, /code=123456/);
+  assert.equal(/localhost|127\.0\.0\.1/i.test(pairUrl), false);
+});
+
+test("kiosk qr rejects localhost public base shape", () => {
+  const bad = "http://127.0.0.1:3100/kiosk/index.html#code=111111";
+  assert.equal(/localhost|127\.0\.0\.1/i.test(bad), true);
+});
+
 console.log(`\n${passed} tests passed`);
