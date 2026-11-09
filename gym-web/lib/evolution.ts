@@ -14,7 +14,13 @@
 import { deflateSync, inflateSync } from "zlib";
 
 const EVOLUTION_URL = (process.env.EVOLUTION_URL || "http://127.0.0.1:8080").replace(/\/$/, "");
-const EVOLUTION_KEY = process.env.EVOLUTION_KEY || "gym-evolution-key";
+function evolutionKey(): string {
+  const key = String(process.env.EVOLUTION_KEY || "").trim();
+  if (!key && process.env.NODE_ENV === "production") {
+    throw new Error("EVOLUTION_KEY_requerido");
+  }
+  return key;
+}
 
 export type WaState = "open" | "connecting" | "qr" | "close";
 
@@ -38,7 +44,7 @@ async function call(
   const res = await fetch(`${EVOLUTION_URL}${path}`, {
     method,
     headers: {
-      apikey: EVOLUTION_KEY,
+      apikey: evolutionKey(),
       ...(body ? { "Content-Type": "application/json" } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,

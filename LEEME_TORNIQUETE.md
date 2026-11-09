@@ -87,7 +87,7 @@ Edita `esp32_torniquete_api/config.h`:
 ```cpp
 #define WIFI_SSID     "TuRedWiFi"
 #define WIFI_PASSWORD "TuPassword"
-#define API_TOKEN     "gym-secret-token"
+#define API_TOKEN     "<TORNIQUETE_TOKEN>"
 ```
 
 ### Paso 2: Flashear el ESP32
@@ -103,7 +103,7 @@ En el monitor serial (115200) veras la IP, por ejemplo: `WiFi OK IP=192.168.1.10
 ```powershell
 curl http://192.168.1.100/health
 curl http://192.168.1.100/api/status
-curl -X POST http://192.168.1.100/api/open -H "Authorization: Bearer gym-secret-token"
+curl -X POST http://192.168.1.100/api/open -H "Authorization: Bearer <TORNIQUETE_TOKEN>"
 ```
 
 O por USB (sin WiFi):
@@ -119,7 +119,7 @@ python C:\Users\Hide\Desktop\Gym\test_torniquete.py OPEN
 ```python
 from gym_torniquete import TurnstileClient
 
-client = TurnstileClient(host="192.168.1.100", token="gym-secret-token")
+client = TurnstileClient(host="192.168.1.100", token="<TORNIQUETE_TOKEN>")
 client.open()
 ```
 

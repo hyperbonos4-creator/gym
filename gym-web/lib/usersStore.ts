@@ -1,7 +1,7 @@
-import fs from "fs";
 import path from "path";
 import type { Role, SessionUser } from "./session";
-import { hashPassword } from "./passwords";
+import { hashPassword, passwordPolicyOk } from "./passwords";
+import { readJsonFile, updateJsonFileSync, writeJsonFile } from "./jsonStore";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "users.json");
@@ -12,33 +12,63 @@ export type StoredUser = {
   nombre: string;
   role: Role;
   gymIds: string[] | "all";
+  /** Incrementar invalida cookies firmadas previas. */
+  sessionVersion?: number;
 };
 
-const SEED: StoredUser[] = [
-  {
-    username: "admin",
-    password: "admin",
-    nombre: "Administrador",
-    role: "superadmin",
-    gymIds: "all",
-  },
-];
+function isProd() {
+  return process.env.NODE_ENV === "production";
+}
+
+function bootstrapFromEnv(): StoredUser[] | null {
+  const username = String(process.env.GYM_BOOTSTRAP_ADMIN_USER || "").trim().toLowerCase();
+  const password = String(process.env.GYM_BOOTSTRAP_ADMIN_PASSWORD || "");
+  const nombre = String(process.env.GYM_BOOTSTRAP_ADMIN_NAME || "Administrador").trim() || "Administrador";
+  if (!username || !password) return null;
+  if (!passwordPolicyOk(password)) {
+    throw new Error("GYM_BOOTSTRAP_ADMIN_PASSWORD debe tener al menos 8 caracteres");
+  }
+  return [
+    {
+      username,
+      password: hashPassword(password),
+      nombre,
+      role: "superadmin",
+      gymIds: "all",
+      sessionVersion: 1,
+    },
+  ];
+}
+
+function ensureUsers(): StoredUser[] {
+  const existing = readJsonFile<StoredUser[]>(FILE, []);
+  if (Array.isArray(existing) && existing.length) {
+    return existing.map((u) => ({
+      ...u,
+      sessionVersion: u.sessionVersion ?? 1,
+    }));
+  }
+  const seeded = bootstrapFromEnv();
+  if (seeded) {
+    writeJsonFile(FILE, seeded);
+    return seeded;
+  }
+  if (isProd()) {
+    throw new Error(
+      "Sin usuarios y sin GYM_BOOTSTRAP_ADMIN_USER/PASSWORD. Configura el bootstrap o restaura data/users.json.",
+    );
+  }
+  // Dev: no crear admin/admin. Dejar vacío y fallar en login hasta bootstrap.
+  writeJsonFile(FILE, []);
+  return [];
+}
 
 function readAll(): StoredUser[] {
-  try {
-    const raw = fs.readFileSync(FILE, "utf-8");
-    const arr = JSON.parse(raw);
-    if (Array.isArray(arr) && arr.length) return arr;
-  } catch {
-    /* seed */
-  }
-  writeAll(SEED);
-  return [...SEED];
+  return ensureUsers();
 }
 
 function writeAll(list: StoredUser[]) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(list, null, 2), "utf-8");
+  writeJsonFile(FILE, list);
 }
 
 export function listUsers(): StoredUser[] {
@@ -60,11 +90,11 @@ export function canAccessGym(user: SessionUser, gymId: string): boolean {
 }
 
 export function grantGym(username: string, gymId: string) {
-  const list = readAll();
-  const i = list.findIndex((u) => u.username === username.trim().toLowerCase());
-  if (i < 0 || list[i].gymIds === "all") return;
-  if (!list[i].gymIds.includes(gymId)) list[i].gymIds = [...list[i].gymIds, gymId];
-  writeAll(list);
+  updateJsonFileSync<StoredUser[]>(FILE, [], (list) => {
+    const i = list.findIndex((u) => u.username === username.trim().toLowerCase());
+    if (i < 0 || list[i]!.gymIds === "all") return;
+    if (!list[i]!.gymIds.includes(gymId)) list[i]!.gymIds = [...list[i]!.gymIds, gymId];
+  });
 }
 
 export function createUser(input: {
@@ -77,7 +107,7 @@ export function createUser(input: {
   const username = input.username.trim().toLowerCase();
   if (!username) throw new Error("usuario_requerido");
   if (getUserByUsername(username)) throw new Error("usuario_existe");
-  if (!input.password || input.password.length < 4) throw new Error("clave_corta");
+  if (!passwordPolicyOk(input.password)) throw new Error("clave_corta");
   if (!input.gymIds.length && input.role !== "superadmin") throw new Error("gym_requerido");
   const user: StoredUser = {
     username,
@@ -85,9 +115,36 @@ export function createUser(input: {
     nombre: input.nombre.trim() || username,
     role: input.role === "superadmin" ? "admin" : input.role,
     gymIds: input.role === "superadmin" ? "all" : input.gymIds,
+    sessionVersion: 1,
   };
-  const list = readAll();
-  list.push(user);
-  writeAll(list);
+  updateJsonFileSync<StoredUser[]>(FILE, [], (list) => {
+    list.push(user);
+  });
   return user;
 }
+
+export function rehashUserPassword(username: string, password: string) {
+  updateJsonFileSync<StoredUser[]>(FILE, [], (list) => {
+    const i = list.findIndex((u) => u.username === username.trim().toLowerCase());
+    if (i < 0) return;
+    list[i]!.password = hashPassword(password);
+  });
+}
+
+export function bumpSessionVersion(username: string): number {
+  let next = 1;
+  updateJsonFileSync<StoredUser[]>(FILE, [], (list) => {
+    const i = list.findIndex((u) => u.username === username.trim().toLowerCase());
+    if (i < 0) return;
+    next = (list[i]!.sessionVersion || 1) + 1;
+    list[i]!.sessionVersion = next;
+  });
+  return next;
+}
+
+export function sessionVersionOf(username: string): number {
+  return getUserByUsername(username)?.sessionVersion || 1;
+}
+
+/** Roles con acceso al panel de personal (no el registro público). */
+export const STAFF_ROLES: Role[] = ["superadmin", "admin", "operador", "recepcion", "caja", "entrenador"];

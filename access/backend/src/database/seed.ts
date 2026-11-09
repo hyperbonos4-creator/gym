@@ -9,16 +9,30 @@ import { User, UserRole } from '../auth/entities/user.entity';
  * SEED_ADMIN_PASSWORD. Idempotente: si ya existe, no hace nada.
  *
  *   npm run seed
+ *
+ * En producción exige variables de entorno (sin defaults débiles).
  */
 async function seed(): Promise<void> {
-  const email = (process.env.SEED_ADMIN_EMAIL ?? 'admin@office.local').trim().toLowerCase();
-  const password = process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMe123!';
+  const email = (process.env.SEED_ADMIN_EMAIL ?? '').trim().toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD ?? '';
+  const isProd = process.env.NODE_ENV === 'production';
+
+  if (!email || !password) {
+    throw new Error(
+      'SEED_ADMIN_EMAIL y SEED_ADMIN_PASSWORD son obligatorios (sin valores por defecto).',
+    );
+  }
+  if (password.length < 12) {
+    throw new Error('SEED_ADMIN_PASSWORD debe tener al menos 12 caracteres.');
+  }
+  if (isProd && (password === 'ChangeMe123!' || email === 'admin@office.local')) {
+    throw new Error('Credenciales de ejemplo prohibidas en producción.');
+  }
 
   await AppDataSource.initialize();
 
-  // En dev, asegura el esquema antes de insertar (permite `seed` sin arrancar
-  // el backend primero). En producción el esquema lo crean las migraciones.
-  if (process.env.DB_SYNCHRONIZE === 'true') {
+  // En dev, asegura el esquema antes de insertar. En producción: migraciones.
+  if (process.env.DB_SYNCHRONIZE === 'true' && !isProd) {
     await AppDataSource.synchronize();
   }
 

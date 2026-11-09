@@ -55,7 +55,7 @@ Espera ~2–5 min la primera vez (descarga modelos vision).
 - Enrolamiento: http://localhost:3010/kiosk/enroll.html
 - Kiosk ingreso (webcam prueba): http://localhost:3010/kiosk/?source=webcam
 
-Login: `admin@office.local` / `ChangeMe123!`
+Login: `<ACCESS_ADMIN_EMAIL>` / `<ACCESS_PASSWORD>`
 
 ### 4. Configurar torniquete + cámara
 

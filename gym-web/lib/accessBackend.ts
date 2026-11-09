@@ -15,17 +15,25 @@
  */
 
 const ACCESS_URL = (process.env.ACCESS_URL || "http://127.0.0.1:3010").replace(/\/$/, "");
-const ADMIN_EMAIL = process.env.ACCESS_ADMIN_EMAIL || "admin@office.local";
-const ADMIN_PASS = process.env.ACCESS_ADMIN_PASS || "ChangeMe123!";
+
+function requiredAccessCreds(): { email: string; password: string } {
+  const email = String(process.env.ACCESS_ADMIN_EMAIL || "").trim();
+  const password = String(process.env.ACCESS_ADMIN_PASS || "");
+  if (!email || !password) {
+    throw new Error("ACCESS_ADMIN_EMAIL/ACCESS_ADMIN_PASS requeridos (sin valores por defecto)");
+  }
+  return { email, password };
+}
 
 let cachedToken: string | null = null;
 
 async function getToken(force = false): Promise<string> {
   if (cachedToken && !force) return cachedToken;
+  const { email, password } = requiredAccessCreds();
   const res = await fetch(`${ACCESS_URL}/api/v1/access/kiosk/session`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email: ADMIN_EMAIL, password: ADMIN_PASS }),
+    body: JSON.stringify({ email, password }),
     cache: "no-store",
   });
   if (!res.ok) throw new Error(`login_backend_${res.status}`);
@@ -66,9 +74,16 @@ export async function accessApi<T = any>(
   return data as T;
 }
 
-/** Token admin actual (para construir el link de enrolamiento con #token=). */
+/** Token admin SOLO server-side. Nunca enviarlo al navegador ni en #token=. */
 export async function adminToken(): Promise<string> {
   return getToken(false);
+}
+
+/** Emite un JWT de enrolamiento acotado al sujeto (TTL corto, purpose=enroll). */
+export async function issueEnrollAccessToken(subjectId: string): Promise<string> {
+  const data = await accessApi<{ token: string }>("POST", "/access/enroll-session", { subjectId });
+  if (!data?.token) throw new Error("enroll_token_missing");
+  return data.token;
 }
 
 export async function updateSubjectProfile(subjectId: string, fullName: string, employeeCode?: string) {
