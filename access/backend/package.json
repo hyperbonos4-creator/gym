@@ -1,7 +1,7 @@
 {
   "name": "office-access-control-backend",
   "version": "0.1.0",
-  "description": "Control de acceso facial para una puerta de oficina (extraído de URBAN).",
+  "description": "Control de acceso facial para una puerta de oficina (extra\u00eddo de URBAN).",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -14,7 +14,9 @@
     "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --dataSource src/database/data-source.ts",
     "migration:run": "npm run typeorm migration:run",
     "migration:revert": "npm run typeorm migration:revert",
-    "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts"
+    "seed": "ts-node -r tsconfig-paths/register src/database/seed.ts",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:create": "npm run typeorm -- migration:create"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",

@@ -10,6 +10,7 @@ import { EnrolledSubject } from '../access-control/entities/enrolled-subject.ent
 import { FaceTemplate } from '../access-control/entities/face-template.entity';
 import { SubjectAuthorization } from '../access-control/entities/subject-authorization.entity';
 import { BiometricConsent } from '../access-control/entities/biometric-consent.entity';
+import { DemoSession } from '../access-control/entities/demo-session.entity';
 
 loadEnv();
 
@@ -33,7 +34,9 @@ export const AppDataSource = new DataSource({
     FaceTemplate,
     SubjectAuthorization,
     BiometricConsent,
+    DemoSession,
   ],
-  migrations: ['src/database/migrations/*.ts'],
+  migrations: ['src/database/migrations/*{.ts,.js}'],
+  migrationsTableName: 'typeorm_migrations',
   synchronize: false,
 });

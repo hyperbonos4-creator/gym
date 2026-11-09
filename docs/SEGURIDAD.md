@@ -35,7 +35,7 @@ Configúralas en `.env` (raíz) y/o `gym-web` / `access/backend` según correspo
 2. Genera `SESSION_SECRET` (p. ej. 32+ bytes hex).
 3. Si `gym-web/data/users.json` tiene contraseñas en texto plano, el **primer login exitoso** las rehashea a scrypt. No hace falta borrar usuarios.
 4. Si no hay usuarios, define `GYM_BOOTSTRAP_ADMIN_*` una vez, arranca, luego quita esas variables.
-5. Access: pon `DB_SYNCHRONIZE=false` en producción. Usa migraciones TypeORM cuando las tengas; no dejes synchronize activo.
+5. Access: pon `DB_SYNCHRONIZE=false` en producción. Usa migraciones TypeORM (ver docs/MIGRACIONES.md). Si la DB ya tiene tablas por synchronize, baselinea InitialSchema antes de migration:run. No dejes synchronize activo.
 6. Rotar **todas** las credenciales que alguna vez estuvieron en el README público o en `.env.example` con valores reales (panel, access, torniquete, SSH, Evolution, Wompi si filtraron).
 7. Redeploy gym-web + access backend (endpoint nuevo `POST /api/v1/access/enroll-session`).
 8. App móvil: actualizar a la build con OTP. Mientras tanto `MOBILE_OTP_REQUIRED=false` mantiene el login doc+tel (solo transición).

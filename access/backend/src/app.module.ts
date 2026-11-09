@@ -42,6 +42,10 @@ import { AssistantModule } from './assistant/assistant.module';
         password: config.get<string>('DB_PASSWORD'),
         database: config.get<string>('DB_NAME'),
         autoLoadEntities: true,
+        // CLI uses data-source.ts; keep the same table name here for ops clarity.
+        migrations: [join(__dirname, 'database', 'migrations', '*.{js,ts}')],
+        migrationsTableName: 'typeorm_migrations',
+        migrationsRun: false,
         synchronize: config.get<string>('DB_SYNCHRONIZE') === 'true',
       }),
     }),
