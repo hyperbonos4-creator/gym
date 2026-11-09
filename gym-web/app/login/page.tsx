@@ -14,7 +14,7 @@ export default function LoginPage() {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
-    const u = String(data.get("username") ?? username).trim();
+    const u = String(data.get("username") ?? username).trim().toLowerCase();
     const p = String(data.get("password") ?? password);
     if (!u || !p) {
       setError("Ingresa tu usuario y contraseña.");
@@ -70,6 +70,10 @@ export default function LoginPage() {
                 onChange={(e) => setUsername(e.target.value)}
                 autoFocus
                 autoComplete="username"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                inputMode="text"
                 className="rounded-xl border border-gym-border bg-gym-navy/80 px-4 py-2.5 text-sm text-gym-silver outline-none transition-colors focus:border-gym-primary"
                 placeholder="admin"
               />
@@ -83,6 +87,9 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 className="rounded-xl border border-gym-border bg-gym-navy/80 px-4 py-2.5 text-sm text-gym-silver outline-none transition-colors focus:border-gym-primary"
                 placeholder="••••••••"
               />

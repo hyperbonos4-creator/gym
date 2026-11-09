@@ -58,3 +58,7 @@ CREDENCIALES_DEMO.txt
 **/CREDENCIALES_DEMO.txt
 gym-web/data-demo/
 
+
+demo-auth.json
+**/demo-auth.json
+

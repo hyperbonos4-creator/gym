@@ -1,6 +1,7 @@
 /**
  * Genera data-demo/ aislada con sedes, socios, membresias, rutinas, ventas y accesos.
  * Escribe CREDENCIALES_DEMO.txt (DEMO_CREDS_FILE). Nunca imprime la clave.
+ * Credenciales estables (demo-auth.json); reset no las rota salvo DEMO_ROTATE_CREDS=1.
  */
 import crypto from "crypto";
 import fs from "fs";
@@ -73,7 +74,52 @@ fs.mkdirSync(outDir, { recursive: true });
 fs.mkdirSync(path.dirname(credsFile), { recursive: true });
 
 const demoUser = "demo";
-const demoPass = crypto.randomBytes(5).toString("base64url").replace(/[^a-zA-Z0-9]/g, "").slice(0, 10) + "A1!";
+/** Auth estable entre resets. Solo rota si DEMO_ROTATE_CREDS=1. */
+const authFile =
+  process.env.DEMO_AUTH_FILE ||
+  path.join(path.dirname(credsFile), "demo-auth.json");
+const rotateCreds = String(process.env.DEMO_ROTATE_CREDS || "").trim() === "1";
+
+function phoneFriendlyPass() {
+  // Sin i/l/1/o/0 ni simbolos: facil de teclear en celular.
+  const words = [
+    "vision",
+    "cancha",
+    "fuerza",
+    "ritmo",
+    "energia",
+    "marca",
+    "acceso",
+    "puerta",
+    "sala",
+    "grupo",
+  ];
+  const digits = "23456789";
+  const w1 = words[Math.floor(Math.random() * words.length)];
+  let w2 = words[Math.floor(Math.random() * words.length)];
+  if (w2 === w1) w2 = words[(words.indexOf(w1) + 1) % words.length];
+  let d = "";
+  for (let i = 0; i < 3; i++) d += digits[Math.floor(Math.random() * digits.length)];
+  return w1 + d + w2;
+}
+
+let demoPass = "";
+if (!rotateCreds && fs.existsSync(authFile)) {
+  try {
+    const auth = JSON.parse(fs.readFileSync(authFile, "utf8"));
+    if (auth && auth.password) demoPass = String(auth.password);
+  } catch {
+    /* ignore */
+  }
+}
+if (!demoPass) demoPass = phoneFriendlyPass();
+fs.mkdirSync(path.dirname(authFile), { recursive: true });
+fs.writeFileSync(
+  authFile,
+  JSON.stringify({ username: demoUser, password: demoPass }, null, 2) + "\n",
+  { encoding: "utf8", mode: 0o600 },
+);
+
 const users = [
   {
     username: demoUser,
