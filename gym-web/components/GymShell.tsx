@@ -226,6 +226,11 @@ export default function GymShell({
       </nav>
 
       <div className="flex min-w-0 flex-1 flex-col">
+        {process.env.NEXT_PUBLIC_GYM_DEMO_MODE === "1" && (
+          <div className="shrink-0 border-b border-amber-400/40 bg-amber-500/15 px-3 py-2 text-center text-xs font-semibold text-amber-100 md:px-6">
+            Entorno de demostración · Datos de ejemplo · Sin hardware, WhatsApp ni pagos reales
+          </div>
+        )}
         <header className="z-10 shrink-0 border-b border-gym-border/70 bg-gym-navy/60 backdrop-blur-xl">
           <div className="flex items-center gap-2 px-3 py-2.5 md:gap-3 md:px-6 md:py-3.5">
             <button onClick={() => setMenuOpen(true)} className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-gym-border/70 text-gym-silver hover:bg-gym-border/40 md:hidden" aria-label="Abrir menú">

@@ -5,3 +5,6 @@
 /data
 *.tsbuildinfo
 .env*.local
+
+data-demo/
+

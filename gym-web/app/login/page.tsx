@@ -42,6 +42,10 @@ export default function LoginPage() {
   }
 
   return (
+    <>
+      {process.env.NEXT_PUBLIC_GYM_DEMO_MODE === "1" && (
+        <div className="fixed inset-x-0 top-0 z-20 border-b border-amber-400/40 bg-amber-500/15 px-3 py-2 text-center text-xs font-semibold text-amber-100">Entorno de demostración · Datos de ejemplo</div>
+      )}
     <main className="relative flex h-dvh items-center justify-center overflow-hidden bg-gym-black px-4 py-4">
       <div className="login-hex pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute inset-0 bg-gym-radial" />
@@ -54,7 +58,7 @@ export default function LoginPage() {
         <div className="glass login-card w-full max-w-md animate-fadeUp">
           <div className="login-card-head text-center">
             <h1 className="text-lg font-extrabold tracking-tight text-white">Acceso a la plataforma</h1>
-            <p className="mt-1 text-xs text-gym-muted">Gestión de clientes y control de acceso</p>
+            <p className="mt-1 text-xs text-gym-muted">Inteligencia que conecta el mundo real</p>
           </div>
 
           <form onSubmit={onSubmit} className="flex flex-col gap-3">
@@ -104,5 +108,6 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+    </>
   );
 }

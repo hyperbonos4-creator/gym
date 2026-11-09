@@ -2,7 +2,8 @@ import { issueEnrollAccessToken } from "./accessBackend";
 import { consumeEnrollCode, issueEnrollCode, type EnrollCode } from "./enrollCodes";
 import { resolvePublicBase } from "./publicUrl";
 
-const GYM_BRAND = "Fuerza Élite";
+import { getBrand } from "./brand";
+const GYM_BRAND = getBrand().name;
 
 /** Aviso de alta. La ficha se abre en la app, no en una página. */
 export function appWelcomeMessage(nombre: string, gymName = GYM_BRAND) {

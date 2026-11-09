@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { verifySessionTokenEdge } from "./lib/sessionTokenEdge";
+import { demoBlockedResponse, demoBlocksPath } from "./lib/demo";
 
 /**
  * Protege páginas del panel. Valida firma HMAC de gym_session (Edge-safe).
@@ -13,6 +14,10 @@ export async function middleware(req: NextRequest) {
   const raw = req.cookies.get("gym_session")?.value || "";
   const claims = raw ? await verifySessionTokenEdge(raw) : null;
   const authed = Boolean(claims);
+
+  if (demoBlocksPath(pathname)) {
+    return demoBlockedResponse();
+  }
 
   const res = (() => {
     if (!authed && !isLogin) {

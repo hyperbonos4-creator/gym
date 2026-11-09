@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { publicBrand } from "../../lib/brand";
 
 const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "borrar", "0", "ok"];
 
@@ -64,7 +65,7 @@ export default function IngresoPage() {
   return (
     <main className="flex min-h-screen flex-col bg-[#070b14] px-5 py-8 text-white">
       <div className="mx-auto flex w-full max-w-md flex-1 flex-col">
-        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gym-primary">Fuerza Élite</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-gym-primary">{publicBrand().name}</p>
         <h1 className="mt-2 text-3xl font-extrabold">Ingreso de invitado</h1>
         <p className="mt-2 text-sm leading-relaxed text-gym-silver">La cámara reconoce el rostro. Si no hay rostro, este PIN abre una sola vez y la invitación expira en ese momento.</p>
 

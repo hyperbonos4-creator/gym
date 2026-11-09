@@ -1,5 +1,6 @@
 "use client";
 
+import { publicBrand } from "../../lib/brand";
 import { useEffect, useState } from "react";
 
 type Invite = {
@@ -134,7 +135,7 @@ export default function InvitarPage() {
   return (
     <main className="min-h-screen bg-gym-navy px-5 py-8 text-white">
       <div className="mx-auto max-w-md">
-        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gym-primary">Fuerza Élite</p>
+        <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-gym-primary">{publicBrand().name}</p>
         <h1 className="mt-2 text-3xl font-extrabold">Pase de invitados</h1>
         <p className="mt-2 text-sm text-gym-silver">El invitado entra por el rostro. Si no puede registrarlo, usa un PIN de un solo uso. Al entrar, la invitación expira.</p>
 

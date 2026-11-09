@@ -53,3 +53,8 @@ access/ora_docker.txt
 *_state.txt
 *_docker.txt
 COM3_capture*.txt
+
+CREDENCIALES_DEMO.txt
+**/CREDENCIALES_DEMO.txt
+gym-web/data-demo/
+

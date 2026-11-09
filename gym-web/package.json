@@ -8,7 +8,11 @@
     "start": "next start -p 3100",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test:security": "node scripts/security-tests.mjs"
+    "test:security": "node scripts/security-tests.mjs",
+    "demo:seed": "node scripts/seed-demo.mjs",
+    "demo:dev": "node scripts/demo-dev.mjs",
+    "demo:start": "cross-env GYM_DEMO_MODE=1 NEXT_PUBLIC_GYM_DEMO_MODE=1 GYM_DATA_DIR=./data-demo NEXT_PUBLIC_BRAND_NAME=VISIONYX SESSION_SECRET=demo-local-session-secret-visionyx-only next start -p 3101",
+    "test:brand": "node scripts/brand-demo-tests.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.117.3",

@@ -1,4 +1,5 @@
 "use client";
+import { publicBrand } from "../../lib/brand";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import GymShell from "../../components/GymShell";
@@ -312,7 +313,7 @@ export default function CajaPage() {
         .total strong { font-size: 22px; }
         .cambio { margin-top: 6px; font-size: 13px; font-weight: 700; }
       </style></head><body>
-      <h1>Fuerza Élite</h1>
+      <h1>${esc(publicBrand().name)}</h1>
       <p class="sub">El poder de la transformación</p>
       <p class="num">VENTA ${s.number}</p>
       <p class="fecha">${esc(new Date(s.createdAt).toLocaleString("es-CO", { timeZone: "America/Bogota" }))}</p>

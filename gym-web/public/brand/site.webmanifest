@@ -1,0 +1,13 @@
+{
+  "name": "VISIONYX",
+  "short_name": "VISIONYX",
+  "description": "Inteligencia que conecta el mundo real",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070b14",
+  "theme_color": "#0b1220",
+  "icons": [
+    { "src": "/brand/vx-app-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/brand/vx-icon-color.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

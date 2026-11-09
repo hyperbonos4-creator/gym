@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { getEnrollCode } from "../../../lib/enrollCodes";
 import EnrollRedirect from "./EnrollRedirect";
+import { getBrand } from "../../../lib/brand";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -16,7 +17,8 @@ function originFromHeaders() {
 export async function generateMetadata({ params }: { params: { code: string } }): Promise<Metadata> {
   const rec = getEnrollCode(params.code);
   const origin = originFromHeaders();
-  const title = "Fuerza Élite · Acceso facial";
+  const brand = getBrand();
+  const title = brand.name + " · Acceso facial";
   const description = rec
     ? `${rec.name.split(/\s+/)[0]}, activa tu acceso facial en menos de un minuto.`
     : "Activa tu acceso facial en menos de un minuto.";
@@ -27,9 +29,9 @@ export async function generateMetadata({ params }: { params: { code: string } })
     openGraph: {
       title,
       description,
-      siteName: "Fuerza Élite",
+      siteName: brand.name,
       type: "website",
-      images: [{ url: `${origin}/brand/fuerza-elite.png`, alt: "Fuerza Élite" }],
+      images: [{ url: `${origin}${brand.logoMark}`, alt: brand.name }],
     },
   };
 }
@@ -42,7 +44,7 @@ export default function EnrollShortPage({ params }: { params: { code: string } }
   return (
     <main className="grid min-h-dvh place-items-center bg-[#05070d] px-6 text-[#e8eefc]">
       <div className="flex w-full max-w-sm flex-col items-center text-center">
-        <img src="/brand/fuerza-elite.png" alt="Fuerza Élite" className="h-24 w-auto object-contain" />
+        <img src={getBrand().logoHorizontal} alt={getBrand().name} className="h-24 w-auto object-contain" />
         {ok ? (
           <>
             <h1 className="mt-6 text-xl font-extrabold tracking-tight text-white">Abriendo tu registro facial</h1>

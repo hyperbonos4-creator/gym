@@ -1,4 +1,5 @@
 "use client";
+import { publicBrand } from "../../lib/brand";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EtiquetaCodigo } from "../../components/EtiquetaCodigo";
@@ -167,7 +168,7 @@ export default function ProductosPage() {
   const [busy, setBusy] = useState(false);
   const [showRestock, setShowRestock] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [gymName, setGymName] = useState("Fuerza Élite");
+  const [gymName, setGymName] = useState(publicBrand().name);
   const [gymShort, setGymShort] = useState("FE");
   const [suppliers, setSuppliers] = useState<{ id: string; name: string; taxId: string; phone: string; active: boolean }[]>([]);
   const [supQ, setSupQ] = useState("");
