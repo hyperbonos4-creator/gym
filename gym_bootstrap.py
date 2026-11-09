@@ -3,19 +3,20 @@
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 import urllib.error
 import urllib.request
 
 API = "http://localhost:3010/api/v1"
-ADMIN_EMAIL = "admin@office.local"
-ADMIN_PASSWORD = "ChangeMe123!"
+ADMIN_EMAIL = os.environ.get("ACCESS_ADMIN_EMAIL", "")
+ADMIN_PASSWORD = os.environ.get("ACCESS_ADMIN_PASS", "")
 POINT_NAME = "Torniquete Gym"
 CAMERA_NAME = "Facial Chino"
 FACIAL_IP = "192.168.100.200"
-TORNIQUETE_HOST = "192.168.100.119"
-TORNIQUETE_TOKEN = "gym-secret-token"
+TORNIQUETE_HOST = os.environ.get("TORNIQUETE_HOST", "")
+TORNIQUETE_TOKEN = os.environ.get("TORNIQUETE_TOKEN", "")
 CONTROLLER_REF = (
     f"POST http://{TORNIQUETE_HOST}/api/open"
     f"|||Authorization: Bearer {TORNIQUETE_TOKEN}"
@@ -55,6 +56,9 @@ def wait_backend(max_s: int = 180) -> None:
 
 
 def main() -> int:
+    if not (TORNIQUETE_HOST and TORNIQUETE_TOKEN and ADMIN_EMAIL and ADMIN_PASSWORD):
+        print("ERROR: define TORNIQUETE_HOST, TORNIQUETE_TOKEN, ACCESS_ADMIN_EMAIL y ACCESS_ADMIN_PASS en el entorno")
+        return 1
     wait_backend()
     login = req("POST", "/auth/login", body={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
     token = login["accessToken"]

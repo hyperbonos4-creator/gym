@@ -21,7 +21,7 @@ services:
     ports:
       - "127.0.0.1:8080:8080"   # solo loopback
     environment:
-      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:-<EVOLUTION_KEY>}
+      AUTHENTICATION_API_KEY: ${EVOLUTION_API_KEY:?Set EVOLUTION_API_KEY}
       SERVER_URL: http://localhost:8080
       DATABASE_ENABLED: "true"
       DATABASE_PROVIDER: postgresql

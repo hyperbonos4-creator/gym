@@ -33,7 +33,7 @@ services:
     container_name: gym_web
     restart: unless-stopped
     ports:
-      - "3100:3100"
+      - "${GYM_WEB_BIND:-127.0.0.1}:3100:3100"
     environment:
       ACCESS_URL: http://office_backend:3000
       SESSION_SECRET: ${SESSION_SECRET:?Set SESSION_SECRET}
@@ -41,6 +41,7 @@ services:
       ACCESS_ADMIN_PASS: ${ACCESS_ADMIN_PASS}
       ALLOW_PUBLIC_REGISTRO: ${ALLOW_PUBLIC_REGISTRO:-false}
       MOBILE_OTP_REQUIRED: ${MOBILE_OTP_REQUIRED:-true}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}
       EVOLUTION_URL: http://gym-evolution:8080
       EVOLUTION_KEY: ${EVOLUTION_KEY:?Set EVOLUTION_KEY}
       ENROLL_PUBLIC_BASE: ${ENROLL_PUBLIC_BASE:-https://<NGROK_DOMAIN>}
