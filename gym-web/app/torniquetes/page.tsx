@@ -20,6 +20,7 @@ type Device = {
   fw: string | null;
   rssi: number | null;
   hasToken: boolean;
+  keyInvalid?: boolean;
 };
 type Ready = { id?: string; fw?: string; name?: string; mode?: string; ip?: string; ap?: string; setup?: string; ssid?: string; token?: string };
 type Net = { ssid: string; rssi: number | null };
@@ -552,11 +553,13 @@ export default function TorniquetesPage() {
             const vias = [
               {
                 k: "Controlador",
-                v: on ? "En línea" : "Desconectado",
-                d: on
+                v: on && d.keyInvalid ? "En línea pero llave inválida" : on ? "En línea" : "Desconectado",
+                d: on && d.keyInvalid
+                  ? "El chip avisa por la red, pero su llave no coincide con la de la sede. Vuelve a vincularlo por USB."
+                  : on
                   ? `${hace(d.lastSeen, now)} · ${d.ssid || "red sin nombre"} · ${d.lastIp || "sin IP"} · ${senal}`
                   : `Último aviso ${hace(d.lastSeen, now)}. Si pasa de un minuto sin avisar, está fuera.`,
-                ok: on,
+                ok: on && !d.keyInvalid,
               },
               {
                 k: "Reconocimiento",
@@ -578,8 +581,8 @@ export default function TorniquetesPage() {
                     <div className="text-[10px] font-bold uppercase tracking-wider text-gym-muted">Puerta</div>
                     <h3 className="mt-1 text-2xl font-extrabold text-white">{door?.name || "Sin puerta asignada"}</h3>
                   </div>
-                  <div className={`rounded-full px-3 py-1 text-xs font-bold ${on ? "bg-status-ok/15 text-status-ok" : "bg-status-warn/15 text-status-warn"}`}>
-                    {on ? `En línea · ${hace(d.lastSeen, now)}` : `Desconectado · ${hace(d.lastSeen, now)}`}
+                  <div className={`rounded-full px-3 py-1 text-xs font-bold ${on && d.keyInvalid ? "bg-status-warn/15 text-status-warn" : on ? "bg-status-ok/15 text-status-ok" : "bg-status-warn/15 text-status-warn"}`}>
+                    {on && d.keyInvalid ? `En línea pero llave inválida · ${hace(d.lastSeen, now)}` : on ? `En línea · ${hace(d.lastSeen, now)}` : `Desconectado · ${hace(d.lastSeen, now)}`}
                   </div>
                 </div>
 
@@ -599,6 +602,9 @@ export default function TorniquetesPage() {
                   <span>Firmware {d.fw === FIRMWARE ? d.fw : d.fw ? `${d.fw} · falta ${FIRMWARE}` : "desconocido"}</span>
                   {agent && port && !on ? <span>El cable {port} no cuenta como torniquete en línea.</span> : null}
                 </div>
+                {on && d.keyInvalid && (
+                  <p className="mt-2 text-sm text-status-warn">En línea, pero la llave del chip no coincide. Conéctalo por USB y vuelve a vincularlo en esta pantalla.</p>
+                )}
                 {!on && (
                   <p className="mt-2 text-sm text-gym-silver">Revisa la corriente del controlador y que siga unido a {d.ssid || "la red del gimnasio"}.</p>
                 )}

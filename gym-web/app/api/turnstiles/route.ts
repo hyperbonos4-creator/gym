@@ -9,8 +9,12 @@ import { forgetTurnstile, listTurnstiles, markSynced, saveTurnstile, unassignedS
 export const dynamic = "force-dynamic";
 
 function publicDevice(row: ReturnType<typeof listTurnstiles>[number]) {
-  const { token, ...rest } = row;
-  return { ...rest, hasToken: token.length >= 8 };
+  const { token, keyInvalidAt, ...rest } = row;
+  return {
+    ...rest,
+    hasToken: token.length >= 8,
+    keyInvalid: Boolean(keyInvalidAt),
+  };
 }
 
 export async function GET(req: Request) {

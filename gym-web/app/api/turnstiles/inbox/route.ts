@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { setTurnstileController } from "../../../../lib/accessBackend";
 import { claimFor, finishJob } from "../../../../lib/turnstileJobs";
-import { announceDevice, tokenKnown } from "../../../../lib/turnstiles";
+import { announceDevice, noteKeyInvalid, tokenKnown } from "../../../../lib/turnstiles";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -20,7 +20,10 @@ export async function GET(req: Request) {
   const token = bearer(req);
   if (id.length < 8 || !ip || token.length < 8) return NextResponse.json({ ok: false }, { status: 400 });
   const row = announceDevice({ id, token, ip, fw, rssi });
-  if (!row) return NextResponse.json({ ok: false }, { status: 401 });
+  if (!row) {
+    noteKeyInvalid(id);
+    return NextResponse.json({ ok: false }, { status: 401 });
+  }
   if (row.changed && row.pointId) {
     try {
       await setTurnstileController(row.pointId, ip, token);

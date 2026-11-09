@@ -21,6 +21,8 @@ export type Turnstile = {
   fw: string | null;
   rssi: number | null;
   syncedIp: string | null;
+  /** Ultimo inbox con Bearer que no coincide con la llave guardada. */
+  keyInvalidAt: string | null;
 };
 
 export type SeenTurnstile = {
@@ -91,6 +93,7 @@ export function saveTurnstile(input: {
     fw: input.fw ?? prev?.fw ?? null,
     rssi: prev?.rssi ?? null,
     syncedIp: prev?.syncedIp || null,
+    keyInvalidAt: null,
   };
   db.devices = db.devices.filter((d) => d.id !== id);
   db.devices.push(row);
@@ -114,6 +117,7 @@ export function announceDevice(input: { id: string; token: string; ip: string; f
   const changed = row.lastIp !== input.ip;
   row.lastIp = input.ip;
   row.lastSeen = now;
+  row.keyInvalidAt = null;
   if (input.fw) row.fw = input.fw;
   const rssi = signal(input.rssi);
   if (rssi != null) row.rssi = rssi;
@@ -131,6 +135,16 @@ export function deviceForPulse(pointId: string, token: string): { ip: string } |
   const row = readDb().devices.find((d) => d.pointId === pointId && d.token === token);
   if (!row?.lastIp) return null;
   return { ip: row.lastIp };
+}
+
+/** Chip conocido, pero el Bearer del inbox no es la llave guardada en la sede. */
+export function noteKeyInvalid(id: string): boolean {
+  const db = readDb();
+  const row = db.devices.find((d) => d.id === id.trim().toUpperCase());
+  if (!row) return false;
+  row.keyInvalidAt = new Date().toISOString();
+  writeDb(db);
+  return true;
 }
 
 export function markSynced(id: string, ip: string) {
