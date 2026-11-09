@@ -85,16 +85,14 @@ function phoneFriendlyPass() {
   const words = [
     "cancha",
     "fuerza",
-    "ritmo",
     "marca",
-    "acceso",
-    "puerta",
     "sala",
-    "grupo",
     "meta",
     "ruta",
     "caja",
-    "turno",
+    "pares",
+    "redes",
+    "pesas",
   ];
   const digits = "23456789";
   const w1 = words[Math.floor(Math.random() * words.length)];
