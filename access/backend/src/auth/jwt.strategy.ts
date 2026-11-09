@@ -12,12 +12,14 @@ interface JwtPayload {
   sub: string;
   email: string;
   role: string;
+  purpose?: string;
+  enrollSubjectId?: string;
+  jti?: string;
 }
 
 /**
- * Estrategia JWT: valida el access token y resuelve el `User` activo. El payload
- * mínimo (`sub/email/role`) basta para los guards; se recarga el usuario para
- * cortar el acceso si fue desactivado tras emitir el token.
+ * Estrategia JWT: valida el access token y resuelve el `User` activo.
+ * Soporta tokens de enrolamiento acotados (purpose=enroll).
  */
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -33,9 +35,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<User> {
+  async validate(payload: JwtPayload): Promise<User & { enrollSubjectId?: string; tokenPurpose?: string; jti?: string }> {
     const user = await this.users.findOne({ where: { id: payload.sub, isActive: true } });
     if (!user) throw new UnauthorizedException('usuario_invalido');
-    return user;
+    const enriched = user as User & { enrollSubjectId?: string; tokenPurpose?: string; jti?: string };
+    if (payload.purpose === 'enroll' && payload.enrollSubjectId) {
+      enriched.enrollSubjectId = payload.enrollSubjectId;
+      enriched.tokenPurpose = 'enroll';
+      enriched.jti = payload.jti;
+    }
+    return enriched;
   }
 }

@@ -17,8 +17,10 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { EnrollScopeGuard } from '../auth/guards/enroll-scope.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { AuthService } from '../auth/auth.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User, UserRole } from '../auth/entities/user.entity';
 
@@ -51,7 +53,7 @@ import {
  */
 @ApiTags('Access Control')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, EnrollScopeGuard)
 @Controller('access')
 export class AccessControlController {
   constructor(
@@ -63,9 +65,25 @@ export class AccessControlController {
     private readonly kiosk: KioskRecognitionService,
     private readonly liveness: LivenessEnrollmentService,
     private readonly jwt: JwtService,
+    private readonly authService: AuthService,
   ) {}
 
   // ── Empleados ───────────────────────────────────────────────────────
+  
+  @Post('enroll-session')
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Emite JWT corto acotado a un sujeto para enrolamiento facial.' })
+  async enrollSession(
+    @CurrentUser() user: User,
+    @Body() body: { subjectId?: string },
+  ) {
+    const subjectId = String(body?.subjectId || '').trim();
+    if (!subjectId) {
+      return { ok: false, error: 'subjectId_requerido' };
+    }
+    return this.authService.issueEnrollToken(user.id, subjectId);
+  }
+
   @Post('subjects')
   @Roles(UserRole.ADMIN)
   @ApiOperation({ summary: 'Crea un empleado enrolable.' })

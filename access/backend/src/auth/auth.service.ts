@@ -5,6 +5,7 @@ import type { JwtSignOptions } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { randomBytes } from 'crypto';
 
 import { User } from './entities/user.entity';
 
@@ -15,8 +16,7 @@ export interface LoginResult {
 
 /**
  * Autenticación mínima de operadores/administradores. Login por email+password
- * (bcrypt) → access JWT stateless. `passwordHash` nunca se serializa (la entidad
- * lo marca `select:false`; aquí se carga explícitamente solo para comparar).
+ * (bcrypt) → access JWT stateless. También emite tokens de enrolamiento acotados.
  */
 @Injectable()
 export class AuthService {
@@ -55,5 +55,27 @@ export class AuthService {
         role: user.role,
       },
     };
+  }
+
+  /**
+   * JWT corto para enrolar un solo sujeto. EnrollScopeGuard limita las rutas.
+   */
+  async issueEnrollToken(adminUserId: string, subjectId: string): Promise<{ token: string; expiresIn: string }> {
+    const user = await this.users.findOne({ where: { id: adminUserId, isActive: true } });
+    if (!user) throw new UnauthorizedException('usuario_invalido');
+    const expiresIn = this.config.get<string>('ENROLL_TOKEN_TTL', '15m');
+    const jti = randomBytes(12).toString('hex');
+    const token = this.jwt.sign(
+      {
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        purpose: 'enroll',
+        enrollSubjectId: subjectId,
+        jti,
+      },
+      { expiresIn } as JwtSignOptions,
+    );
+    return { token, expiresIn };
   }
 }

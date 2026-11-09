@@ -1,5 +1,5 @@
-import { adminToken } from "./accessBackend";
-import { issueEnrollCode, type EnrollCode } from "./enrollCodes";
+import { issueEnrollAccessToken } from "./accessBackend";
+import { consumeEnrollCode, issueEnrollCode, type EnrollCode } from "./enrollCodes";
 import { resolvePublicBase } from "./publicUrl";
 
 const GYM_BRAND = "Fuerza Élite";
@@ -35,8 +35,13 @@ export async function buildEnrollLink(req: Request, subjectId: string, nombre: s
   return `${base}/e/${code}`;
 }
 
+/**
+ * Redirección al kiosko de enrolamiento.
+ * El token es un JWT acotado al sujeto (purpose=enroll), NO el admin token.
+ */
 export async function enrollRedirectUrl(rec: EnrollCode): Promise<string> {
-  const tok = await adminToken();
+  const tok = await issueEnrollAccessToken(rec.subjectId);
+  consumeEnrollCode(rec.code);
   const q = `subjectId=${encodeURIComponent(rec.subjectId)}&name=${encodeURIComponent(rec.name)}`;
   return `/kiosk/enroll.html?${q}#token=${encodeURIComponent(tok)}`;
 }

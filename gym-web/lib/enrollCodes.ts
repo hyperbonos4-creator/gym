@@ -1,15 +1,15 @@
 /**
  * Códigos cortos de enrolamiento. El WhatsApp no lleva el JWT: el socio abre
- * `/e/xxxx` y ahí se resuelve el token fresco contra el backend de acceso.
+ * `/e/xxxx` y ahí se resuelve un token fresco acotado al sujeto.
  */
-
 import { randomBytes } from "crypto";
-import fs from "fs";
 import path from "path";
+import { readJsonFile, updateJsonFileSync, writeJsonFile } from "./jsonStore";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "enroll-codes.json");
-const TTL_MS = 30 * 24 * 60 * 60 * 1000;
+/** TTL corto del código de invitación (horas). */
+const TTL_MS = Number(process.env.ENROLL_CODE_TTL_HOURS || "24") * 60 * 60 * 1000;
 
 export type EnrollCode = {
   code: string;
@@ -17,25 +17,20 @@ export type EnrollCode = {
   name: string;
   createdAt: string;
   expiresAt: string;
+  usedAt?: string | null;
 };
 
 function readAll(): EnrollCode[] {
-  try {
-    const raw = fs.readFileSync(FILE, "utf-8");
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
-  }
+  const arr = readJsonFile<EnrollCode[]>(FILE, []);
+  return Array.isArray(arr) ? arr : [];
 }
 
 function writeAll(list: EnrollCode[]) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(list, null, 2), "utf-8");
+  writeJsonFile(FILE, list);
 }
 
 function prune(list: EnrollCode[], now = Date.now()): EnrollCode[] {
-  return list.filter((x) => new Date(x.expiresAt).getTime() > now);
+  return list.filter((x) => new Date(x.expiresAt).getTime() > now && !x.usedAt);
 }
 
 function randomCode(): string {
@@ -44,21 +39,34 @@ function randomCode(): string {
 
 export function issueEnrollCode(subjectId: string, name: string): string {
   const now = Date.now();
-  const list = prune(readAll(), now).filter((x) => x.subjectId !== subjectId);
-  let code = randomCode();
-  while (list.some((x) => x.code === code)) code = randomCode();
-  list.push({
-    code,
-    subjectId,
-    name,
-    createdAt: new Date(now).toISOString(),
-    expiresAt: new Date(now + TTL_MS).toISOString(),
+  let code = "";
+  updateJsonFileSync<EnrollCode[]>(FILE, [], (list) => {
+    const kept = prune(list, now).filter((x) => x.subjectId !== subjectId);
+    code = randomCode();
+    while (kept.some((x) => x.code === code)) code = randomCode();
+    kept.push({
+      code,
+      subjectId,
+      name,
+      createdAt: new Date(now).toISOString(),
+      expiresAt: new Date(now + TTL_MS).toISOString(),
+      usedAt: null,
+    });
+    list.length = 0;
+    list.push(...kept);
   });
-  writeAll(list);
   return code;
 }
 
 export function getEnrollCode(code: string): EnrollCode | null {
   const rec = prune(readAll()).find((x) => x.code === code);
   return rec ?? null;
+}
+
+/** Marca el código como usado (un solo uso). */
+export function consumeEnrollCode(code: string) {
+  updateJsonFileSync<EnrollCode[]>(FILE, [], (list) => {
+    const i = list.findIndex((x) => x.code === code);
+    if (i >= 0) list[i]!.usedAt = new Date().toISOString();
+  });
 }
