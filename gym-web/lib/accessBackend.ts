@@ -259,7 +259,7 @@ export async function doorTestOpen(pointId: string) {
 export async function visionHealth(): Promise<{ ok: boolean; detail?: any }> {
   try {
     const h = await accessApi<any>("GET", "/access/health");
-    return { ok: true, detail: h };
+    return { ok: h?.ok === true, detail: h };
   } catch (e: any) {
     return { ok: false, detail: String(e?.message || e) };
   }
