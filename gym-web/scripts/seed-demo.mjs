@@ -83,16 +83,18 @@ const rotateCreds = String(process.env.DEMO_ROTATE_CREDS || "").trim() === "1";
 function phoneFriendlyPass() {
   // Sin i/l/1/o/0 ni simbolos: facil de teclear en celular.
   const words = [
-    "vision",
     "cancha",
     "fuerza",
     "ritmo",
-    "energia",
     "marca",
     "acceso",
     "puerta",
     "sala",
     "grupo",
+    "meta",
+    "ruta",
+    "caja",
+    "turno",
   ];
   const digits = "23456789";
   const w1 = words[Math.floor(Math.random() * words.length)];
