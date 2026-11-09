@@ -5,7 +5,7 @@
 
 ## Acceso
 
-1. Abre el enlace de demo que te compartieron.
+1. Abre **https://visionyx.duckdns.org** (respaldo: `https://demo.198-199-82-161.sslip.io`).
 2. Inicia sesión con el usuario y la clave del archivo de credenciales (pide el archivo a quien te envió la demo).
 3. Verás la franja ámbar **«Entorno de demostración»**.
 
