@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { randomInt, randomUUID } from "crypto";
 import { STARTER_PRODUCTS } from "./retailCatalog";
 import { SKU_PATTERN, familyPrefix, nextSku, restockTarget } from "./retailCodes";
@@ -179,8 +180,7 @@ function readDb(): Db {
 }
 
 function writeDb(db: Db) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(db, null, 2), "utf-8");
+  writeJsonFile(FILE, db);
 }
 
 export function money(n: number) {

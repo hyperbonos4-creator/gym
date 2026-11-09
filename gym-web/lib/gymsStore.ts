@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import type { Gym } from "./tenants";
 
 const DATA_DIR = path.join(process.cwd(), "data");
@@ -29,8 +30,7 @@ function readAll(): Gym[] {
 }
 
 function writeAll(list: Gym[]) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(list, null, 2), "utf-8");
+  writeJsonFile(FILE, list);
 }
 
 export function listGyms(): Gym[] {

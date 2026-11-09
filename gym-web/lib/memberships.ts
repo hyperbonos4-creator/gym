@@ -3,8 +3,8 @@
  * puerta consulta en cada reconocimiento (validUntil). Si ya pasó y no se
  * renovó, el torniquete niega aunque el rostro coincida.
  */
-import fs from "fs";
 import path from "path";
+import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { randomUUID } from "crypto";
 
 const FILE = path.join(process.cwd(), "data", "memberships.json");
@@ -89,7 +89,7 @@ const STARTER: { name: string; durationDays: number; price: number }[] = [
 
 function readDb(): Db {
   try {
-    const raw = JSON.parse(fs.readFileSync(FILE, "utf-8"));
+    const raw = readJsonFile<any>(FILE, { plans: [], memberships: [] });
     return {
       plans: Array.isArray(raw.plans) ? raw.plans : [],
       memberships: Array.isArray(raw.memberships) ? raw.memberships : [],
@@ -100,8 +100,7 @@ function readDb(): Db {
 }
 
 function writeDb(db: Db) {
-  fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(db, null, 2), "utf-8");
+  writeJsonFile(FILE, db);
 }
 
 export function bogotaToday(): string {

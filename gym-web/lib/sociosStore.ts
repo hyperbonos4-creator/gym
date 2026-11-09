@@ -8,8 +8,8 @@
  * migra a la base de datos del gym). Multi-tenant: cada registro lleva `gymId`.
  */
 
-import fs from "fs";
 import path from "path";
+import { readJsonFile, updateJsonFileSync, writeJsonFile } from "./jsonStore";
 
 const DATA_DIR = path.join(process.cwd(), "data");
 const FILE = path.join(DATA_DIR, "socios.json");
@@ -48,36 +48,35 @@ export type Socio = {
 };
 
 function readAll(): Socio[] {
-  try {
-    const raw = fs.readFileSync(FILE, "utf-8");
-    const arr = JSON.parse(raw);
-    return Array.isArray(arr) ? arr : [];
-  } catch {
-    return [];
-  }
+  const arr = readJsonFile<Socio[]>(FILE, []);
+  return Array.isArray(arr) ? arr : [];
 }
 
 function writeAll(list: Socio[]) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(list, null, 2), "utf-8");
+  writeJsonFile(FILE, list);
+}
+
+function mutate(mutator: (list: Socio[]) => void) {
+  updateJsonFileSync<Socio[]>(FILE, [], mutator);
 }
 
 export function addSocio(s: Socio) {
-  const list = readAll();
-  list.push(s);
-  writeAll(list);
+  mutate((list) => {
+    list.push(s);
+  });
   return s;
 }
 
 export function updateSocio(id: string, patch: Partial<Socio>) {
-  const list = readAll();
-  const i = list.findIndex((x) => x.id === id);
-  if (i >= 0) {
-    list[i] = { ...list[i], ...patch };
-    writeAll(list);
-    return list[i];
-  }
-  return null;
+  let updated: Socio | null = null;
+  mutate((list) => {
+    const i = list.findIndex((x) => x.id === id);
+    if (i >= 0) {
+      list[i] = { ...list[i], ...patch };
+      updated = list[i];
+    }
+  });
+  return updated;
 }
 
 export function getSocio(id: string): Socio | undefined {

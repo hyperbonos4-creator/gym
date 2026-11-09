@@ -4,6 +4,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 
 const FILE = path.join(process.cwd(), "data", "turnstiles.json");
 
@@ -46,7 +47,7 @@ function readDb(): Db {
 
 function writeDb(db: Db) {
   fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(db, null, 2), "utf-8");
+  writeJsonFile(FILE, db);
 }
 
 export function listTurnstiles(gymId: string): Turnstile[] {

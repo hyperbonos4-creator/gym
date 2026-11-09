@@ -5,6 +5,7 @@
  */
 import fs from "fs";
 import path from "path";
+import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { randomInt, randomUUID } from "crypto";
 import { guestWallet, releaseGuestCredit, reserveGuestCredit } from "./memberships";
 
@@ -47,7 +48,7 @@ function readAll(): Invitation[] {
 
 function writeAll(rows: Invitation[]) {
   fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(rows, null, 2), "utf-8");
+  writeJsonFile(FILE, rows);
 }
 
 function freshPin(rows: Invitation[]): string {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { guardGym, gymFromQuery } from "../../../lib/authServer";
 import { listEvents, setDoorUntil } from "../../../lib/accessBackend";
+import { enqueueDoorSync, flushDoorOutbox } from "../../../lib/doorOutbox";
 import { listOwnerInvitations } from "../../../lib/invitations";
 import {
   assignMembership,
@@ -42,6 +43,28 @@ function methodOf(value: unknown): Exclude<PayMethod, "wompi"> {
   return value === "tarjeta" || value === "transferencia" ? value : "efectivo";
 }
 
+async function pushDoor(gymId: string, socioId: string, membershipId?: string, stamp?: string) {
+  const current = currentMembership(gymId, socioId);
+  const until = doorUntil(gymId, socioId);
+  const schedule = current ? doorSchedule(current) : null;
+  try {
+    const points = await setDoorUntil(socioId, until, schedule);
+    if (membershipId && stamp) markDoorPushed(gymId, membershipId, stamp);
+    return { door: true, points };
+  } catch (e: any) {
+    enqueueDoorSync({
+      gymId,
+      socioId,
+      membershipId,
+      stamp,
+      validUntil: until,
+      schedule,
+    });
+    console.warn("[memberships] door sync queued", socioId, String(e?.message || e));
+    return { door: false, points: 0 };
+  }
+}
+
 export async function GET(req: Request) {
   const gymId = gymFromQuery(req);
   const auth = guardGym(req, gymId);
@@ -67,14 +90,11 @@ export async function GET(req: Request) {
   takeHolderEntries(gymId, events);
   const pendingDoor = ticketsNeedingDoor(gymId);
   for (const row of pendingDoor) {
-    try {
-      const current = currentMembership(gymId, row.socioId);
-      await setDoorUntil(row.socioId, doorUntil(gymId, row.socioId), current ? doorSchedule(current) : null);
-      markDoorPushed(gymId, row.id, row.stamp);
-    } catch {
-      /* la ficha igual muestra la tiquetera. La puerta se reintenta en la siguiente consulta. */
-    }
+    await pushDoor(gymId, row.socioId, row.id, row.stamp);
   }
+  // Reintentos de outbox pendientes
+  await flushDoorOutbox(10);
+
   const history = listMemberships(gymId);
   const items = socios.map((s) => ({
     id: s.id,
@@ -181,12 +201,9 @@ export async function POST(req: Request) {
     let door = true;
     let points = 0;
     if (action !== "cobrar") {
-      try {
-        const current = currentMembership(gymId, socioId);
-        points = await setDoorUntil(socioId, doorUntil(gymId, socioId), current ? doorSchedule(current) : null);
-      } catch {
-        door = false;
-      }
+      const pushed = await pushDoor(gymId, socioId, membership?.id, membership ? `${membership.live}|${membership.creditsLeft ?? 0}|${membership.validUntil}` : undefined);
+      door = pushed.door;
+      points = pushed.points;
     }
     return NextResponse.json({ ok: true, membership, door, points, sale });
   } catch (e: any) {

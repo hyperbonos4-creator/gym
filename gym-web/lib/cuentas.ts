@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { createGym, deleteGym, updateGym } from "./gymsStore";
 import { createUser, grantGym, listUsers } from "./usersStore";
 
@@ -37,7 +38,7 @@ function readAll(): Cuenta[] {
 
 function writeAll(list: Cuenta[]) {
   fs.mkdirSync(path.dirname(FILE), { recursive: true });
-  fs.writeFileSync(FILE, JSON.stringify(list, null, 2), "utf-8");
+  writeJsonFile(FILE, list);
 }
 
 export function listCuentas() {
