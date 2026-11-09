@@ -1,4 +1,4 @@
-﻿# Secrets and local env
+# Secrets and local env
 .env
 .env.local
 .env.*.local
@@ -46,3 +46,10 @@ COM3_capture_facial.txt
 .DS_Store
 Thumbs.db
 .cursor/
+
+# Ops dumps / local captures (never commit)
+access/ora_state.txt
+access/ora_docker.txt
+*_state.txt
+*_docker.txt
+COM3_capture*.txt

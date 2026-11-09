@@ -73,3 +73,16 @@ En `NODE_ENV=production`:
 - Sin `ACCESS_ADMIN_EMAIL`/`ACCESS_ADMIN_PASS`: fallan llamadas al backend de acceso.
 - Access seed sin `SEED_ADMIN_*`: el seed aborta.
 - Compose access sin `DB_PASSWORD`: el compose no arranca.
+
+## Tunel de camara (access/tunnel.ps1)
+
+No dejes IPs ni rutas de llaves en el script. Configura en el entorno (o .env local no versionado):
+
+| Variable | Obligatoria | Ejemplo placeholder |
+|---|---|---|
+| GYM_TUNNEL_SERVER | si | oot@TU_SERVIDOR_O_IP |
+| GYM_CAMERA_HOST | si | 192.168.1.10 |
+| GYM_TUNNEL_SSH_KEY | si | ruta a tu llave privada |
+| GYM_CAM_PUBLIC_URL | no | https://cam.ejemplo.sslip.io/ |
+
+Si falta GYM_TUNNEL_SERVER o GYM_CAMERA_HOST, el script imprime error y sale.

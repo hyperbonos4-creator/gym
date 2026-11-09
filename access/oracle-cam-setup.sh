@@ -20,8 +20,8 @@ SECRET="${1:?Falta el FAMILY_STREAM_SECRET como 1er argumento}"
 AUTH_USER="${2:?Falta el usuario de login como 2do argumento}"
 AUTH_PASS="${3:?Falta la clave de login como 3er argumento}"
 
-PUBLIC_IP="$(curl -s ifconfig.me || echo '157.137.230.190')"
-HOST="$(echo "$PUBLIC_IP" | tr '.' '-').sslip.io"   # ej. 157-137-230-190.sslip.io
+PUBLIC_IP="$(curl -s ifconfig.me || echo "0.0.0.0")"
+HOST="$(echo "$PUBLIC_IP" | tr '.' '-').sslip.io"   # ej. TU-IP-PUBLICA.sslip.io
 TUNNEL_PORT=8081
 
 echo "==> Dominio sin comprar nada: $HOST"
@@ -117,3 +117,4 @@ echo " LISTO. Abre en el celular (con el túnel activo en el PC):"
 echo "   https://$HOST/cam"
 echo " Te pedirá usuario/clave: $AUTH_USER / (la que pusiste)"
 echo "============================================================"
+
