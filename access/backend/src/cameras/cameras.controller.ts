@@ -14,6 +14,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { IsOptional, IsString } from 'class-validator';
 
+import { EnrollScopeGuard } from '../auth/guards/enroll-scope.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -46,7 +47,7 @@ class LinkPointDto {
 
 @ApiTags('Cameras')
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, EnrollScopeGuard)
 @Controller('cameras')
 export class CamerasController {
   constructor(

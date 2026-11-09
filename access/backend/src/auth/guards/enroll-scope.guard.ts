@@ -6,8 +6,9 @@ import {
 } from '@nestjs/common';
 
 /**
- * Si el JWT trae purpose=enroll + enrollSubjectId, solo permite operar sobre ese sujeto
- * y bloquea rutas administrativas peligrosas.
+ * Un JWT con purpose=enroll solo puede preparar el rostro de SU sujeto.
+ * No lista cámaras, no emite otro token, no toca puertas ni otras fichas.
+ * El registro del celular usa: confirmar la ficha, leerla, pedir el reto y enviarlo.
  */
 @Injectable()
 export class EnrollScopeGuard implements CanActivate {
@@ -17,39 +18,22 @@ export class EnrollScopeGuard implements CanActivate {
     const purpose = req.user?.tokenPurpose as string | undefined;
     if (purpose !== 'enroll' || !enrollSubjectId) return true;
 
-    const path: string = String(req.route?.path || req.url || '');
-    const method = String(req.method || '').toUpperCase();
-    const paramId = req.params?.id as string | undefined;
+    const method = String(req.method || 'GET').toUpperCase();
+    const url = String(req.originalUrl || req.url || '').split('?')[0];
 
-    // Rutas permitidas para enrolamiento acotado
-    const allowed =
-      (paramId && paramId === enrollSubjectId) ||
-      path.includes('enroll-session') ||
-      false;
+    if (method === 'POST' && /\/subjects\/ensure$/.test(url)) {
+      if (String(req.body?.id || '') !== enrollSubjectId) {
+        throw new ForbiddenException('enroll_scope_subject');
+      }
+      return true;
+    }
 
-    // Bloquear listados, creación de sujetos, puertas, etc.
-    const blockedPatterns = [
-      /subjects$/, // list/create without :id
-      /points/,
-      /authorizations/,
-      /events/,
-      /door/,
-      /recognize/,
-      /demo/,
-    ];
-    if (blockedPatterns.some((re) => re.test(path)) && !paramId) {
-      throw new ForbiddenException('enroll_scope');
+    const own = (suffix: string) => url.endsWith(`/subjects/${enrollSubjectId}${suffix}`);
+    if (method === 'GET' && (own('') || own('/templates') || own('/portrait'))) return true;
+    if (method === 'POST' && (own('/liveness/challenge') || own('/liveness/enroll') || own('/consent'))) {
+      return true;
     }
-    if (paramId && paramId !== enrollSubjectId) {
-      throw new ForbiddenException('enroll_scope_subject');
-    }
-    // No permitir DELETE de biometrics de otros (ya cubierto por paramId)
-    if (method === 'DELETE' && paramId && paramId !== enrollSubjectId) {
-      throw new ForbiddenException('enroll_scope_subject');
-    }
-    if (!allowed && paramId !== enrollSubjectId) {
-      throw new ForbiddenException('enroll_scope');
-    }
-    return true;
+
+    throw new ForbiddenException('enroll_scope');
   }
 }

@@ -4,6 +4,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
+import { EnrollScopeGuard } from './guards/enroll-scope.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from './entities/user.entity';
 
@@ -19,7 +20,7 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, EnrollScopeGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Perfil del usuario autenticado.' })
   me(@CurrentUser() user: User) {
