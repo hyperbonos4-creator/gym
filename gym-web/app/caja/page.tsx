@@ -314,7 +314,7 @@ export default function CajaPage() {
         .cambio { margin-top: 6px; font-size: 13px; font-weight: 700; }
       </style></head><body>
       <h1>${esc(publicBrand().name)}</h1>
-      <p class="sub">El poder de la transformación</p>
+      <p class="sub">${esc(publicBrand().tagline)}</p>
       <p class="num">VENTA ${s.number}</p>
       <p class="fecha">${esc(new Date(s.createdAt).toLocaleString("es-CO", { timeZone: "America/Bogota" }))}</p>
       ${filas}

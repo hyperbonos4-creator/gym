@@ -4,7 +4,7 @@ Aplicación única (Next.js) desde la que se controla el gimnasio: socios, Whats
 
 - **URL local:** http://localhost:3100
 - **Login de prueba:** `admin` / `admin`
-- **Gimnasio de prueba:** Fuerza Élite Madera Silvestre (multi-tenant: cada gym se ve por separado)
+- **Gimnasio de prueba:** VISIONYX (id interno fuerza-elite) (multi-tenant: cada gym se ve por separado)
 
 ## Qué está activo
 

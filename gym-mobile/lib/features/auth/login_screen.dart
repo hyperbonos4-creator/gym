@@ -46,7 +46,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.fromLTRB(24, 48, 24, 24),
           children: [
             const UpdateBanner(),
-            const Text('FUERZA ÉLITE', style: TextStyle(letterSpacing: 3, fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF38BDF8))),
+            const Text('VISIONYX', style: TextStyle(letterSpacing: 3, fontSize: 12, fontWeight: FontWeight.w800, color: Color(0xFF38BDF8))),
             const SizedBox(height: 12),
             const Text('Tu pase', style: TextStyle(fontSize: 34, fontWeight: FontWeight.w800)),
             const SizedBox(height: 8),

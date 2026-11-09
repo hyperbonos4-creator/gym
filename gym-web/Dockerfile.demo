@@ -1,0 +1,46 @@
+FROM node:20-bookworm-slim AS deps
+WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
+
+FROM node:20-bookworm-slim AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_GYM_DEMO_MODE=1
+ARG NEXT_PUBLIC_BRAND_NAME=VISIONYX
+ARG NEXT_PUBLIC_BRAND_TAGLINE="Inteligencia que conecta el mundo real"
+ARG NEXT_PUBLIC_BRAND_LOGO=/brand/vx-horizontal-color.svg
+ARG NEXT_PUBLIC_BRAND_MARK=/brand/vx-icon-color.svg
+ARG NEXT_PUBLIC_BRAND_FAVICON=/brand/favicon.svg
+ENV NEXT_PUBLIC_GYM_DEMO_MODE=$NEXT_PUBLIC_GYM_DEMO_MODE
+ENV NEXT_PUBLIC_BRAND_NAME=$NEXT_PUBLIC_BRAND_NAME
+ENV NEXT_PUBLIC_BRAND_TAGLINE=$NEXT_PUBLIC_BRAND_TAGLINE
+ENV NEXT_PUBLIC_BRAND_LOGO=$NEXT_PUBLIC_BRAND_LOGO
+ENV NEXT_PUBLIC_BRAND_MARK=$NEXT_PUBLIC_BRAND_MARK
+ENV NEXT_PUBLIC_BRAND_FAVICON=$NEXT_PUBLIC_BRAND_FAVICON
+# Demo must not depend on office_backend at build time
+ENV ACCESS_URL=
+RUN npm run build
+
+FROM node:20-bookworm-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3101
+ENV HOSTNAME=0.0.0.0
+ENV GYM_DEMO_MODE=1
+ENV GYM_DATA_DIR=/app/data-demo
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/next.config.mjs ./
+COPY --from=builder /app/lib ./lib
+COPY --from=builder /app/app ./app
+COPY --from=builder /app/middleware.ts ./
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/scripts ./scripts
+EXPOSE 3101
+CMD ["npx", "next", "start", "-H", "0.0.0.0", "-p", "3101"]

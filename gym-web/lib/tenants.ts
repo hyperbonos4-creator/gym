@@ -25,11 +25,11 @@ export type Gym = {
 export const GYMS: Gym[] = [
   {
     id: "fuerza-elite",
-    name: "Fuerza Élite Madera Silvestre",
+    name: "VISIONYX",
     city: "Sede principal",
     whatsapp: "conectado",
     waInstance: "gym",
-    short: "FE",
+    short: "VX",
   },
 ];
 

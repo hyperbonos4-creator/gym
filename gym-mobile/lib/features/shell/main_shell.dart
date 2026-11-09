@@ -63,7 +63,7 @@ class _MainShellState extends ConsumerState<MainShell> {
           onPressed: () => scaffoldKey.currentState?.openDrawer(),
           icon: const Icon(Icons.more_vert),
         ),
-        title: const Text('FUERZA ÉLITE'),
+        title: const Text('VISIONYX'),
       ),
       body: Column(
         children: [
@@ -139,7 +139,7 @@ class _OptionsDrawer extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('FUERZA ÉLITE', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.4)),
+                  Text('VISIONYX', style: TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w800, letterSpacing: 2.4)),
                   SizedBox(height: 6),
                   Text('Opciones', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800)),
                 ],

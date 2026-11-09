@@ -1,5 +1,5 @@
 /*
- * Fuerza Élite · Torniquete 5.0
+ * VISIONYX · Torniquete 5.0
  * Sin red, clave ni token en el programa. Eso queda en la memoria del chip.
  * Si la red cambia y no entra, abre un Wi-Fi propio FE-xxxx para configurarlo.
  * GPIO25 ingreso · GPIO26 volver al medio · GPIO27 no se toca.

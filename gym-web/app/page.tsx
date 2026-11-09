@@ -112,7 +112,7 @@ export default function DashboardPage() {
     };
   }, []);
 
-  const sede = gymName.replace(/^fuerza élite\s*/i, "").trim() || gymName;
+  const sede = gymName.replace(/^(fuerza\s*[eé]lite|visionyx)\s*/i, "").trim() || gymName;
   const gente = useMemo(
     () => (pulse?.personas || []).filter((p) => !ocultarEnsayo || !p.ensayo),
     [pulse, ocultarEnsayo],

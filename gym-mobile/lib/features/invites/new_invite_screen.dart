@@ -79,7 +79,7 @@ class _NewInviteScreenState extends ConsumerState<NewInviteScreen> {
             if ('${issued['enrollUrl'] ?? ''}'.isNotEmpty) ...[
               FilledButton(
                 onPressed: () {
-                  final text = 'Hola ${issued['guestName']}. Registra tu rostro para tu visita a Fuerza Élite:\n${issued['enrollUrl']}';
+                  final text = 'Hola ${issued['guestName']}. Registra tu rostro para tu visita a VISIONYX:\n${issued['enrollUrl']}';
                   launchUrl(Uri.parse('https://wa.me/?text=${Uri.encodeComponent(text)}'), mode: LaunchMode.externalApplication);
                 },
                 child: const Padding(padding: EdgeInsets.symmetric(vertical: 14), child: Text('Enviar enlace por WhatsApp')),

@@ -1,0 +1,52 @@
+services:
+  gym-web-demo:
+    build:
+      context: ./gym-web
+      dockerfile: Dockerfile.demo
+      args:
+        NEXT_PUBLIC_GYM_DEMO_MODE: "1"
+        NEXT_PUBLIC_BRAND_NAME: "VISIONYX"
+        NEXT_PUBLIC_BRAND_TAGLINE: "Inteligencia que conecta el mundo real"
+        NEXT_PUBLIC_BRAND_LOGO: "/brand/vx-horizontal-color.svg"
+        NEXT_PUBLIC_BRAND_MARK: "/brand/vx-icon-color.svg"
+        NEXT_PUBLIC_BRAND_FAVICON: "/brand/favicon.svg"
+    image: gym/web-demo:0.1.0
+    container_name: gym_web_demo
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3101:3101"
+    environment:
+      PORT: "3101"
+      HOSTNAME: "0.0.0.0"
+      NODE_ENV: production
+      GYM_DEMO_MODE: "1"
+      NEXT_PUBLIC_GYM_DEMO_MODE: "1"
+      GYM_DATA_DIR: /app/data-demo
+      NEXT_PUBLIC_BRAND_NAME: VISIONYX
+      NEXT_PUBLIC_BRAND_TAGLINE: "Inteligencia que conecta el mundo real"
+      NEXT_PUBLIC_BRAND_LOGO: /brand/vx-horizontal-color.svg
+      NEXT_PUBLIC_BRAND_MARK: /brand/vx-icon-color.svg
+      NEXT_PUBLIC_BRAND_FAVICON: /brand/favicon.svg
+      SESSION_SECRET: ${DEMO_SESSION_SECRET:?Set DEMO_SESSION_SECRET}
+      COOKIE_SECURE: "true"
+      ALLOW_PUBLIC_REGISTRO: "false"
+      # Do not wire real Evolution/Wompi/DIAN/ESP — leave empty / dummy
+      EVOLUTION_URL: ""
+      EVOLUTION_KEY: ""
+      DIAN_URL: ""
+      WOMPI_PUBLIC_KEY: ""
+      WOMPI_INTEGRITY_SECRET: ""
+      WOMPI_EVENTS_SECRET: ""
+      WOMPI_PRIVATE_KEY: ""
+      ESP_AGENT_KEY: ""
+      ACCESS_URL: ""
+      ENROLL_PUBLIC_BASE: https://demo.198-199-82-161.sslip.io
+    volumes:
+      - ./gym-web/data-demo:/app/data-demo
+      - ./gym-web/scripts:/app/scripts:ro
+    networks:
+      - default
+
+networks:
+  default:
+    name: gym-demo_net

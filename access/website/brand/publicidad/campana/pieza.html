@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Fuerza Élite</title>
+  <title>VISIONYX</title>
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;800&family=Exo+2:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -59,10 +59,10 @@
       const root = document.getElementById("root");
       if (!row) return;
       if (row.end) {
-        root.innerHTML = `<div class="end"><img src="logo-fe.png" alt="" /><div class="brand" style="margin-top:18px">FUERZA ÉLITE</div><h1>${row.title}</h1><p>${row.lead}</p><div class="cta">${row.cta}</div></div>`;
+        root.innerHTML = `<div class="end"><img src="logo-fe.png" alt="" /><div class="brand" style="margin-top:18px">VISIONYX</div><h1>${row.title}</h1><p>${row.lead}</p><div class="cta">${row.cta}</div></div>`;
         return;
       }
-      root.innerHTML = `<div class="brand"><img src="logo-fe.png" alt="" />FUERZA ÉLITE</div><div class="kicker">${row[0]}</div><h1>${row[1]}</h1><p class="say">${row[2]}</p><div class="shot"><img src="${row[3]}" alt="" /></div>`;
+      root.innerHTML = `<div class="brand"><img src="logo-fe.png" alt="" />VISIONYX</div><div class="kicker">${row[0]}</div><h1>${row[1]}</h1><p class="say">${row[2]}</p><div class="shot"><img src="${row[3]}" alt="" /></div>`;
     }
     window.addEventListener("hashchange", paint);
     paint();

@@ -47,6 +47,17 @@ assert.ok(demo.includes("demoBlocksPath"));
 assert.ok(demo.includes("/api/whatsapp"));
 
 console.log("ok - brand defaults VISIONYX");
+
+const caja = fs.readFileSync(path.join(root, "app/caja/page.tsx"), "utf8");
+assert.ok(!/El poder de la transform/i.test(caja), "caja still has old slogan");
+assert.ok(/publicBrand\(\)\.tagline/.test(caja), "caja receipt should use brand tagline");
+const retorno = fs.readFileSync(path.join(root, "app/api/mobile/pagos/retorno/route.ts"), "utf8");
+assert.ok(!/FUERZA/i.test(retorno), "pagos retorno still has FUERZA");
+assert.ok(/VISIONYX/.test(retorno), "pagos retorno should say VISIONYX");
+const kiosk = fs.readFileSync(path.join(root, "../access/backend/public/assets/kiosk.js"), "utf8");
+assert.ok(!/FUERZA/i.test(kiosk), "kiosk.js still has FUERZA");
+console.log("ok - old gym brand purged from client surfaces");
+
 console.log("ok - BrandLogo uses publicBrand");
 console.log("ok - brand assets present");
 console.log("ok - demo seed isolates data");

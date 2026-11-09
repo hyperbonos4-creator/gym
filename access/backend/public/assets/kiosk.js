@@ -134,7 +134,7 @@ function overlayPreviewMessage(title, body) {
   if (!card) return;
   card.innerHTML =
     '<div class="brand" style="justify-content:center;margin-bottom:16px">' +
-    '<div class="wordmark"><b>FUERZA ÉLITE</b><span>' + title + '</span></div></div>' +
+    '<div class="wordmark"><b>VISIONYX</b><span>' + title + '</span></div></div>' +
     '<p class="muted center" style="text-align:center;line-height:1.5">' + body + '</p>';
 }
 
@@ -244,7 +244,7 @@ function showPairingProgress(text) {
   if (!card) return;
   card.innerHTML =
     '<div class="brand" style="justify-content:center;margin-bottom:16px">' +
-    '<div class="wordmark"><b>FUERZA ÉLITE</b><span>Vincular tablet</span></div></div>' +
+    '<div class="wordmark"><b>VISIONYX</b><span>Vincular tablet</span></div></div>' +
     '<p class="muted center" style="text-align:center">' + (text || 'Vinculando…') + '</p>';
 }
 
@@ -259,7 +259,7 @@ function showPairing(errorMsg) {
     : '';
   card.innerHTML =
     '<div class="brand" style="justify-content:center;margin-bottom:16px">' +
-    '<div class="wordmark"><b>FUERZA ÉLITE</b><span>Vincular tablet</span></div></div>' +
+    '<div class="wordmark"><b>VISIONYX</b><span>Vincular tablet</span></div></div>' +
     errHtml +
     '<p class="muted center" style="text-align:center;margin-bottom:14px;line-height:1.45">' +
     'Escanea el QR de <b>Vincular kiosko</b> en el panel, o ingresa el código de 6 dígitos. No uses contraseñas de administrador.</p>' +

@@ -17,7 +17,7 @@ export async function GET() {
       headers: {
         "Content-Type": "application/vnd.android.package-archive",
         "Content-Length": String(info.size),
-        "Content-Disposition": 'attachment; filename="FuerzaElite.apk"',
+        "Content-Disposition": 'attachment; filename="VISIONYX.apk"',
         "Cache-Control": "no-store",
       },
     });

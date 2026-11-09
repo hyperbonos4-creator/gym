@@ -23,7 +23,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('FUERZA ÉLITE', style: TextStyle(letterSpacing: 3, fontWeight: FontWeight.w800, color: Color(0xFF38BDF8))),
+            Text('VISIONYX', style: TextStyle(letterSpacing: 3, fontWeight: FontWeight.w800, color: Color(0xFF38BDF8))),
             SizedBox(height: 16),
             SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
           ],

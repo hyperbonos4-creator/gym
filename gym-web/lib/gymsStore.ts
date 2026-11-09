@@ -10,11 +10,11 @@ const FILE = path.join(DATA_DIR, "gyms.json");
 const SEED: Gym[] = [
   {
     id: "fuerza-elite",
-    name: "Fuerza Élite Madera Silvestre",
+    name: "VISIONYX",
     city: "Sede principal",
     whatsapp: "conectado",
     waInstance: "gym",
-    short: "FE",
+    short: "VX",
   },
 ];
 

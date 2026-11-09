@@ -53,7 +53,7 @@ class _UpdateBannerState extends ConsumerState<UpdateBanner> {
     });
     try {
       final dir = await getTemporaryDirectory();
-      final file = File('${dir.path}/FuerzaElite.apk');
+      final file = File('${dir.path}/VISIONYX.apk');
       await ref.read(dioProvider).download(
         '/api/mobile/app',
         file.path,
