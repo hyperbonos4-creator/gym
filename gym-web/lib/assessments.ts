@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { randomUUID } from "crypto";
 import { getSocio } from "./sociosStore";
 import { activeAssignment } from "./routineAssignments";
@@ -14,8 +15,8 @@ import {
   type PhotoView,
 } from "./assessmentTypes";
 
-const FILE = path.join(process.cwd(), "data", "assessments.json");
-const MEDIA = path.join(process.cwd(), "data", "assessment-media");
+const FILE = path.join(dataDir(), "assessments.json");
+const MEDIA = path.join(dataDir(), "assessment-media");
 
 function readAll(): Assessment[] {
   try {

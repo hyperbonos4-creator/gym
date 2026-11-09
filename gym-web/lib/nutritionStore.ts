@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { randomUUID } from "crypto";
 import { getSocio } from "./sociosStore";
 import {
@@ -19,7 +20,7 @@ import {
   type TrackingMode,
 } from "./nutritionTypes";
 
-const DIR = path.join(process.cwd(), "data");
+const DIR = dataDir();
 
 function file(name: string) {
   return path.join(DIR, name);

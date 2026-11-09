@@ -4,10 +4,11 @@
  * renovó, el torniquete niega aunque el rostro coincida.
  */
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { randomUUID } from "crypto";
 
-const FILE = path.join(process.cwd(), "data", "memberships.json");
+const FILE = path.join(dataDir(), "memberships.json");
 
 export type AccessWindow = "completo" | "manana" | "noche" | "personalizado";
 

@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { createGym, deleteGym, updateGym } from "./gymsStore";
 import { createUser, grantGym, listUsers } from "./usersStore";
 
-const FILE = path.join(process.cwd(), "data", "cuentas.json");
+const FILE = path.join(dataDir(), "cuentas.json");
 const TRIAL_DAYS = 14;
 
 export type PlanId = "inicio" | "operacion" | "red";

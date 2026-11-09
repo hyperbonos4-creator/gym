@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { randomUUID } from "crypto";
 
-const FILE = path.join(process.cwd(), "data", "exercise-assignments.json");
+const FILE = path.join(dataDir(), "exercise-assignments.json");
 
 export type ExerciseAssignment = {
   id: string;

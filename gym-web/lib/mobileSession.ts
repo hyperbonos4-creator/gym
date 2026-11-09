@@ -5,9 +5,10 @@
 import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { findSocioByDoc, getSocio, type Socio } from "./sociosStore";
 
-const KEY_FILE = path.join(process.cwd(), "data", "mobile.key");
+const KEY_FILE = path.join(dataDir(), "mobile.key");
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 function key(): string {

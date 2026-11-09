@@ -9,9 +9,10 @@
  */
 
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, updateJsonFileSync, writeJsonFile } from "./jsonStore";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = dataDir();
 const FILE = path.join(DATA_DIR, "socios.json");
 
 export type Socio = {

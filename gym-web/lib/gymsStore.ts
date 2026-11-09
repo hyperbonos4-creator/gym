@@ -1,9 +1,10 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import type { Gym } from "./tenants";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = dataDir();
 const FILE = path.join(DATA_DIR, "gyms.json");
 
 const SEED: Gym[] = [

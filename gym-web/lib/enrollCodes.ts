@@ -4,9 +4,10 @@
  */
 import { randomBytes } from "crypto";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, updateJsonFileSync, writeJsonFile } from "./jsonStore";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = dataDir();
 const FILE = path.join(DATA_DIR, "enroll-codes.json");
 /** TTL corto del código de invitación (horas). */
 const TTL_MS = Number(process.env.ENROLL_CODE_TTL_HOURS || "24") * 60 * 60 * 1000;

@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { randomUUID } from "crypto";
 import { EXERCISES } from "./exercisesCatalog";
 import {
@@ -11,7 +12,7 @@ import {
   type PublishedSnapshot,
 } from "./motionModel";
 
-const FILE = path.join(process.cwd(), "data", "motion-studio.json");
+const FILE = path.join(dataDir(), "motion-studio.json");
 const known = new Set(EXERCISES.map((e) => e.id));
 
 function readAll(): MotionPiece[] {

@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { randomInt, randomUUID } from "crypto";
 import { STARTER_PRODUCTS } from "./retailCatalog";
 import { SKU_PATTERN, familyPrefix, nextSku, restockTarget } from "./retailCodes";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = dataDir();
 const FILE = path.join(DATA_DIR, "retail.json");
 
 export type PayMethod = "efectivo" | "tarjeta" | "transferencia";

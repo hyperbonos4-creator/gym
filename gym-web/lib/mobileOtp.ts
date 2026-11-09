@@ -1,5 +1,6 @@
 import { randomInt } from "crypto";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { updateJsonFileSync, readJsonFile } from "./jsonStore";
 import { rateLimit } from "./rateLimit";
 import { findSocioByDoc, type Socio } from "./sociosStore";
@@ -7,7 +8,7 @@ import { samePhone } from "./mobileSession";
 
 export type WaSender = (instance: string, to: string, text: string) => Promise<{ ok: boolean; error?: string }>;
 
-const FILE = path.join(process.cwd(), "data", "mobile-otp.json");
+const FILE = path.join(dataDir(), "mobile-otp.json");
 const TTL_MS = 10 * 60 * 1000;
 
 type OtpRow = {

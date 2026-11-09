@@ -1,11 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { randomUUID } from "crypto";
 import { getSocio } from "./sociosStore";
 import { getRoutine } from "./routinesStore";
 import { latestPublished } from "./routineTypes";
 
-const FILE = path.join(process.cwd(), "data", "routine-assignments.json");
+const FILE = path.join(dataDir(), "routine-assignments.json");
 
 export type RoutineAssignment = {
   id: string;

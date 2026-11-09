@@ -3,10 +3,11 @@
  * Si el backend de acceso falla, se reintenta y el estado queda visible.
  */
 import path from "path";
+import { dataDir } from "./dataDir";
 import { setDoorUntil } from "./accessBackend";
 import { readJsonFile, updateJsonFileSync, writeJsonFile } from "./jsonStore";
 
-const FILE = path.join(process.cwd(), "data", "door-outbox.json");
+const FILE = path.join(dataDir(), "door-outbox.json");
 
 export type DoorOutboxItem = {
   id: string;

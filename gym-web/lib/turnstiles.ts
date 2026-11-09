@@ -4,9 +4,10 @@
  */
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 
-const FILE = path.join(process.cwd(), "data", "turnstiles.json");
+const FILE = path.join(dataDir(), "turnstiles.json");
 
 export type Turnstile = {
   id: string;

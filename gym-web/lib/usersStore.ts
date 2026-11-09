@@ -1,9 +1,10 @@
 import path from "path";
+import { dataDir } from "./dataDir";
 import type { Role, SessionUser } from "./session";
 import { hashPassword, passwordPolicyOk } from "./passwords";
 import { readJsonFile, updateJsonFileSync, writeJsonFile } from "./jsonStore";
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = dataDir();
 const FILE = path.join(DATA_DIR, "users.json");
 
 export type StoredUser = {

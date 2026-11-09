@@ -1,12 +1,13 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { randomUUID } from "crypto";
 import { assignMembership, currentMembership, doorSchedule, doorUntil, listPlans } from "./memberships";
 import { recordServiceSale } from "./retailStore";
 import { getSocio } from "./sociosStore";
 import { setDoorUntil } from "./accessBackend";
 
-const FILE = path.join(process.cwd(), "data", "mobile-payments.json");
+const FILE = path.join(dataDir(), "mobile-payments.json");
 
 export type MobilePayment = {
   id: string;

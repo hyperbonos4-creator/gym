@@ -1,12 +1,13 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 
 export type FacturacionSede = {
   enabled: boolean;
   nit: string;
 };
 
-const FILE = path.join(process.cwd(), "data", "facturacion-sedes.json");
+const FILE = path.join(dataDir(), "facturacion-sedes.json");
 
 function readAll(): Record<string, FacturacionSede> {
   try {

@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 
-const DATA = path.join(process.cwd(), "data");
+const DATA = dataDir();
 const FILES = [
   "socios.json",
   "memberships.json",

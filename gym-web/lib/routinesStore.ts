@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { randomUUID } from "crypto";
 import { EXERCISES } from "./exercisesCatalog";
 import type { BlockKind, PrescribedExercise, RoutineBlock, RoutineDay, RoutineLevel, RoutineTemplate, RoutineVersion } from "./routineTypes";
 
-const FILE = path.join(process.cwd(), "data", "routines.json");
+const FILE = path.join(dataDir(), "routines.json");
 const LEVELS: RoutineLevel[] = ["Inicio", "Intermedio", "Avanzado"];
 const KINDS: BlockKind[] = ["ejercicio", "superserie", "circuito", "calentamiento"];
 const known = new Set(EXERCISES.map((e) => e.id));

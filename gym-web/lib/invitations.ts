@@ -5,11 +5,12 @@
  */
 import fs from "fs";
 import path from "path";
+import { dataDir } from "./dataDir";
 import { readJsonFile, writeJsonFile, updateJsonFileSync } from "./jsonStore";
 import { randomInt, randomUUID } from "crypto";
 import { guestWallet, releaseGuestCredit, reserveGuestCredit } from "./memberships";
 
-const FILE = path.join(process.cwd(), "data", "invitations.json");
+const FILE = path.join(dataDir(), "invitations.json");
 
 export type InvitationStatus = "pending" | "used" | "cancelled" | "expired";
 
