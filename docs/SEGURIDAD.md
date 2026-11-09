@@ -80,9 +80,19 @@ No dejes IPs ni rutas de llaves en el script. Configura en el entorno (o .env lo
 
 | Variable | Obligatoria | Ejemplo placeholder |
 |---|---|---|
-| GYM_TUNNEL_SERVER | si | oot@TU_SERVIDOR_O_IP |
+| GYM_TUNNEL_SERVER | si | root@TU_SERVIDOR_O_IP |
 | GYM_CAMERA_HOST | si | 192.168.1.10 |
 | GYM_TUNNEL_SSH_KEY | si | ruta a tu llave privada |
 | GYM_CAM_PUBLIC_URL | no | https://cam.ejemplo.sslip.io/ |
 
 Si falta GYM_TUNNEL_SERVER o GYM_CAMERA_HOST, el script imprime error y sale.
+
+## Despliegue en el servidor (droplet)
+
+- Puertos: `gym-web` (3100) y `access` backend (3010) publican solo en `127.0.0.1` por defecto; nginx hace de proxy HTTPS. Para exponerlos en la LAN de un PC local usa `GYM_WEB_BIND=0.0.0.0` / `ACCESS_BIND=0.0.0.0` (nunca en un VPS: Docker salta UFW).
+- Compose lee la interpolacion del `.env` del directorio del proyecto: crea `access/.env` con `DB_PASSWORD` (y `DB_SYNCHRONIZE=false`) y `evolution/.env` con `EVOLUTION_API_KEY` (igual a `EVOLUTION_KEY` de la raiz). Sin ellos el compose no arranca.
+- `COOKIE_SECURE=true` en el `.env` raiz cuando el panel va detras de HTTPS.
+- Recrear solo el servicio cambiado: `docker compose up -d --no-deps <servicio>` (raiz: `gym-web`; `access`: `backend`; `evolution`: `-p gym-wa ... evolution-api`). En la raiz no levantes `ngrok` en el servidor.
+- Rotar `EVOLUTION_KEY`: cambia `EVOLUTION_KEY` (raiz) y `EVOLUTION_API_KEY` (evolution/.env), recrea `evolution-api` y luego `gym-web`. La sesion de WhatsApp se conserva (se guarda en la base de Evolution).
+- Rotar `DB_PASSWORD`: `ALTER USER access WITH PASSWORD ...`, actualiza `access/backend/.env` y `access/.env`, recrea `backend`.
+- Antes de cada cambio: copia de los `.env`, `pg_dump -Fc` de `access_control` y etiqueta de las imagenes actuales (`:pre-<fecha>`) para poder volver atras.
