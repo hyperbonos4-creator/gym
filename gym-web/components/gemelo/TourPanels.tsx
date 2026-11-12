@@ -92,18 +92,18 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
     }
     if (tour.phase === "plan") {
       const pt = tour.nt;
-      F.mensual!.classList.toggle("gm-sel", pt > 0.6);
-      show(F.vig, pt > 0.7);
-      F.pay!.classList.toggle("gm-sel", pt > 1.3);
-      F.btn2!.classList.toggle("gm-press", pt > 1.9 && pt < 2.25);
-      show(F.okPlan, pt > 2.3);
+      F.mensual!.classList.toggle("gm-sel", pt > 0.8);
+      show(F.vig, pt > 1.0);
+      F.pay!.classList.toggle("gm-sel", pt > 1.8);
+      F.btn2!.classList.toggle("gm-press", pt > 2.6 && pt < 2.95);
+      show(F.okPlan, pt > 3.0);
       // ficha del cliente: recepción envía el enlace de registro facial (POST /api/socios/resend)
-      const ficha = pt >= 3.4;
+      const ficha = pt >= 4.6;
       show(F.planBox, !ficha, "block");
       show(F.ficha, ficha, "block");
-      F.send!.classList.toggle("gm-press", pt > 4.7 && pt < 5.05);
-      F.send!.textContent = pt > 5.0 ? "Enviando…" : "Enviar enlace";
-      show(F.confirm, pt > 4.1 && pt < 4.75, "block");
+      F.send!.classList.toggle("gm-press", pt > 6.5 && pt < 6.85);
+      F.send!.textContent = pt > 6.8 ? "Enviando…" : "Enviar enlace";
+      show(F.confirm, pt > 5.5 && pt < 6.55, "block");
     }
   });
   return (
@@ -284,18 +284,19 @@ const WA_LINK = `visionyx.duckdns.org/e/${P.code}`;
 
 /** Guion del celular (s dentro de la fase "phone"). Pantallas reales de /e/{code} y enroll.html. */
 export const PHONE_T = {
-  wa: 0, e: 3.2, idle: 4.8, perm: 8.0, steps: 11.0, verif: 23.6, ok: 26.2, end: 30.0,
+  wa: 0, link: 3.2, e: 6.6, idle: 9.0, perm: 12.6, steps: 15.8, verif: 30.2, ok: 33.2, end: 37.4,
 };
 const PHONE_STEPS = [
-  { t0: 11.0, t1: 14.2, icon: "◎", title: "Mira al frente", hint: "Rostro recto, ojos a la cámara", yaw: 0 },
-  { t0: 14.2, t1: 17.4, icon: "⬅️", title: "Gira a la izquierda", hint: "Lleva el mentón hacia tu hombro izquierdo", yaw: -1 },
-  { t0: 17.4, t1: 20.6, icon: "➡️", title: "Gira a la derecha", hint: "Lleva el mentón hacia tu hombro derecho", yaw: 1 },
-  { t0: 20.6, t1: 23.6, icon: "😉", title: "Parpadea", hint: "Cierra y abre los ojos con naturalidad", yaw: 0 },
+  { t0: 15.8, t1: 19.4, icon: "◎", title: "Mira al frente", hint: "Rostro recto, ojos a la cámara", yaw: 0 },
+  { t0: 19.4, t1: 23.0, icon: "⬅️", title: "Gira a la izquierda", hint: "Lleva el mentón hacia tu hombro izquierdo", yaw: -1 },
+  { t0: 23.0, t1: 26.6, icon: "➡️", title: "Gira a la derecha", hint: "Lleva el mentón hacia tu hombro derecho", yaw: 1 },
+  { t0: 26.6, t1: 30.2, icon: "😉", title: "Parpadea", hint: "Cierra y abre los ojos con naturalidad", yaw: 0 },
 ];
 /** Rótulo corto por paso (recorrido interactivo) */
 export function phoneStepLabel(t: number): string {
   const T = PHONE_T;
-  if (t < T.e) return "1/7 · Le llega el enlace por WhatsApp";
+  if (t < T.link) return "1/7 · Bienvenida automática por WhatsApp";
+  if (t < T.e) return "1/7 · Recepción le envía el enlace por WhatsApp";
   if (t < T.idle) return "2/7 · Abre su registro facial";
   if (t < T.perm) return "3/7 · Inicia el reconocimiento";
   if (t < T.steps) return "4/7 · Permite la cámara del celular";
@@ -359,10 +360,14 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
     const scr = t < T.e ? "wa" : t < T.idle ? "e" : t < T.perm ? "idle" : t < T.verif ? "stage" : t < T.ok ? "verif" : "ok";
     for (const k of ["wa", "e", "idle", "stage", "ok"]) show(F[k], k === scr || (k === "stage" && scr === "verif"), "flex");
     // WhatsApp
-    show(F.notif, t < 1.2);
-    F.notif!.style.transform = `translateY(${t < 0.35 ? -(0.35 - t) * 240 : 0}px)`;
-    show(F.bubble, t > 0.8, "block");
-    F.link!.classList.toggle("gm-tap", t > 2.5 && t < 3.15);
+    // 1) bienvenida automática (appWelcomeMessage) · 2) enlace que recepción envió (enrollMessage)
+    const nt2 = t < T.link ? t : t - T.link;
+    show(F.notif, nt2 < 1.4);
+    F.notif!.style.transform = `translateY(${nt2 < 0.35 ? -(0.35 - nt2) * 240 : 0}px)`;
+    F.notifTxt!.textContent = t < T.link ? `Hola, ${P.first}. Bienvenido a VISIONYX. Tu ficha ya está en la aplicación…` : `Hola, ${P.first}. VISIONYX necesita tu rostro para la puerta…`;
+    show(F.bubble0, t > 0.7, "block");
+    show(F.bubble, t > T.link + 0.7, "block");
+    F.link!.classList.toggle("gm-tap", t > T.e - 0.75 && t < T.e - 0.1);
     // idle: barra de arranque y botón
     const boot = Math.min(1, Math.max(0.08, (t - T.idle - 0.2) / 1.8));
     F.bootBar!.style.width = `${boot * 100}%`;
@@ -445,7 +450,7 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
           <div ref={reg("wa")} className="gm-scr gm-wa">
             <div ref={reg("notif")} className="gm-wa-notif">
               <div className="gm-wa-ico">✆</div>
-              <div><b>VISIONYX</b><span>Hola, {P.first}. VISIONYX necesita tu rostro para la puerta…</span></div>
+              <div><b>VISIONYX</b><span ref={reg("notifTxt")}>Hola, {P.first}. VISIONYX necesita tu rostro para la puerta…</span></div>
             </div>
             <div className="gm-wa-head">
               <span className="gm-wa-back">‹</span>
@@ -455,7 +460,7 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
             <div className="gm-wa-input"><span>Mensaje</span><i>🎤</i></div>
             <div className="gm-wa-body">
               <div className="gm-wa-day">HOY</div>
-              <div className="gm-wa-bubble gm-wa-old">
+              <div ref={reg("bubble0")} className="gm-wa-bubble gm-wa-old" style={{ display: "none" }}>
                 Hola, {P.first}.<br /><br />Bienvenido a VISIONYX.<br /><br />Tu ficha ya está en la aplicación. Ábrela y entra con tu documento y este WhatsApp.
                 <span className="gm-wa-time">6:40 p. m.</span>
               </div>

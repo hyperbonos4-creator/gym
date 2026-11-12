@@ -40,7 +40,7 @@ const WALK = 1.45; // m/s, paso natural
  * Ritmo del recorrido: lento a propósito para que se lea cada campo y cada
  * pantalla del registro facial (mismo ritmo en la página y en el comercial).
  */
-const DUR: Record<string, number> = { form: 12.0, registered: 2.6, plan: 6.4, phone: 30.0, enrolled: 2.0, gate: 1.9 };
+const DUR: Record<string, number> = { form: 12.0, registered: 3.4, plan: 8.4, phone: 37.4, enrolled: 2.6, gate: 2.4 };
 const DUR_FAST: Record<string, number> = DUR;
 
 function pathLen(p: Pt[]) {
