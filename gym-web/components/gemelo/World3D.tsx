@@ -849,7 +849,7 @@ function CameraRig({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
     const targetFor = (): { pos: THREE.Vector3; tgt: THREE.Vector3 } => {
       if (ctrl.preset === "follow" && followM) {
         const portrait = aspect < 0.9;
-        const tgt = new THREE.Vector3(followM.x, portrait ? 3.4 : 1.6, followM.z);
+        const tgt = new THREE.Vector3(followM.x, portrait ? 4.6 : 1.6, followM.z);
         const off = portrait ? new THREE.Vector3(3 * sim.layout.mirror, 8, 10.5) : new THREE.Vector3(6 * sim.layout.mirror, 7.5, 10.5);
         return { pos: tgt.clone().add(off), tgt };
       }

@@ -346,9 +346,10 @@ body {
 .gm-cap-top { top: 15vh; }
 .gm-cap-center { top: 50%; transform: translateY(-50%); text-align: center; }
 .gm-cap-bottom { bottom: 16vh; }
+.gm-cap-bottom::before { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: 46vh; z-index: -1; background: linear-gradient(180deg, transparent, rgba(5, 7, 13, 0.92) 55%); }
 .gm-cap-l { font-weight: 900; line-height: 0.95; letter-spacing: -0.04em; color: #fff; text-shadow: 0 6px 40px rgba(0, 0, 0, 0.75), 0 2px 6px rgba(0, 0, 0, 0.6); }
 .gm-cap-pre { font-size: 0.42em; letter-spacing: 0.16em; text-transform: uppercase; color: #a3e635; margin-bottom: 0.35em; font-weight: 800; }
-.gm-cap-acc { filter: drop-shadow(0 6px 26px rgba(0, 0, 0, 0.7)); }
+.gm-cap-acc { text-shadow: none; filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.85)); }
 .gm-cap-acc .gm-cap-w { background: linear-gradient(95deg, #7ef0e0 0%, #38bdf8 45%, #a78bfa 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; padding-bottom: 0.08em; }
 .gm-cap-w { display: inline-block; will-change: transform, opacity; }
 .gm-capture *, .gm-capture *::before, .gm-capture *::after { transition: none !important; animation: none !important; }

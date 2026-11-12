@@ -335,7 +335,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
         const e = 1 - Math.pow(1 - a, 4);
         w.style.opacity = String(e);
         w.style.transform = `translate3d(0, ${(1 - e) * 0.9}em, 0) rotate(${(1 - e) * 4}deg)`;
-        w.style.filter = `blur(${(1 - e) * 8}px)`;
+        w.style.filter = e > 0.995 || w.parentElement?.classList.contains("gm-cap-acc") ? "none" : `blur(${(1 - e) * 8}px)`;
       });
     }
     if (flashEl.current) {
@@ -765,7 +765,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
           {c.lines.map((l, li) => (
             <div key={li} className={li === c.accent ? "gm-cap-l gm-cap-acc" : li === 0 && c.lines.length > 1 ? "gm-cap-l gm-cap-pre" : "gm-cap-l"}>
               {l.split(" ").map((w, wi) => (
-                <span key={wi} className="gm-cap-w">{w}&nbsp;</span>
+                <span key={wi} className="gm-cap-w" style={{ opacity: 0 }}>{w}&nbsp;</span>
               ))}
             </div>
           ))}
