@@ -491,3 +491,43 @@ body {
 .gm-touring .gm-hud-stats, .gm-touring .gm-hud-feed { display: none !important; }
 .gm-ad .gm-touring { display: none !important; }
 .gm-wa-input { position: absolute; left: 8px; right: 8px; bottom: 14px; display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; border-radius: 22px; background: #1f2c34; color: #8696a0; font-size: 13px; z-index: 2; }
+/* Recorrido lento: permiso de cámara y rótulo por paso */
+.gm-perm { position: absolute; inset: 0; z-index: 7; align-items: center; justify-content: center; background: rgba(2, 4, 12, 0.55); padding: 18px; }
+.gm-perm-box { width: 100%; border-radius: 16px; background: #f8fafc; color: #0f172a; padding: 16px 16px 12px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55); font-family: system-ui, sans-serif; }
+.gm-perm-host { font-size: 14px; font-weight: 700; }
+.gm-perm-q { margin-top: 4px; font-size: 13px; color: #334155; }
+.gm-perm-btns { margin-top: 14px; display: flex; justify-content: flex-end; gap: 8px; font-size: 13px; font-weight: 700; }
+.gm-perm-btns span { padding: 8px 12px; border-radius: 999px; color: #1d4ed8; }
+.gm-perm-btns span.ok { background: #1d4ed8; color: #fff; }
+.gm-perm-btns span.ok.gm-tap { background: #1e3a8a; transform: scale(0.95); box-shadow: 0 0 0 6px rgba(29, 78, 216, 0.25); }
+.gm-phone-chip { position: absolute; left: 50%; bottom: calc(100% + 14px); transform: translateX(-50%); white-space: nowrap; padding: 8px 14px; border-radius: 999px; background: rgba(5, 7, 13, 0.85); border: 1px solid rgba(56, 189, 248, 0.45); color: #e2e8f0; font-size: 14px; font-weight: 700; }
+.gm-cap-phone { top: 4.5vh; }
+@media (min-aspect-ratio: 1/1) {
+  .gm-cap-phone { top: 50%; transform: translateY(-50%); right: auto; width: 46vw; }
+}
+/* HUD compacto en celular: una sola fila + tarjeta acoplada abajo */
+.gm-sede-m, .gm-speed-m { display: none; }
+@media (max-width: 767px) {
+  .gm-hud-top { display: flex !important; flex-wrap: nowrap; gap: 0.4rem; padding: 0.5rem 0.6rem; background: rgba(5, 7, 13, 0.92); border-bottom: 1px solid #1e2a44; }
+  .gm-hud-top > .gm-sede-d, .gm-hud-top .gm-speed-d, .gm-hud-title { display: none !important; }
+  .gm-hud-id { min-width: 0; flex: 1; }
+  .gm-hud-id img { width: 26px; height: 26px; }
+  .gm-sede-m { display: block; appearance: none; -webkit-appearance: none; max-width: 9.5rem; padding: 0.42rem 1.6rem 0.42rem 0.7rem; border-radius: 10px; font-size: 0.82rem; font-weight: 800; color: #fff; border: 1px solid #1e2a44; background: #0a0f1c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238b9ac0' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right 0.55rem center; }
+  .gm-speed-m { display: block; min-width: 2.6rem; padding: 0.42rem 0.55rem; border-radius: 10px; font-size: 0.82rem; font-weight: 900; color: #05070d; background: #e8eefc; }
+  .gm-clock { font-size: 0.9rem; padding: 0.38rem 0.55rem; }
+  .gm-x { width: 34px; height: 34px; font-size: 1.3rem; }
+  .gm-card.gm-card-dock { width: min(420px, calc(100vw - 20px)); transform: translate(-50%, -100%); background: #0a0f1c; box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.6); }
+  body.gm-card-follow .gm-hud-stats, body.gm-card-tour-on .gm-hud-stats { display: none !important; }
+  body.gm-card-follow .gm-label, body.gm-card-follow .gm-pop, body.gm-card-tour-on .gm-label, body.gm-card-tour-on .gm-pop { display: none !important; }
+}
+.gm-wa-old { margin-bottom: 10px; animation: none; }
+.gm-toast { transform: translate(-50%, 0); width: 300px; padding: 12px 14px; border-radius: 16px; background: #0a0f1c; border: 1px solid rgba(34, 224, 161, 0.55); box-shadow: 0 18px 50px rgba(0, 0, 0, 0.6); color: #e8eefc; font-family: inherit; animation: gmPop 0.35s ease-out both; }
+.gm-toast-ad { transform: translate(-50%, -100%) scale(1.25); transform-origin: 50% 100%; }
+.gm-toast-k { font-size: 10px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #8b9ac0; }
+.gm-toast-t { margin-top: 2px; font-size: 15px; font-weight: 900; color: #fff; }
+.gm-toast-t small { margin-left: 6px; font-size: 11px; font-weight: 700; color: #8b9ac0; }
+.gm-toast-row { display: flex; justify-content: space-between; gap: 10px; margin-top: 4px; font-size: 12.5px; color: #9fb0d6; }
+.gm-toast-row b { color: #fff; font-weight: 700; }
+.gm-toast-row b.ok, .gm-toast-ok { color: #22e0a1; }
+.gm-toast-ok { margin-top: 6px; font-size: 13px; font-weight: 800; }
+.gm-toast-s { font-size: 11.5px; color: #8b9ac0; }

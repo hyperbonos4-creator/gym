@@ -18,7 +18,7 @@ import type { Tour } from "../../lib/gemelo/tour";
 import { TOUR_PERSON } from "../../lib/gemelo/tour";
 import { StudioEnv, Turnstiles } from "./Turnstiles";
 import { Human } from "./Human";
-import { ClientesPanel3D, PhoneOverlay } from "./TourPanels";
+import { ClientesPanel3D, PhoneOverlay, StatusToast } from "./TourPanels";
 
 type Box = { p: [number, number, number]; s: [number, number, number]; r: number; c: string };
 type Cyl = { p: [number, number, number]; rad: number; h: number; axis: "x" | "y" | "z"; r: number; c: string };
@@ -408,7 +408,21 @@ function Members({ sim, ctrl, onPick }: { sim: GemeloSim; ctrl: WorldCtrl; onPic
       const camD = Math.hypot(m.x - state.camera.position.x, 1.0 - state.camera.position.y, m.z - state.camera.position.z);
       const tp = ctrl.tour.phase;
       const clearSet = ctrl.preset === "tour" && (tp === "to_gate" || tp === "gate") && (m.phase === "fila" || m.phase === "validando" || m.phase === "llegando") && m.z > 7.5 && m.z < 14;
-      if (m.phase === "fuera" || (ctrl.preset === "tour" && camD < 2.7) || clearSet) {
+      // en el recorrido, nadie se cruza entre la cámara y la protagonista
+      let blocks = false;
+      if (ctrl.preset === "tour" && ctrl.tour.active && tp !== "form" && tp !== "phone") {
+        const cx = state.camera.position.x, cz = state.camera.position.z;
+        const vx = ctrl.tour.x - cx, vz = ctrl.tour.z - cz;
+        const L2 = vx * vx + vz * vz;
+        if (L2 > 0.01) {
+          const u = ((m.x - cx) * vx + (m.z - cz) * vz) / L2;
+          if (u > 0 && u < 0.92) {
+            const dx = cx + vx * u - m.x, dz = cz + vz * u - m.z;
+            blocks = dx * dx + dz * dz < 0.75 * 0.75;
+          }
+        }
+      }
+      if (m.phase === "fuera" || (ctrl.preset === "tour" && camD < 2.7) || clearSet || blocks) {
         torso.current.setMatrixAt(i, ZERO);
         head.current.setMatrixAt(i, ZERO);
         legs.current.setMatrixAt(i * 2, ZERO);
@@ -529,27 +543,31 @@ function Members({ sim, ctrl, onPick }: { sim: GemeloSim; ctrl: WorldCtrl; onPic
 
 type Pop = { id: number; x: number; z: number; kind: string; title: string; detail: string; born: number };
 
-function Popups({ sim, enabled }: { sim: GemeloSim; enabled: boolean }) {
+function Popups({ sim, enabled, tour }: { sim: GemeloSim; enabled: boolean; tour: Tour }) {
   const [pops, setPops] = useState<Pop[]>([]);
   const lastId = useRef(0);
   const clock = useRef(0);
   const els = useRef<Map<number, HTMLDivElement>>(new Map());
+  // en celular, máximo 2 globos a la vez (no tapan etiquetas ni tarjetas)
+  const narrow = useThree((st) => st.size.width) < 768;
   useFrame((_, dt) => {
     clock.current += fdt(dt);
     const fresh = sim.events.filter((e) => e.id > lastId.current);
     if (fresh.length) {
       lastId.current = fresh[fresh.length - 1].id;
-      if (enabled) {
-        const add = fresh.slice(-3).map((e) => ({
+      // en el recorrido solo se ve lo de la protagonista (nada tapa el formulario ni el celular)
+      const quiet = tour.active && tour.phase !== "to_gate" && tour.phase !== "gate" && tour.phase !== "enter" && tour.phase !== "training";
+      if (enabled && !quiet) {
+        const add = fresh.slice(narrow ? -1 : -3).map((e) => ({
           id: e.id,
           x: e.x,
           z: e.z,
           kind: e.kind,
-          title: e.kind === "ok" ? "✓ Acceso permitido" : e.kind === "deny" ? "✕ Acceso denegado" : e.kind === "renew" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "sale" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "lost" ? "Dinero en riesgo" : "",
+          title: e.kind === "ok" ? "✔ Acceso concedido" : e.kind === "deny" ? "✕ Acceso denegado" : e.kind === "renew" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "sale" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "lost" ? "Dinero en riesgo" : "",
           detail: e.kind === "ok" || e.kind === "deny" ? `${e.name} · ${e.detail.split(" · ").slice(-2).join(" · ")}` : e.detail,
           born: clock.current,
         }));
-        setPops((p) => [...p.filter((x) => clock.current - x.born < 2.6), ...add].slice(-6));
+        setPops((p) => [...p.filter((x) => clock.current - x.born < 2.6), ...add].slice(narrow ? -2 : -6));
       }
     }
     for (let pi = 0; pi < pops.length; pi++) {
@@ -590,13 +608,29 @@ function Popups({ sim, enabled }: { sim: GemeloSim; enabled: boolean }) {
 
 /* ---------- Tarjeta que sigue al socio ---------- */
 
+/** En celular la tarjeta se acopla abajo (bottom sheet sobre la barra de navegación) */
+const DOCK_W = 768;
+function dockPos(bottom: number) {
+  return (_el: THREE.Object3D, _cam: THREE.Camera, size: { width: number; height: number }) => [size.width / 2, size.height - bottom];
+}
+function setCardFlag(k: string, on: boolean) {
+  if (typeof document === "undefined") return;
+  document.body.classList.toggle(k, on);
+}
+
 function FollowCard({ sim, ctrl, onClose }: { sim: GemeloSim; ctrl: WorldCtrl; onClose: () => void }) {
   const g = useRef<THREE.Group>(null!);
   const [snap, setSnap] = useState<{ id: number; key: string } | null>(null);
   const acc = useRef(0);
+  const width = useThree((st) => st.size.width);
+  const docked = width < DOCK_W && !(typeof window !== "undefined" && /[?&]ad=1/.test(window.location.search));
+  useEffect(() => () => setCardFlag("gm-card-follow", false), []);
   useFrame((_, dt) => {
     const id = ctrl.selected;
-    const m = id >= 0 ? sim.members[id] : null;
+    // nunca dos tarjetas: la de la protagonista del recorrido tiene prioridad
+    const tourCard = ctrl.tour.active && (ctrl.tour.phase === "training" || ctrl.tour.phase === "enter");
+    const m = id >= 0 && !tourCard ? sim.members[id] : null;
+    setCardFlag("gm-card-follow", !!(m && m.phase !== "fuera"));
     if (m && m.phase !== "fuera") {
       g.current.visible = true;
       g.current.position.set(m.x, 2.35, m.z);
@@ -612,8 +646,13 @@ function FollowCard({ sim, ctrl, onClose }: { sim: GemeloSim; ctrl: WorldCtrl; o
   return (
     <group ref={g}>
       {m && (
-        <Html center zIndexRange={[60, 50]} style={{ pointerEvents: "auto" }}>
-          <div className="gm-card">
+        <Html
+          center={!docked}
+          calculatePosition={docked ? (dockPos(ctrl.tour.active ? 168 : 84) as any) : undefined}
+          zIndexRange={[75, 74]}
+          style={{ pointerEvents: "auto" }}
+        >
+          <div className={`gm-card ${docked ? "gm-card-dock" : ""}`}>
             <div className="gm-card-h">
               <span className="gm-dot" style={{ background: m.shirt }} />
               <div>
@@ -624,14 +663,14 @@ function FollowCard({ sim, ctrl, onClose }: { sim: GemeloSim; ctrl: WorldCtrl; o
             </div>
             {m.phase !== "staff" && (
               <div className="gm-card-g">
-                <div><span>Plan</span><b>{m.plan}</b></div>
+                <div><span>Plan</span><b>{m.method === "PIN" ? "Invitación" : m.plan}</b></div>
                 <div>
                   <span>Días restantes</span>
-                  <b className={m.vencida ? "text-[#FF4D6D]" : m.daysLeft <= 5 ? "text-[#FFB02E]" : "text-[#22E0A1]"}>{m.vencida ? "Vencida" : m.daysLeft}</b>
+                  <b className={m.vencida ? "text-[#FF4D6D]" : m.daysLeft <= 5 ? "text-[#FFB02E]" : "text-[#22E0A1]"}>{m.method === "PIN" ? "1 ingreso" : m.vencida ? "Vencida" : m.daysLeft}</b>
                 </div>
                 <div className="col-span-2"><span>Rutina del día</span><b>{m.routine}</b></div>
-                <div><span>Acceso</span><b>{m.method}</b></div>
-                <div><span>Visitas</span><b>{12 + ((m.id * 7) % 30)} este mes</b></div>
+                <div><span>Acceso</span><b>{m.method === "PIN" ? "Invitado · PIN" : "Facial"}</b></div>
+                <div><span>Visitas</span><b>{m.method === "PIN" ? "Invitado" : `${12 + ((m.id * 7) % 30)} este mes`}</b></div>
               </div>
             )}
             {m.phase !== "staff" && (
@@ -739,9 +778,9 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     return { pos: P.clone().add(off), tgt, k: pt < 0.05 ? 50 : 3.2 };
   }
   if (ph === "form" || ph === "registered" || ph === "plan") {
-    const d = portrait ? 5.7 : 7.9;
+    const d = portrait ? 5.7 : ph === "form" ? 8.1 : 7.2;
     const push = ph === "form" ? Math.max(0, 1 - pt / 7) * 0.5 : 0;
-    const lift = portrait ? 0.42 : 0.12;
+    const lift = portrait ? 0.42 : 0.36;
     const pos = panel.clone().addScaledVector(panelN, d + push).add(new THREE.Vector3(0, 0.05 + lift, 0));
     const tgt = panel.clone().add(new THREE.Vector3(0, lift, 0));
     if (!portrait) {
@@ -931,15 +970,25 @@ function CameraRig({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
 function TourCard({ tour }: { tour: Tour }) {
   const g = useRef<THREE.Group>(null!);
   const el = useRef<HTMLDivElement>(null);
+  const width = useThree((st) => st.size.width);
+  const docked = width < DOCK_W && !(typeof window !== "undefined" && /[?&]ad=1/.test(window.location.search));
+  useEffect(() => () => setCardFlag("gm-card-tour-on", false), []);
   useFrame(() => {
-    const on = tour.active && (tour.phase === "training" || (tour.phase === "enter" && tour.phaseT > 1.4));
+    // después de la tarjeta de Accesos (nunca dos tarjetas a la vez)
+    const on = tour.active && (tour.phase === "training" || (tour.phase === "enter" && tour.phaseT > 6.6));
     g.current.position.set(tour.x, 2.25, tour.z);
     if (el.current) el.current.style.display = on ? "" : "none";
+    setCardFlag("gm-card-tour-on", on);
   });
   return (
     <group ref={g}>
-      <Html center zIndexRange={[60, 50]} style={{ pointerEvents: "none" }}>
-        <div ref={el} className="gm-card gm-card-tour" style={{ display: "none" }}>
+      <Html
+        center={!docked}
+        calculatePosition={docked ? (dockPos(168) as any) : undefined}
+        zIndexRange={[75, 74]}
+        style={{ pointerEvents: "none" }}
+      >
+        <div ref={el} className={`gm-card gm-card-tour ${docked ? "gm-card-dock" : ""}`} style={{ display: "none" }}>
           <div className="gm-card-h">
             <span className="gm-dot" style={{ background: "#38BDF8" }} />
             <div>
@@ -1011,9 +1060,10 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <ClientesPanel3D sim={sim} tour={ctrl.tour} />
       <PhoneOverlay tour={ctrl.tour} anchor={phoneRef} />
       <TourCard tour={ctrl.tour} />
+      <StatusToast tour={ctrl.tour} />
       <Members sim={sim} ctrl={ctrl} onPick={onPick} />
       {labels && <ZoneLabels key={`l${version}`} L={L} />}
-      <Popups sim={sim} enabled={labels} />
+      <Popups sim={sim} enabled={labels} tour={ctrl.tour} />
       <FollowCard sim={sim} ctrl={ctrl} onClose={() => onPick(-1)} />
       <CameraRig sim={sim} ctrl={ctrl} />
     </>

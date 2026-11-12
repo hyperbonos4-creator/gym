@@ -36,9 +36,12 @@ export const TOUR_PERSON = {
 type Pt = { x: number; z: number };
 
 const WALK = 1.45; // m/s, paso natural
-const DUR: Record<string, number> = { form: 7.2, registered: 1.8, plan: 2.6, phone: 10.2, enrolled: 2.0, gate: 1.9 };
-/** versión compacta (comercial): mismas pantallas, ritmo más rápido */
-const DUR_FAST: Record<string, number> = { form: 5.4, registered: 1.4, plan: 2.0, phone: 8.4, enrolled: 1.4, gate: 1.7 };
+/**
+ * Ritmo del recorrido: lento a propósito para que se lea cada campo y cada
+ * pantalla del registro facial (mismo ritmo en la página y en el comercial).
+ */
+const DUR: Record<string, number> = { form: 12.0, registered: 2.6, plan: 6.4, phone: 30.0, enrolled: 2.0, gate: 1.9 };
+const DUR_FAST: Record<string, number> = DUR;
 
 function pathLen(p: Pt[]) {
   let d = 0;

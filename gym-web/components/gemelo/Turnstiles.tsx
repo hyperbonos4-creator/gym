@@ -5,7 +5,7 @@
  * de vidrio batientes), modelados en código: gabinetes con pilares de extremo
  * redondeados, tapa superior larga, tapas oscuras con anillo LED cian, ranura
  * negra lateral, paneles de vidrio con esquinas redondeadas sobre eje de acero,
- * flechas verde / X roja + símbolo NFC, tablet de reconocimiento facial sobre
+ * flechas verde / X roja + el ícono de tarjeta impreso del equipo (solo arte: el software no usa tarjetas), tablet de reconocimiento facial sobre
  * poste y pantalla trasera. Geometría estática fusionada por material (pocas
  * draw calls), PBR metal/rugosidad con entorno generado en código.
  */
@@ -126,7 +126,7 @@ function capTopTexture() {
     g.lineTo(96, 82);
     g.closePath();
     g.fill();
-    // símbolo NFC / tarjeta
+    // ícono de tarjeta impreso en el equipo físico (solo arte)
     g.strokeStyle = "#9fdcff";
     g.lineWidth = 7;
     g.strokeRect(84, 166, 88, 58);
@@ -234,10 +234,11 @@ function tabletTexture(kind: TabletState) {
       g.lineTo(x, y + dy * L);
     }
     g.stroke();
+    // Textos reales del kiosko (access/backend/public/assets/kiosk.js · setVerdict)
     if (kind === "idle") {
       g.fillStyle = "#94a3b8";
-      g.font = "600 22px Inter, sans-serif";
-      g.fillText("Acerque su rostro", 150, 215);
+      g.font = "600 34px Inter, sans-serif";
+      g.fillText("◎", 150, 215);
     }
     // franja de estado
     const sy = 360;
@@ -245,39 +246,44 @@ function tabletTexture(kind: TabletState) {
       g.fillStyle = "rgba(34,224,161,0.16)";
       g.fillRect(0, sy, 300, 160);
       g.fillStyle = "#22E0A1";
-      g.font = "800 30px Inter, sans-serif";
-      g.fillText("✓ Acceso permitido", 150, sy + 52);
+      g.font = "800 27px Inter, sans-serif";
+      g.fillText("✔ ACCESO CONCEDIDO", 150, sy + 50);
       g.fillStyle = "#e8eefc";
-      g.font = "600 22px Inter, sans-serif";
-      g.fillText(kind === "okv" ? `Bienvenida, ${TOUR_PERSON.first}` : "Bienvenido", 150, sy + 92);
+      g.font = "600 19px Inter, sans-serif";
+      if (kind === "okv") {
+        g.fillText("Bienvenido,", 150, sy + 86);
+        g.fillText(TOUR_PERSON.nombre, 150, sy + 112);
+      } else g.fillText("Identidad verificada", 150, sy + 92);
       g.fillStyle = "#94a3b8";
-      g.font = "500 18px Inter, sans-serif";
-      g.fillText(kind === "okv" ? "Mensual · 30 días" : "Membresía vigente", 150, sy + 124);
+      g.font = "500 16px Inter, sans-serif";
+      g.fillText("Cliente · Abriendo…", 150, sy + 142);
     } else if (kind === "deny") {
       g.fillStyle = "rgba(255,77,109,0.18)";
       g.fillRect(0, sy, 300, 160);
       g.fillStyle = "#FF4D6D";
-      g.font = "800 30px Inter, sans-serif";
-      g.fillText("✕ Acceso denegado", 150, sy + 52);
+      g.font = "800 27px Inter, sans-serif";
+      g.fillText("✕ ACCESO DENEGADO", 150, sy + 52);
       g.fillStyle = "#e8eefc";
-      g.font = "600 21px Inter, sans-serif";
-      g.fillText("Membresía vencida", 150, sy + 92);
+      g.font = "600 18px Inter, sans-serif";
+      g.fillText("Membresía vencida o sin plan", 150, sy + 94);
       g.fillStyle = "#94a3b8";
-      g.font = "500 18px Inter, sans-serif";
-      g.fillText("Pasa a recepción", 150, sy + 124);
-    } else if (kind === "scan") {
-      g.fillStyle = "#38BDF8";
-      g.font = "700 26px Inter, sans-serif";
-      g.fillText("Verificando rostro…", 150, sy + 62);
-      g.fillStyle = "rgba(56,189,248,0.25)";
-      g.fillRect(40, sy + 92, 220, 8);
-      g.fillStyle = "#38BDF8";
-      g.fillRect(40, sy + 92, 150, 8);
+      g.font = "500 16px Inter, sans-serif";
+      g.fillText("Cerrado", 150, sy + 126);
     } else {
+      // reposo y lectura: "Acérquese a la cámara" (la tarjeta pulsa mientras escanea)
+      g.fillStyle = kind === "scan" ? "#38BDF8" : "#cbd5e1";
+      g.font = "700 22px Inter, sans-serif";
+      g.fillText("Acérquese a la cámara", 150, sy + 46);
       g.fillStyle = "#64748b";
-      g.font = "500 19px Inter, sans-serif";
-      g.fillText("Reconocimiento facial", 150, sy + 60);
-      g.fillText("NFC · QR", 150, sy + 92);
+      g.font = "500 15px Inter, sans-serif";
+      g.fillText("El sistema reconocerá su", 150, sy + 80);
+      g.fillText("rostro automáticamente", 150, sy + 100);
+      if (kind === "scan") {
+        g.fillStyle = "rgba(56,189,248,0.25)";
+        g.fillRect(40, sy + 124, 220, 6);
+        g.fillStyle = "#38BDF8";
+        g.fillRect(40, sy + 124, 150, 6);
+      }
     }
   });
 }

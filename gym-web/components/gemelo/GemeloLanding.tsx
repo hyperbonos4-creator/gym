@@ -11,7 +11,7 @@ const World3D = dynamic(() => import("./World3D"), {
   loading: () => <div className="gm-loading"><span />Cargando gemelo 3D…</div>,
 });
 
-type Caption = { id: number; lines: string[]; pos: "top" | "center" | "bottom"; accent: number; born: number; size: number };
+type Caption = { id: number; lines: string[]; pos: "top" | "center" | "bottom" | "phone"; accent: number; born: number; size: number };
 
 function useRaf(cb: (now: number) => void, on = true) {
   const ref = useRef(cb);
@@ -87,7 +87,7 @@ const AREAS = [
     k: "01",
     t: "Operación",
     d: "La recepción deja de ser un cuello de botella. Cada entrada se valida sola y la caja cuadra al final del día.",
-    items: ["Control de acceso: torniquetes, rostro, QR y huella", "Recepción y caja (POS)", "Clases y reservas", "Inventario y proveedores"],
+    items: ["Control de acceso: torniquetes con reconocimiento facial", "Recepción y caja (POS)", "Clases y reservas", "Inventario y proveedores"],
     c: "#38BDF8",
   },
   {
@@ -115,7 +115,7 @@ const AREAS = [
     k: "05",
     t: "Experiencia del socio",
     d: "Tu gimnasio en el bolsillo de cada socio: entra con el celular y ve su rutina del día.",
-    items: ["App móvil del socio", "Ingreso con QR o rostro", "Rutina del día en el celular", "Pagos en línea e invitaciones"],
+    items: ["App móvil del socio", "Ingreso con el rostro · invitados con PIN de un uso", "Rutina del día en el celular", "Pagos en línea e invitaciones"],
     c: "#F472B6",
   },
 ];
@@ -636,14 +636,19 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       {full && (
         <div className={`gm-hud ${tourPhase !== "off" ? "gm-touring" : ""}`}>
           <div className="gm-hud-top">
-            <div className="flex items-center gap-2">
+            <div className="gm-hud-id flex items-center gap-2">
               <img src="/brand/vx-icon-color.svg" alt="" className="h-8 w-8" />
-              <div className="leading-tight">
+              <select className="gm-sede-m" value={sede} onChange={(e) => changeSede(Number(e.target.value))} aria-label="Sede">
+                {SEDES.map((s, i) => (
+                  <option key={s.name} value={i}>{s.name.replace("VISIONYX ", "")}</option>
+                ))}
+              </select>
+              <div className="gm-hud-title leading-tight">
                 <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-gym-muted">Gemelo digital</div>
                 <div className="text-sm font-extrabold text-white">{S.name}</div>
               </div>
             </div>
-            <div className="gm-seg">
+            <div className="gm-seg gm-sede-d">
               {SEDES.map((s, i) => (
                 <button key={s.name} className={i === sede ? "on" : ""} onClick={() => changeSede(i)}>
                   {s.name.replace("VISIONYX ", "")}
@@ -652,11 +657,14 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             </div>
             <div className="flex items-center gap-2">
               <div className="gm-clock">{formatClock(clock)}</div>
-              <div className="gm-seg">
+              <div className="gm-seg gm-speed-d">
                 {[1, 10, 60].map((s) => (
                   <button key={s} className={speed === s ? "on" : ""} onClick={() => changeSpeed(s)}>x{s}</button>
                 ))}
               </div>
+              <button className="gm-speed-m" onClick={() => changeSpeed(speed === 1 ? 10 : speed === 10 ? 60 : 1)} aria-label="Velocidad">
+                x{speed}
+              </button>
               <button className="gm-x" onClick={exit} aria-label="Salir">×</button>
             </div>
           </div>
@@ -726,7 +734,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
         <h2 className="gm-h2" data-rv="0">El mundo real, <span className="gm-grad">conectado.</span></h2>
         <div className="gm-steps">
           {[
-            ["Llega", "Rostro, QR o huella. Sin carnés, sin filas en recepción.", "#38BDF8"],
+            ["Llega", "Con su rostro. Sin carnés, sin filas en recepción.", "#38BDF8"],
             ["Valida", "Membresía, días restantes y saldo, al instante. El torniquete abre solo.", "#A3E635"],
             ["Entrena", "Su rutina del día aparece en su celular. Tú ves el aforo en vivo.", "#A78BFA"],
           ].map(([t, d, c], i) => (

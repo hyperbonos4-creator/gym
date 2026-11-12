@@ -65,38 +65,45 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
     show(F.done, tour.phase === "registered");
     show(F.plan, tour.phase === "plan");
     if (tour.phase === "form" || tour.phase === "walk_in") {
-      const doc = typed(P.doc, t, 0.3, 1.4);
-      const nom = typed(P.nombre, t, 1.7, 3.4);
-      const cel = typed(P.cel, t, 3.6, 4.8);
-      const mail = typed(P.email, t, 5.0, 6.3);
+      const doc = typed(P.doc, t, 0.6, 2.3);
+      const nom = typed(P.nombre, t, 3.0, 5.4);
+      const cel = typed(P.cel, t, 5.9, 7.3);
+      const mail = typed(P.email, t, 7.9, 9.9);
       const caret = (on: boolean) => (on && Math.floor(t * 3) % 2 === 0 ? "|" : "");
-      F.doc!.textContent = doc + caret(t > 0.2 && t < 1.6);
-      F.nom!.textContent = nom + caret(t >= 1.6 && t < 3.5);
-      F.cel!.textContent = cel + caret(t >= 3.5 && t < 4.9);
-      F.mail!.textContent = mail + caret(t >= 4.9 && t < 6.4);
+      F.doc!.textContent = doc + caret(t > 0.3 && t < 2.8);
+      F.nom!.textContent = nom + caret(t >= 2.8 && t < 5.7);
+      F.cel!.textContent = cel + caret(t >= 5.7 && t < 7.7);
+      F.mail!.textContent = mail + caret(t >= 7.7 && t < 10.2);
       for (const k of ["doc", "nom", "cel", "mail"]) {
         const v = (F[k]!.textContent || "").replace("|", "");
         F[k]!.classList.toggle("gm-ph-holder", !v);
         if (!v) F[k]!.textContent = (F[k] as HTMLElement).dataset.ph || "";
       }
-      const active = t < 1.6 ? "docBox" : t < 3.5 ? "nomBox" : t < 4.9 ? "celBox" : t < 6.4 ? "mailBox" : "";
+      const active = t < 2.8 ? "docBox" : t < 5.7 ? "nomBox" : t < 7.7 ? "celBox" : t < 10.2 ? "mailBox" : "";
       for (const k of ["docBox", "nomBox", "celBox", "mailBox"]) F[k]?.classList.toggle("gm-focus", k === active);
-      show(F.docOk, t > 1.5);
-      show(F.preview, t > 1.75, "flex");
+      show(F.docOk, t > 2.5);
+      show(F.preview, t > 3.1, "flex");
       F.pvName!.textContent = nom || "Nuevo cliente";
       F.pvSub!.textContent = `CC ${doc || "sin documento"}${cel ? ` · +57 ${cel}` : ""}`;
       F.pvIni!.textContent = (nom || "N").charAt(0).toUpperCase();
-      show(F.celOk, t > 4.9);
-      F.btn!.classList.toggle("gm-press", t > 6.5 && t < 6.85);
-      F.btn!.textContent = t > 6.8 ? "Guardando y avisando…" : "Registrar cliente y avisar en la app";
+      show(F.celOk, t > 7.5);
+      F.btn!.classList.toggle("gm-press", t > 10.9 && t < 11.3);
+      F.btn!.textContent = t > 11.25 ? "Guardando y enviando…" : "Registrar cliente y avisar en la app";
     }
     if (tour.phase === "plan") {
       const pt = tour.nt;
-      F.mensual!.classList.toggle("gm-sel", pt > 0.45);
-      show(F.vig, pt > 0.5);
-      F.pay!.classList.toggle("gm-sel", pt > 0.9);
-      F.btn2!.classList.toggle("gm-press", pt > 1.3 && pt < 1.6);
-      show(F.okPlan, pt > 1.65);
+      F.mensual!.classList.toggle("gm-sel", pt > 0.6);
+      show(F.vig, pt > 0.7);
+      F.pay!.classList.toggle("gm-sel", pt > 1.3);
+      F.btn2!.classList.toggle("gm-press", pt > 1.9 && pt < 2.25);
+      show(F.okPlan, pt > 2.3);
+      // ficha del cliente: recepción envía el enlace de registro facial (POST /api/socios/resend)
+      const ficha = pt >= 3.4;
+      show(F.planBox, !ficha, "block");
+      show(F.ficha, ficha, "block");
+      F.send!.classList.toggle("gm-press", pt > 4.7 && pt < 5.05);
+      F.send!.textContent = pt > 5.0 ? "Enviando…" : "Enviar enlace";
+      show(F.confirm, pt > 4.1 && pt < 4.75, "block");
     }
   });
   return (
@@ -193,9 +200,14 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
               <li>○ Membresía pendiente</li>
               <li className="text-status-err">⛔ Acceso todavía no autorizado</li>
             </ul>
+            <p className="mt-3 text-xs text-gym-muted">Consentimiento para identificación facial · Registrado · hace un momento</p>
             <div className="mt-5 rounded-2xl border border-gym-border/70 bg-gym-navy/40 p-4">
               <div className="text-[11px] font-bold uppercase tracking-wider text-gym-muted">Siguiente paso</div>
               <p className="mt-1 text-sm text-white">El cliente entra a la app con su documento y este WhatsApp.</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="rounded-xl border border-gym-border px-3 py-2 text-xs font-semibold text-gym-silver">Copiar enlace</span>
+                <span className="rounded-xl border border-gym-border px-3 py-2 text-xs font-semibold text-gym-silver">Ver cliente</span>
+              </div>
             </div>
             <div className="mt-4">
               <p className="text-sm text-gym-silver">¿Quieres activarlo ahora?</p>
@@ -204,6 +216,7 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
           </div>
           {/* --- Membresías: Nueva membresía --- */}
           <div ref={reg("plan")} className="p-6" style={{ display: "none" }}>
+            <div ref={reg("planBox")}>
             <div className="text-[11px] font-bold uppercase tracking-wider text-gym-muted">Membresías</div>
             <h3 className="mt-1 text-lg font-bold text-white">Nueva membresía · {P.nombre}</h3>
             <div className="mt-4 grid grid-cols-2 gap-2">
@@ -215,7 +228,10 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
                 </div>
               ))}
             </div>
-            <p ref={reg("vig")} className="mt-3 text-sm text-gym-silver" style={{ display: "none" }}>Nueva vigencia: <b className="text-white">12 nov 2026 → 12 dic 2026</b></p>
+            <div ref={reg("vig")} className="mt-3 rounded-xl border border-gym-border/60 bg-gym-navy/40 px-3 py-2 text-xs text-gym-silver" style={{ display: "none" }}>
+              <div>Empieza hoy. No queda un plan vigente que conservar.</div>
+              <div className="mt-1 font-semibold text-white">Nueva vigencia: 12 nov 2026 → 12 dic 2026.</div>
+            </div>
             <div className="mt-3 flex gap-4 text-sm text-gym-silver">
               <span>◉ Cobrar ahora</span>
               <span className="text-gym-muted">○ Registrar como pendiente</span>
@@ -227,9 +243,33 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
             </div>
             <div ref={reg("btn2")} className="btn-gym mt-4 w-full py-3">Confirmar y cobrar</div>
             <div ref={reg("okPlan")} className="mt-4 rounded-2xl border border-status-ok/50 bg-status-ok/10 p-4 text-sm" style={{ display: "none" }}>
-              <div className="font-bold text-status-ok">✓ Membresía Mensual activa · $120.000</div>
-              <div className="mt-1 text-gym-silver">✓ Enlace de registro facial enviado por WhatsApp</div>
-              <div className="mt-1 text-gym-muted">○ Rostro pendiente: lo hace desde su celular</div>
+              <div className="font-bold text-status-ok">Cobrado en caja. La puerta ya respeta la vigencia nueva.</div>
+            </div>
+            </div>
+            {/* --- Clientes · ficha: Siguiente paso → Enviar enlace (registro facial) --- */}
+            <div ref={reg("ficha")} style={{ display: "none" }}>
+              <div className="text-[11px] font-bold uppercase tracking-wider text-gym-muted">Clientes · ficha</div>
+              <h3 className="mt-1 text-xl font-extrabold text-white">{P.nombre}</h3>
+              <section className="mt-3 rounded-xl border border-gym-border/60 p-3">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-gym-muted">Membresía</h4>
+                <div className="mt-2 flex items-center justify-between"><p className="text-sm font-semibold text-white">Mensual</p><span className="rounded-full bg-status-ok/15 px-2.5 py-1 text-[11px] font-bold text-status-ok">Vigente</span></div>
+              </section>
+              <section className="mt-3 rounded-xl border border-gym-border/60 p-3 text-sm text-gym-silver">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-gym-muted">Acceso</h4>
+                <div className="mt-2 flex justify-between"><span className="text-gym-muted">Rostro</span><span className="text-status-warn">Pendiente</span></div>
+                <div className="flex justify-between"><span className="text-gym-muted">Sede</span><span className="text-status-ok">Autorizada</span></div>
+                <div className="flex justify-between"><span className="text-gym-muted">Último ingreso</span><span>Sin acceso</span></div>
+                <p className="mt-2 font-semibold text-status-warn">Rostro no registrado</p>
+              </section>
+              <section className="mt-3 rounded-xl border border-gym-border/60 p-3">
+                <h4 className="text-[10px] font-bold uppercase tracking-wider text-gym-muted">Siguiente paso</h4>
+                <p className="mt-1 text-sm text-white">Falta el registro facial.</p>
+                <span ref={reg("send")} className="btn-gym mt-2 inline-block px-4 py-2 text-xs">Enviar enlace</span>
+              </section>
+              <div ref={reg("confirm")} className="mt-3 rounded-xl border border-gym-primary/50 bg-gym-navy p-3 text-xs text-white" style={{ display: "none" }}>
+                Se avisará a {P.nombre} por WhatsApp para que abra la app y registre el rostro.
+                <div className="mt-2 flex justify-end gap-2"><span className="text-gym-muted">Cancelar</span><span className="font-bold text-gym-primary">Aceptar</span></div>
+              </div>
             </div>
           </div>
         </div>
@@ -242,6 +282,29 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
 
 const WA_LINK = `visionyx.duckdns.org/e/${P.code}`;
 
+/** Guion del celular (s dentro de la fase "phone"). Pantallas reales de /e/{code} y enroll.html. */
+export const PHONE_T = {
+  wa: 0, e: 3.2, idle: 4.8, perm: 8.0, steps: 11.0, verif: 23.6, ok: 26.2, end: 30.0,
+};
+const PHONE_STEPS = [
+  { t0: 11.0, t1: 14.2, icon: "◎", title: "Mira al frente", hint: "Rostro recto, ojos a la cámara", yaw: 0 },
+  { t0: 14.2, t1: 17.4, icon: "⬅️", title: "Gira a la izquierda", hint: "Lleva el mentón hacia tu hombro izquierdo", yaw: -1 },
+  { t0: 17.4, t1: 20.6, icon: "➡️", title: "Gira a la derecha", hint: "Lleva el mentón hacia tu hombro derecho", yaw: 1 },
+  { t0: 20.6, t1: 23.6, icon: "😉", title: "Parpadea", hint: "Cierra y abre los ojos con naturalidad", yaw: 0 },
+];
+/** Rótulo corto por paso (recorrido interactivo) */
+export function phoneStepLabel(t: number): string {
+  const T = PHONE_T;
+  if (t < T.e) return "1/7 · Le llega el enlace por WhatsApp";
+  if (t < T.idle) return "2/7 · Abre su registro facial";
+  if (t < T.perm) return "3/7 · Inicia el reconocimiento";
+  if (t < T.steps) return "4/7 · Permite la cámara del celular";
+  if (t < PHONE_STEPS[1].t0) return "5/7 · Mira al frente, dentro del óvalo";
+  if (t < T.verif) return "6/7 · Prueba de vida: gira y parpadea";
+  if (t < T.ok) return "7/7 · Verificando…";
+  return "✓ Registro exitoso";
+}
+
 export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.MutableRefObject<THREE.Object3D | null> }) {
   const grp = useRef<THREE.Group>(null!);
   const root = useRef<HTMLDivElement>(null);
@@ -249,8 +312,9 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
   const reg = (k: string) => (el: HTMLElement | null) => {
     f.current[k] = el;
   };
-  const { size } = useThree();
+  const { size, camera } = useThree();
   const v = new THREE.Vector3();
+  const ad = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("ad") === "1";
   useFrame(() => {
     const el = root.current;
     const on = tour.active && (tour.phase === "phone" || tour.phase === "enrolled");
@@ -262,52 +326,87 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
       grp.current.position.copy(v);
     }
     const F = f.current;
+    const T = PHONE_T;
     const t = tour.phase === "phone" ? tour.nt : 99;
     const enrolled = tour.phase === "enrolled";
-    // escala para que el celular quepa en cualquier formato
-    const s = Math.min(1.1, (size.height * 0.7) / 640, (size.width * 0.86) / 320);
-    const inA = Math.min(1, (tour.phase === "phone" ? t : 9) / 0.45);
-    const outA = enrolled ? Math.max(0, 1 - Math.max(0, tour.phaseT - (tour.phaseDur - 0.45)) / 0.45) : 1;
-    el.style.transform = `translate(-50%,-50%) translateY(${(1 - inA) * 120}px) scale(${s * (0.92 + 0.08 * inA)}) rotate(${(1 - inA) * -6}deg)`;
-    el.style.opacity = String(Math.min(inA, outA));
-    const scr = t < 2.0 ? "wa" : t < 3.0 ? "e" : t < 4.3 ? "idle" : t < 8.6 ? "stage" : t < 9.3 ? "verif" : "ok";
+    // El celular llena casi todo el cuadro: centrado abajo en vertical, a la derecha en horizontal
+    const portrait = size.width < size.height;
+    const s = portrait ? Math.min((size.height * 0.75) / 620, (size.width * 0.92) / 300) : Math.min((size.height * 0.84) / 620, (size.width * 0.5) / 300);
+    const tx = portrait ? size.width * 0.5 : size.width * 0.66;
+    const ty = portrait ? size.height * 0.595 : size.height * 0.5;
+    const pr = v.clone().project(camera);
+    const sx = ((pr.x + 1) / 2) * size.width;
+    const sy = ((1 - pr.y) / 2) * size.height;
+    const inA = Math.min(1, (tour.phase === "phone" ? t : 9) / 0.6);
+    const ie = 1 - Math.pow(1 - inA, 3);
+    const outA = enrolled ? Math.max(0, 1 - Math.max(0, tour.phaseT - (tour.phaseDur - 0.5)) / 0.5) : 1;
+    const dx = (tx - sx) * ie;
+    const dy = (ty - sy) * ie;
+    const sc = s * (0.35 + 0.65 * ie);
+    el.style.transform = `translate(-50%,-50%) translate(${dx}px,${dy}px) scale(${sc}) rotate(${(1 - ie) * -8}deg)`;
+    el.style.opacity = String(Math.min(Math.min(1, inA * 2), outA));
+    if (F.chip) {
+      show(F.chip, !ad, "block");
+      F.chip.textContent = enrolled ? "✓ Rostro registrado · ya puede entrar" : phoneStepLabel(t);
+    }
+    const scr = t < T.e ? "wa" : t < T.idle ? "e" : t < T.perm ? "idle" : t < T.verif ? "stage" : t < T.ok ? "verif" : "ok";
     for (const k of ["wa", "e", "idle", "stage", "ok"]) show(F[k], k === scr || (k === "stage" && scr === "verif"), "flex");
     // WhatsApp
-    show(F.notif, t < 0.9);
-    F.notif!.style.transform = `translateY(${t < 0.25 ? -(0.25 - t) * 300 : 0}px)`;
-    show(F.bubble, t > 0.55, "block");
-    F.link!.classList.toggle("gm-tap", t > 1.45 && t < 1.95);
-    // /e
-    // idle: barra de arranque
-    const boot = Math.min(1, Math.max(0.08, (t - 3.0) / 0.8));
+    show(F.notif, t < 1.2);
+    F.notif!.style.transform = `translateY(${t < 0.35 ? -(0.35 - t) * 240 : 0}px)`;
+    show(F.bubble, t > 0.8, "block");
+    F.link!.classList.toggle("gm-tap", t > 2.5 && t < 3.15);
+    // idle: barra de arranque y botón
+    const boot = Math.min(1, Math.max(0.08, (t - T.idle - 0.2) / 1.8));
     F.bootBar!.style.width = `${boot * 100}%`;
-    F.bootLbl!.textContent = boot >= 1 ? "Motor listo. Ya puedes iniciar." : boot > 0.16 ? "Preparando el motor de visión…" : "Comprobando tu acceso…";
+    F.bootLbl!.textContent = boot >= 1 ? "Motor listo. Ya puedes iniciar." : boot > 0.3 ? "Preparando el motor de visión…" : "Comprobando tu acceso…";
     F.start!.classList.toggle("gm-dis", boot < 1);
-    F.start!.classList.toggle("gm-press", t > 3.95 && t < 4.25);
-    // escenario guiado
-    const steps = [
-      { t0: 4.3, t1: 5.4, icon: "◎", title: "Mira al frente", hint: "Rostro recto, ojos a la cámara", yaw: 0 },
-      { t0: 5.4, t1: 6.5, icon: "⬅️", title: "Gira a la izquierda", hint: "Lleva el mentón hacia tu hombro izquierdo", yaw: -1 },
-      { t0: 6.5, t1: 7.6, icon: "➡️", title: "Gira a la derecha", hint: "Lleva el mentón hacia tu hombro derecho", yaw: 1 },
-      { t0: 7.6, t1: 8.6, icon: "😉", title: "Parpadea", hint: "Cierra y abre los ojos con naturalidad", yaw: 0 },
-    ];
+    F.start!.classList.toggle("gm-press", t > T.perm - 0.6 && t < T.perm - 0.2);
     if (scr === "stage" || scr === "verif") {
-      const i = Math.max(0, steps.findIndex((sp) => t < sp.t1));
-      const sp = scr === "verif" ? null : steps[i];
+      // permiso de cámara (diálogo del navegador) y arranque
+      const perm = t < T.steps;
+      const dlg = perm && t > T.perm + 0.4 && t < T.perm + 2.45;
+      show(F.perm, dlg, "flex");
+      F.permOk!.classList.toggle("gm-tap", t > T.perm + 1.9 && t < T.perm + 2.4);
+      const camOn = t > T.perm + 2.45;
+      F.camWrap!.style.opacity = camOn ? String(Math.min(1, (t - T.perm - 2.45) / 0.4)) : "0";
+      const i = Math.max(0, PHONE_STEPS.findIndex((sp) => t < sp.t1));
+      const sp = scr === "verif" || perm ? null : PHONE_STEPS[i];
       const lt = sp ? t - sp.t0 : 0;
-      if (sp) {
+      if (perm) {
+        const act = t > T.perm + 2.45;
+        F.cueIcon!.textContent = "◎";
+        F.cueTitle!.textContent = act ? "Activando reconocimiento" : "Abriendo la cámara";
+        F.cueHint!.textContent = act ? "La cámara ya está encendida" : "Permite el acceso cuando el celular lo pida";
+        F.flag!.textContent = act ? "Motor de visión…" : "Cámara…";
+        F.flag!.className = "gm-flag";
+        F.face!.style.transform = "";
+        F.guide!.classList.remove("ok");
+      } else if (sp) {
+        const dur = sp.t1 - sp.t0;
         F.cueIcon!.textContent = sp.icon;
         F.cueTitle!.textContent = sp.title;
         F.cueHint!.textContent = sp.hint;
-        const hold = lt > 0.35;
-        const left = Math.max(0, Math.ceil((sp.t1 - sp.t0 - 0.15 - lt) / 0.5) / 2);
-        F.flag!.textContent = sp.title === "Parpadea" ? (lt < 0.4 ? "Mírame con los ojos abiertos" : "Ahora parpadea") : hold ? `Mantén la posición… ${Math.max(0, Math.ceil((sp.t1 - 0.15 - t)))}s` : sp.yaw ? "Ahora gira" : "Prepárate…";
+        const hold = lt > 1.2;
+        F.flag!.textContent =
+          sp.title === "Parpadea"
+            ? lt < 0.9
+              ? "Mírame con los ojos abiertos"
+              : lt < 1.9
+                ? "Ahora parpadea"
+                : "¡Perfecto!"
+            : lt > dur - 0.6
+              ? "¡Perfecto!"
+              : hold
+                ? `Mantén la posición… ${Math.max(1, Math.ceil(dur - 0.6 - lt))}s`
+                : sp.yaw
+                  ? "Ahora gira"
+                  : "Prepárate…";
         F.flag!.className = `gm-flag ${hold ? "ok" : ""}`;
-        void left;
         // rostro: giro y parpadeo
-        const turn = sp.yaw * Math.min(1, Math.max(0, (lt - 0.1) / 0.35)) * (lt > sp.t1 - sp.t0 - 0.2 ? 0.6 : 1);
+        const turn = sp.yaw * Math.min(1, Math.max(0, (lt - 0.3) / 0.8)) * (lt > dur - 0.4 ? 0.6 : 1);
         F.face!.style.transform = `translateX(${-turn * 18}px) rotateY(${-turn * 32}deg)`;
-        const blink = sp.title === "Parpadea" && lt > 0.45 && lt < 0.62;
+        const blink = sp.title === "Parpadea" && lt > 1.2 && lt < 1.45;
         F.eyes!.style.transform = `scaleY(${blink ? 0.1 : 1})`;
         F.guide!.classList.toggle("ok", hold);
       } else {
@@ -317,20 +416,22 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
         F.flag!.textContent = "Procesando";
         F.flag!.className = "gm-flag";
         F.face!.style.transform = "";
+        F.guide!.classList.remove("ok");
       }
       // progreso del anillo = pasos completados
-      const done = sp ? i + Math.min(1, Math.max(0, (t - sp.t0) / (sp.t1 - sp.t0))) : 4;
+      const done = perm ? 0 : sp ? i + Math.min(1, Math.max(0, (t - sp.t0) / (sp.t1 - sp.t0))) : 4;
       const C = 238.76;
       (F.ring as unknown as SVGCircleElement).style.strokeDashoffset = String(C * (1 - done / 4));
       // destello de captura al final de cada paso
-      const flash = steps.some((s2) => t > s2.t1 - 0.12 && t < s2.t1 + 0.18);
-      F.shutter!.style.opacity = flash ? String(Math.max(0, 0.85 - (t - (steps.find((s2) => t > s2.t1 - 0.12 && t < s2.t1 + 0.18)!.t1 - 0.12)) * 2.8)) : "0";
+      const fs = PHONE_STEPS.find((s2) => t > s2.t1 - 0.15 && t < s2.t1 + 0.25);
+      F.shutter!.style.opacity = fs ? String(Math.max(0, 0.85 - (t - (fs.t1 - 0.15)) * 2.2)) : "0";
     }
   });
   return (
     <group ref={grp}>
       <Html zIndexRange={[70, 60]} style={{ pointerEvents: "none" }}>
         <div ref={root} className="gm-phone" style={{ display: "none" }}>
+          <div ref={reg("chip")} className="gm-phone-chip" style={{ display: "none" }} />
           <div className="gm-phone-notch" />
           <div className="gm-phone-status"><span>6:42</span><span>●●● 5G ▮</span></div>
           {/* WhatsApp */}
@@ -347,6 +448,10 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
             <div className="gm-wa-input"><span>Mensaje</span><i>🎤</i></div>
             <div className="gm-wa-body">
               <div className="gm-wa-day">HOY</div>
+              <div className="gm-wa-bubble gm-wa-old">
+                Hola, {P.first}.<br /><br />Bienvenido a VISIONYX.<br /><br />Tu ficha ya está en la aplicación. Ábrela y entra con tu documento y este WhatsApp.
+                <span className="gm-wa-time">6:40 p. m.</span>
+              </div>
               <div ref={reg("bubble")} className="gm-wa-bubble" style={{ display: "none" }}>
                 Hola, {P.first}.<br /><br />VISIONYX necesita tu rostro para la puerta.<br /><br />Abre este paso en el celular:<br />
                 <span ref={reg("link")} className="gm-wa-link">https://{WA_LINK}</span>
@@ -378,7 +483,7 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
             <EnrollTop />
             <div className="gm-stage">
               <div className="gm-cam">
-                <svg viewBox="0 0 200 260" className="gm-cam-face">
+                <svg ref={reg("camWrap") as any} viewBox="0 0 200 260" className="gm-cam-face">
                   <defs>
                     <radialGradient id="gmbg" cx="50%" cy="40%" r="70%"><stop offset="0" stopColor="#3a4a63" /><stop offset="1" stopColor="#111827" /></radialGradient>
                   </defs>
@@ -412,6 +517,16 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
                 <div ref={reg("cueHint")} className="hint">Pulsa Iniciar y permite el acceso</div>
               </div>
               <div ref={reg("shutter")} className="gm-shutter" />
+              <div ref={reg("perm")} className="gm-perm" style={{ display: "none" }}>
+                <div className="gm-perm-box">
+                  <div className="gm-perm-host">visionyx.duckdns.org</div>
+                  <div className="gm-perm-q">quiere usar tu cámara</div>
+                  <div className="gm-perm-btns">
+                    <span>No permitir</span>
+                    <span ref={reg("permOk")} className="ok">Permitir</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           {/* enroll.html — éxito */}
@@ -433,7 +548,7 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
               </div>
               <div className="detail">La verificación de vida y la captura facial se completaron. Ya puedes entrar al gimnasio con tu rostro.</div>
               <div className="scores"><div className="s">Liveness pasivo<b>0.97</b></div></div>
-              <p className="next">Prueba ahora cómo se verá en la entrada. No pide usuario ni contraseña.</p>
+              <p className="next">Prueba ahora cómo se verá en la entrada. No pide usuario ni contraseña. Este acceso es temporal: cuando el link expire, ya no abrirá.</p>
               <div className="gm-en-btn">Probar en la entrada</div>
             </div>
           </div>
@@ -452,5 +567,62 @@ function EnrollTop() {
       </div>
       <span className="who"><b>{P.nombre}</b></span>
     </header>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+
+/**
+ * Lo que ve recepción cuando el rostro queda activo (Clientes · ficha · Acceso)
+ * y la fila que aparece en Accesos después de entrar (app/accesos + lib/accessCopy).
+ */
+export function StatusToast({ tour }: { tour: Tour }) {
+  const grp = useRef<THREE.Group>(null!);
+  const root = useRef<HTMLDivElement>(null);
+  const f = useRef<Record<string, HTMLElement | null>>({});
+  const reg = (k: string) => (el: HTMLElement | null) => {
+    f.current[k] = el;
+  };
+  const ad = typeof window !== "undefined" && /[?&]ad=1/.test(window.location.search);
+  useFrame(() => {
+    // anclado a la protagonista (siempre frente a la cámara en el recorrido)
+    grp.current.position.set(tour.x, 1.2, tour.z);
+    const el = root.current;
+    if (!el) return;
+    const ph = tour.phase;
+    const pt = tour.phaseT;
+    const ficha = tour.active && ph === "to_gate" && pt < 3.3;
+    const log = tour.active && ph === "enter" && pt > 0.9 && pt < 6.6;
+    el.style.display = ficha || log ? "" : "none";
+    show(f.current.ficha, ficha, "block");
+    show(f.current.log, log, "block");
+  });
+  return (
+    <group ref={grp}>
+    <Html
+      zIndexRange={[72, 71]}
+      calculatePosition={((_o: unknown, _c: unknown, size: { width: number; height: number }) => [size.width / 2, ad ? size.height * 0.79 : 64]) as any}
+      style={{ pointerEvents: "none" }}
+    >
+      <div ref={root} className={`gm-toast ${ad ? "gm-toast-ad" : ""}`} style={{ display: "none" }}>
+        <div ref={reg("ficha")}>
+          <div className="gm-toast-k">Clientes · ficha · Acceso</div>
+          <div className="gm-toast-t">{P.nombre}</div>
+          <div className="gm-toast-row"><span>Rostro</span><b className="ok">Registrado</b></div>
+          <div className="gm-toast-row"><span>Sede</span><b className="ok">Autorizada</b></div>
+          <div className="gm-toast-ok">Puede entrar · Rostro, membresía y sede válidos</div>
+        </div>
+        <div ref={reg("log")}>
+          <div className="gm-toast-k">Accesos · ahora</div>
+          <div className="gm-toast-t">{P.nombre} <small>Cliente</small></div>
+          <div className="gm-toast-ok">Entrada autorizada</div>
+          <div className="gm-toast-s">Membresía vigente · rostro reconocido</div>
+          <div className="gm-toast-row"><span>Plan ese día</span><b>Mensual</b></div>
+          <div className="gm-toast-row"><span>Rostro · Vida</span><b>96% · 98%</b></div>
+          <div className="gm-toast-row"><span>Apertura</span><b>Ordenada por rostro</b></div>
+        </div>
+      </div>
+    </Html>
+    </group>
   );
 }

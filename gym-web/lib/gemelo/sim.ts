@@ -46,7 +46,8 @@ export type Member = {
   planPrice: number;
   daysLeft: number;
   routine: string;
-  method: "Facial" | "QR" | "Huella";
+  /** Acceso real: rostro. Invitados sin rostro: PIN de un solo uso en /ingreso */
+  method: "Facial" | "PIN";
   pref: Zone;
   shirt: string;
   pants: string;
@@ -300,7 +301,7 @@ export class GemeloSim {
       planPrice: plan.price,
       daysLeft: Math.max(1, Math.round(this.r(1, plan.days))),
       routine: this.pick(ROUTINES[pref]),
-      method: mr < 0.55 ? "Facial" : mr < 0.85 ? "QR" : "Huella",
+      method: !real && mr > 0.94 ? "PIN" : "Facial",
       pref,
       shirt: this.pick(SHIRTS),
       pants: this.pick(PANTS),
@@ -309,6 +310,8 @@ export class GemeloSim {
       willRenew: this.rng() < 0.72,
       speedMul: this.r(0.85, 1.2),
     });
+    // invitado: entra una sola vez con el PIN que le dio el socio que lo invitó
+    if (m.method === "PIN") m.vencida = false;
   }
 
   private initMembers() {
@@ -619,14 +622,14 @@ export class GemeloSim {
               g.open = 1.5;
               S.accesosOk++;
               m.visits++;
-              this.emit({ kind: "ok", name: m.name, detail: `Acceso ${m.method.toLowerCase()} · ${m.plan} · ${m.daysLeft} días`, x: g.x, z: g.z, member: m.id });
+              this.emit({ kind: "ok", name: m.name, detail: m.method === "PIN" ? "Invitado · PIN de un solo uso" : `Acceso facial · ${m.plan} · ${m.daysLeft} días`, x: g.x, z: g.z, member: m.id });
               m.path = [{ x: g.x, z: g.z - 1.2 }];
               this.goToStationAfterGate(m);
               setTimeoutLike(g);
             } else {
               g.flashOk = false;
               S.accesosNeg++;
-              this.emit({ kind: "deny", name: m.name, detail: "Membresía vencida · pasa a recepción", x: g.x, z: g.z, member: m.id });
+              this.emit({ kind: "deny", name: m.name, detail: "Membresía vencida o sin plan", x: g.x, z: g.z, member: m.id });
               g.busy = false;
               m.path = [
                 { x: g.x, z: g.z + 1.6 },
@@ -770,7 +773,7 @@ export function phaseLabel(m: Member, L: Layout): string {
     case "fila":
       return "En fila para ingresar";
     case "validando":
-      return `Validando ${m.method.toLowerCase()}…`;
+      return m.method === "PIN" ? "Invitado · digitando PIN…" : "Validando rostro…";
     case "recepcion_ir":
     case "recepcion":
       return m.vencida ? "En recepción · renovando" : "En recepción";
