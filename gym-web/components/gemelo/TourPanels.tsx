@@ -331,9 +331,16 @@ export function PhoneOverlay({ tour, anchor }: { tour: Tour; anchor: React.Mutab
     const enrolled = tour.phase === "enrolled";
     // El celular llena casi todo el cuadro: centrado abajo en vertical, a la derecha en horizontal
     const portrait = size.width < size.height;
-    const s = portrait ? Math.min((size.height * 0.75) / 620, (size.width * 0.92) / 300) : Math.min((size.height * 0.84) / 620, (size.width * 0.5) / 300);
+    // página interactiva en celular: el celular cabe entre el HUD (arriba) y la barra del recorrido (abajo)
+    const fitInteractive = !ad && portrait;
+    const avail = size.height - 64 - 176 - 44;
+    const s = fitInteractive
+      ? Math.min(avail / 620, (size.width * 0.92) / 300)
+      : portrait
+        ? Math.min((size.height * 0.75) / 620, (size.width * 0.92) / 300)
+        : Math.min((size.height * 0.84) / 620, (size.width * 0.5) / 300);
     const tx = portrait ? size.width * 0.5 : size.width * 0.66;
-    const ty = portrait ? size.height * 0.595 : size.height * 0.5;
+    const ty = fitInteractive ? 64 + 44 + (620 * s) / 2 : portrait ? size.height * 0.595 : size.height * 0.5;
     const pr = v.clone().project(camera);
     const sx = ((pr.x + 1) / 2) * size.width;
     const sy = ((1 - pr.y) / 2) * size.height;
