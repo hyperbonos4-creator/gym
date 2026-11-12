@@ -1,3 +1,4 @@
+import { DEMO_SOCIOS, SEDE_IDS } from "./demoSocios";
 /**
  * Gemelo digital VISIONYX — simulación pura (sin three.js).
  * Todo es ficticio: nombres, planes y montos son datos de demostración.
@@ -67,6 +68,8 @@ export type Member = {
   kind: StationKind | "walk" | "idle";
   visits: number;
   willRenew: boolean;
+  /** id real en la base demo (para "Ver en el panel"), si corresponde */
+  socioId?: string;
 };
 
 export type SimEvent = {
@@ -93,17 +96,16 @@ export type Stats = {
 };
 
 export const SEDES = [
-  { name: "Sede Laureles", city: "Medellín", accent: "#38BDF8", accent2: "#7C3AED", mirror: 1 as const, seed: 11, mix: [16, 10, 8] },
-  { name: "Sede El Poblado", city: "Medellín", accent: "#A78BFA", accent2: "#22D3EE", mirror: -1 as const, seed: 23, mix: [12, 14, 8] },
-  { name: "Sede Envigado", city: "Envigado", accent: "#A3E635", accent2: "#38BDF8", mirror: 1 as const, seed: 37, mix: [12, 8, 14] },
+  { name: "VISIONYX Norte", city: "Bogotá · Norte", accent: "#38BDF8", accent2: "#7C3AED", mirror: 1 as const, seed: 11, mix: [16, 10, 8] },
+  { name: "VISIONYX Centro", city: "Bogotá · Centro", accent: "#A78BFA", accent2: "#22D3EE", mirror: -1 as const, seed: 23, mix: [12, 14, 8] },
+  { name: "VISIONYX Sur", city: "Bogotá · Sur", accent: "#A3E635", accent2: "#38BDF8", mirror: 1 as const, seed: 37, mix: [12, 8, 14] },
 ];
 
 export const PLANS = [
-  { name: "Mensual", price: 120000, days: 30, w: 0.5 },
-  { name: "Trimestral", price: 320000, days: 90, w: 0.2 },
-  { name: "Anual", price: 1100000, days: 365, w: 0.1 },
-  { name: "Tiquetera 10", price: 90000, days: 45, w: 0.15 },
-  { name: "Pase día", price: 15000, days: 1, w: 0.05 },
+  { name: "Mensual", price: 120000, days: 30, w: 0.55 },
+  { name: "Trimestral", price: 320000, days: 90, w: 0.22 },
+  { name: "Anual", price: 990000, days: 365, w: 0.11 },
+  { name: "Pase del día", price: 15000, days: 1, w: 0.12 },
 ];
 
 const FIRST = [
@@ -198,7 +200,7 @@ function buildLayout(index: number): Layout {
     { zone: "funcional", label: "Funcional", x0: 3.2 * m, z0: -3.0, x1: 17.4 * m, z1: 5.4 },
     { zone: "lobby", label: "Recepción", x0: -17.4, z0: 8.4, x1: 17.4, z1: 12.8 },
   ] as ZoneRect[]).map((r) => ({ ...r, x0: Math.min(r.x0, r.x1), x1: Math.max(r.x0, r.x1) }));
-  const gates: Gate[] = [-2, 0, 2].map((x) => ({ x, z: 8, queue: [], busy: false, open: 0, flash: 0, flashOk: true }));
+  const gates: Gate[] = [-1, 0, 1].map((x) => ({ x, z: 8, queue: [], busy: false, open: 0, flash: 0, flashOk: true }));
   return {
     index,
     name: S.name,
@@ -210,7 +212,7 @@ function buildLayout(index: number): Layout {
     stations: st,
     gates,
     exitX: 4.4 * m,
-    reception: { x: -9 * m, z: 10.4 },
+    reception: { x: -5 * m, z: 10.4 },
     kiosk: { x: 6.8 * m, z: 9.4 },
     zones,
   };
@@ -230,6 +232,8 @@ export class GemeloSim {
   private saleCd = 30;
   private histCd = 0;
   forceDenyNext = false;
+  /** Carril reservado por el recorrido guiado (-1 = ninguno). */
+  reservedGate = -1;
   version = 0;
 
   constructor(sede = 0) {
@@ -288,8 +292,10 @@ export class GemeloSim {
     }
     const pref = this.pick<Zone>(["pesas", "pesas", "cardio", "funcional"]);
     const mr = this.rng();
+    const real = m.id !== undefined && m.id >= 1 && m.id <= 14 ? DEMO_SOCIOS[SEDE_IDS[this.layout.index]]?.[m.id - 1] : undefined;
     Object.assign(m, {
-      name: `${this.pick(FIRST)} ${this.pick(LAST)}`,
+      socioId: real ? real[0] : undefined,
+      name: real ? `${real[1].split(" ")[0]} ${real[1].split(" ")[1]?.charAt(0) ?? ""}.` : `${this.pick(FIRST)} ${this.pick(LAST)}`,
       plan: plan.name,
       planPrice: plan.price,
       daysLeft: Math.max(1, Math.round(this.r(1, plan.days))),
@@ -369,7 +375,7 @@ export class GemeloSim {
     return (this.t % 86400) / 3600;
   }
 
-  private emit(e: Omit<SimEvent, "id" | "t">) {
+  emit(e: Omit<SimEvent, "id" | "t">) {
     const ev = { ...e, id: ++this.eventSeq, t: this.t };
     this.events.push(ev);
     if (this.events.length > 40) this.events.shift();
@@ -386,7 +392,7 @@ export class GemeloSim {
 
   chooseStation(m: Member): number {
     const L = this.layout;
-    const free = L.stations.map((s, i) => ({ s, i })).filter(({ s }) => s.occ < 0);
+    const free = L.stations.map((s, i) => ({ s, i })).filter(({ s }) => s.occ === -1);
     if (!free.length) return -1;
     const pref = free.filter(({ s }) => s.zone === m.pref);
     const pool = pref.length && this.rng() < 0.8 ? pref : free;
@@ -457,13 +463,38 @@ export class GemeloSim {
     m.z = 19.5;
     m.visits = 0;
     const L = this.layout;
-    let g = 0;
-    for (let i = 1; i < L.gates.length; i++) if (L.gates[i].queue.length < L.gates[g].queue.length) g = i;
+    const g = this.pickGate();
     m.gate = g;
     m.path = [{ x: this.r(-2.5, 2.5), z: 13.8 }];
     m.phase = "llegando";
     m.kind = "walk";
     m.session = this.r(1800, 4200);
+  }
+
+  pickGate(): number {
+    const L = this.layout;
+    let g = -1;
+    for (let i = 0; i < L.gates.length; i++) {
+      if (i === this.reservedGate) continue;
+      if (g < 0 || L.gates[i].queue.length < L.gates[g].queue.length) g = i;
+    }
+    return Math.max(0, g);
+  }
+
+  /** Reserva un carril para el recorrido: reubica a quien esté en esa fila. */
+  reserveGate(i: number) {
+    this.reservedGate = i;
+    if (i < 0) return;
+    const g = this.layout.gates[i];
+    for (const id of g.queue) {
+      const m = this.members[id];
+      if (m.phase !== "fila") continue;
+      const ng = this.pickGate();
+      m.gate = ng;
+      this.layout.gates[ng].queue.push(id);
+    }
+    g.queue = g.queue.filter((id) => this.members[id].phase === "validando");
+    for (const m of this.members) if (m.phase === "llegando" && m.gate === i) m.gate = this.pickGate();
   }
 
   /** Mueve hacia (tx,tz). Devuelve true si llegó. */
@@ -629,8 +660,7 @@ export class GemeloSim {
               S.porVencer = Math.max(0, S.porVencer - 1);
               S.dineroRiesgo = Math.max(0, S.dineroRiesgo - m.planPrice);
               this.emit({ kind: "renew", name: m.name, detail: `Renovación ${m.plan}`, amount: m.planPrice, x: L.reception.x, z: L.reception.z, member: m.id });
-              let g = 0;
-              for (let i = 1; i < L.gates.length; i++) if (L.gates[i].queue.length < L.gates[g].queue.length) g = i;
+              const g = this.pickGate();
               m.gate = g;
               m.path = [{ x: L.gates[g].x, z: 12.2 }];
               m.phase = "llegando";

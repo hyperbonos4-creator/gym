@@ -60,17 +60,26 @@ const HEAT = DOW.map((_, d) => HOURS.map((h) => {
   return Math.min(1, occupancyCurve(h - (d >= 5 && h < 12 ? -shift : 0)) * f * (0.88 + seeded(d * 31 + h) * 0.2));
 }));
 const PLAN_MIX = [
-  { name: "Mensual", v: 52, c: "#38BDF8" },
-  { name: "Trimestral", v: 21, c: "#7C3AED" },
+  { name: "Mensual", v: 55, c: "#38BDF8" },
+  { name: "Trimestral", v: 22, c: "#7C3AED" },
   { name: "Anual", v: 11, c: "#A3E635" },
-  { name: "Tiquetera", v: 16, c: "#FBBF24" },
+  { name: "Pase del día", v: 12, c: "#FBBF24" },
 ];
 const POR_VENCER = [
   { n: "Mariana P.", p: "Mensual", d: 1 },
   { n: "Sebastián R.", p: "Trimestral", d: 2 },
   { n: "Laura G.", p: "Mensual", d: 2 },
-  { n: "Tomás H.", p: "Tiquetera 10", d: 4 },
+  { n: "Tomás M.", p: "Trimestral", d: 4 },
   { n: "Catalina V.", p: "Anual", d: 5 },
+];
+
+const TOUR_STEPS = [
+  { l: "Llega", p: ["walk_in"] },
+  { l: "Ficha en Clientes", p: ["form", "registered"] },
+  { l: "Membresía", p: ["plan"] },
+  { l: "Rostro desde su celular", p: ["phone", "enrolled"] },
+  { l: "Entra con su rostro", p: ["to_gate", "gate"] },
+  { l: "Rutina", p: ["enter", "training"] },
 ];
 
 const AREAS = [
@@ -235,6 +244,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
   const [feed, setFeed] = useState<SimEvent[]>([]);
   const [hist, setHist] = useState(sim.history.slice());
   const [selected, setSelected] = useState(-1);
+  const [tourPhase, setTourPhase] = useState<string>("off");
   const [reduced, setReduced] = useState(false);
   const [webgl, setWebgl] = useState(true);
   const [want3d, setWant3d] = useState(false);
@@ -301,6 +311,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       setClock(sim.t);
       setFeed(sim.events.slice(-6).reverse());
       setHist(sim.history.slice());
+      setTourPhase(ctrl.tour.active ? ctrl.tour.phase : "off");
     }, 250);
     return () => clearInterval(id);
   }, [sim]);
@@ -354,6 +365,12 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
     document.documentElement.style.overflow = "hidden";
   }, [ctrl, webgl]);
   const exit = useCallback(() => {
+    if (ctrl.tour.active) {
+      ctrl.stopTour();
+      sim.speed = speedBeforeTour.current;
+      setSpeed(sim.speed);
+    }
+    ctrl.zoom = 1;
     setFull(false);
     ctrl.fullscreen = false;
     ctrl.selected = -1;
@@ -362,8 +379,38 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
     setPreset("hero");
     document.documentElement.style.overflow = "";
   }, [ctrl]);
+  const speedBeforeTour = useRef(10);
+  const startTour = useCallback((compact?: boolean) => {
+    if (!webgl) return;
+    setWant3d(true);
+    setFull(true);
+    ctrl.fullscreen = true;
+    document.documentElement.style.overflow = "hidden";
+    if (!ctrl.tour.active) speedBeforeTour.current = sim.speed;
+    sim.speed = 1;
+    setSpeed(1);
+    ctrl.zoom = 1;
+    ctrl.startTour(compact === true);
+    if (compact === true) ctrl.go("tour", 0.0001);
+    setTourPhase("walk_in");
+    setSelected(-1);
+    setPreset("tour");
+  }, [ctrl, sim, webgl]);
+  const stopTour = useCallback(() => {
+    ctrl.stopTour();
+    sim.speed = speedBeforeTour.current;
+    setSpeed(sim.speed);
+    ctrl.go("general", 1.2);
+    setPreset("general");
+  }, [ctrl, sim]);
   const go = useCallback(
     (p: CamPreset, dur = 1.1) => {
+      if (p === "tour") return startTour();
+      if (ctrl.tour.active) {
+        ctrl.stopTour();
+        sim.speed = speedBeforeTour.current;
+        setSpeed(sim.speed);
+      }
       if (p === "follow") {
         const id = ctrl.selected >= 0 && sim.members[ctrl.selected].phase !== "fuera" ? ctrl.selected : sim.nextAtGate();
         ctrl.followMember(id, dur);
@@ -371,7 +418,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       } else ctrl.go(p, dur);
       setPreset(p);
     },
-    [ctrl, sim],
+    [ctrl, sim, startTour],
   );
   const pick = useCallback(
     (id: number) => {
@@ -414,6 +461,11 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       enter,
       exit,
       go,
+      tour: (compact = true) => startTour(compact),
+      tourStop: () => stopTour(),
+      tourT: () => ctrl.tour.t,
+      tourStartOf: (p: string) => ctrl.tour.startOf(p as any),
+      zoom: (z: number) => (ctrl.zoom = z),
       cut: (p: CamPreset) => go(p, 0.0001),
       follow: (what: number | "gate" | "pesas" | "cardio" | "funcional", dur = 1) => {
         const id = typeof what === "number" ? what : what === "gate" ? sim.nextAtGate() : sim.trainingIn(what);
@@ -426,18 +478,34 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       speed: changeSpeed,
       sede: changeSede,
       denyNext: () => (sim.forceDenyNext = true),
-      denyAtGate: () => {
-        let best = -1;
-        for (const g of sim.layout.gates) {
-          const id = g.queue[0];
-          if (id !== undefined && sim.members[id].phase === "fila") {
-            best = id;
-            break;
+      denyAtGate: (gi = 1) => {
+        // Socio con membresía vencida al frente del carril gi (guion del comercial)
+        const g = sim.layout.gates[gi];
+        let best = g.queue.find((id) => sim.members[id].phase === "fila") ?? -1;
+        if (best < 0) {
+          let bd = 1e9;
+          for (const m of sim.members) {
+            if (m.phase !== "llegando" && m.phase !== "fila") continue;
+            const d = Math.hypot(m.x - g.x, m.z - g.z);
+            if (d < bd) {
+              bd = d;
+              best = m.id;
+            }
           }
         }
         if (best < 0) best = sim.nextAtGate();
         const m = sim.members[best];
         if (m) {
+          if (m.phase !== "fila" || m.gate !== gi) {
+            for (const gg of sim.layout.gates) gg.queue = gg.queue.filter((x) => x !== best);
+            m.phase = "fila";
+            m.gate = gi;
+            m.x = g.x;
+            m.z = g.z + 2.3;
+            m.h = Math.PI;
+            m.path = [];
+            g.queue.unshift(best);
+          }
           m.vencida = true;
           m.willRenew = true;
         }
@@ -455,7 +523,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       },
       flash: () => setFlash(performance.now()),
     };
-  }, [capture, sim, ctrl, enter, exit, go, pick, changeSpeed, changeSede]);
+  }, [capture, sim, ctrl, enter, exit, go, pick, changeSpeed, changeSede, startTour, stopTour]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -499,7 +567,10 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
             <button onClick={enter} className="gm-btn" disabled={!webgl}>
-              Entrar al gimnasio 3D <span aria-hidden>→</span>
+              Explorar en 3D <span aria-hidden>→</span>
+            </button>
+            <button onClick={() => startTour()} className="gm-btn-ghost gm-btn-tour" disabled={!webgl}>
+              ▶ Ver inscripción
             </button>
             <a href={contact} className="gm-btn-ghost">{contactLabel}</a>
           </div>
@@ -554,7 +625,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             {!full && want3d && webgl && (
               <button className="gm-enter" onClick={enter} aria-label="Entrar al gimnasio 3D">
                 <span className="gm-enter-chip">{S.name} · {formatClock(clock)} · x{speed}</span>
-                <span className="gm-enter-cta">Haz clic para entrar <b>→</b></span>
+                <span className="gm-enter-cta">Explorar en 3D <b>→</b></span>
               </button>
             )}
           </div>
@@ -563,7 +634,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
 
       {/* HUD pantalla completa */}
       {full && (
-        <div className="gm-hud">
+        <div className={`gm-hud ${tourPhase !== "off" ? "gm-touring" : ""}`}>
           <div className="gm-hud-top">
             <div className="flex items-center gap-2">
               <img src="/brand/vx-icon-color.svg" alt="" className="h-8 w-8" />
@@ -575,7 +646,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             <div className="gm-seg">
               {SEDES.map((s, i) => (
                 <button key={s.name} className={i === sede ? "on" : ""} onClick={() => changeSede(i)}>
-                  {s.name.replace("Sede ", "")}
+                  {s.name.replace("VISIONYX ", "")}
                 </button>
               ))}
             </div>
@@ -611,12 +682,26 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
               ["pesas", "Pesas"],
               ["cardio", "Cardio"],
               ["funcional", "Funcional"],
+              ["torniquete", "Torniquetes"],
               ["follow", "Seguir socio"],
+              ["tour", "▶ Ver inscripción"],
             ] as [CamPreset, string][]).map(([p, l]) => (
               <button key={p} className={preset === p ? "on" : ""} onClick={() => go(p)}>{l}</button>
             ))}
           </div>
-          {selected < 0 && !capture && <div className="gm-hint">Toca un socio para ver su tarjeta · arrastra para girar</div>}
+          {selected < 0 && !capture && tourPhase === "off" && <div className="gm-hint">Arrastra para girar · rueda o pellizco para zoom · toca un socio</div>}
+          {tourPhase !== "off" && !ad && (
+            <div className="gm-tourbar">
+              <div className="gm-tourbar-steps">
+                {TOUR_STEPS.map((st, i) => (
+                  <span key={st.l} className={st.p.includes(tourPhase) ? "on" : TOUR_STEPS.findIndex((x) => x.p.includes(tourPhase)) > i ? "done" : ""}>
+                    <b>{i + 1}</b>{st.l}
+                  </span>
+                ))}
+              </div>
+              <button onClick={stopTour}>Saltar</button>
+            </div>
+          )}
         </div>
       )}
 

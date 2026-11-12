@@ -1,6 +1,7 @@
 import type { GemeloSim } from "./sim";
+import { Tour } from "./tour";
 
-export type CamPreset = "hero" | "general" | "entrada" | "pesas" | "cardio" | "funcional" | "recepcion" | "follow";
+export type CamPreset = "hero" | "general" | "entrada" | "pesas" | "cardio" | "funcional" | "recepcion" | "follow" | "tour" | "torniquete";
 
 /** Puente entre la UI (DOM) y la escena 3D. Sin dependencias de three. */
 export class WorldCtrl {
@@ -12,7 +13,21 @@ export class WorldCtrl {
   fullscreen = false;
   reduced = false;
   orbitBoost = 0;
+  /** zoom del usuario (rueda / pellizco): multiplica la distancia de cámara */
+  zoom = 1;
+  /** modo explorar: arrastre libre + zoom sin pantalla completa */
+  explore = false;
+  tour = new Tour();
   constructor(public sim: GemeloSim) {}
+  startTour(compact = false) {
+    this.tour.start(this.sim, { compact });
+    this.selected = -1;
+    this.follow = -1;
+    this.go("tour", 0.9);
+  }
+  stopTour() {
+    this.tour.stop();
+  }
   go(preset: CamPreset, dur = 1.1) {
     this.preset = preset;
     this.dur = this.reduced ? 0 : dur;

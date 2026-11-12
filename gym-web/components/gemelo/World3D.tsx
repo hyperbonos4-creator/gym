@@ -14,6 +14,11 @@ import { Html } from "@react-three/drei";
 import * as THREE from "three";
 import { MAX_MEMBERS, formatCOP, phaseLabel, type GemeloSim, type Layout, type StationKind } from "../../lib/gemelo/sim";
 import type { WorldCtrl, CamPreset } from "../../lib/gemelo/ctrl";
+import type { Tour } from "../../lib/gemelo/tour";
+import { TOUR_PERSON } from "../../lib/gemelo/tour";
+import { StudioEnv, Turnstiles } from "./Turnstiles";
+import { Human } from "./Human";
+import { ClientesPanel3D, PhoneOverlay } from "./TourPanels";
 
 type Box = { p: [number, number, number]; s: [number, number, number]; r: number; c: string };
 type Cyl = { p: [number, number, number]; rad: number; h: number; axis: "x" | "y" | "z"; r: number; c: string };
@@ -86,20 +91,7 @@ function buildStatic(L: Layout) {
     B(px, 0.3, 12.7, 0.7, 0.6, 0.7, "#2a334d");
     B(px, 0.95, 12.7, 0.5, 0.8, 0.5, "#1f7a4d");
   }
-  // Torniquetes: gabinetes entre carriles
-  for (const gx of [-3, -1, 1, 3]) {
-    B(gx, 0.5, L.gates[0].z, 0.28, 1.0, 1.3, "#25335a");
-    G(gx, 1.02, L.gates[0].z, 0.3, 0.04, 1.32, "#38BDF8");
-  }
-  // Carril de salida
-  const ex = L.exitX;
-  B(ex - 0.8, 0.5, 8, 0.25, 1.0, 1.2, "#25335a");
-  B(ex + 0.8, 0.5, 8, 0.25, 1.0, 1.2, "#25335a");
-  G(ex, 0.03, 8, 1.2, 0.02, 1.2, "#334155");
-  // Kiosko facial
-  const k = L.kiosk;
-  B(k.x, 0.7, k.z, 0.32, 1.4, 0.32, "#1e293b");
-  B(k.x, 1.55, k.z, 0.62, 0.9, 0.08, "#0f172a");
+  // Torniquetes reales: ver Turnstiles.tsx (modelo PBR aparte)
   // Señal VISIONYX pared fondo (barras)
   // Equipos
   for (const s of L.stations) {
@@ -170,6 +162,12 @@ function buildStatic(L: Layout) {
     }
   }
   return { boxes, glow, cyls };
+}
+
+/** En captura, delta fijo por cuadro (R3F puede medir tiempo real entre screenshots). */
+export function fdt(dt: number): number {
+  const w = typeof window !== "undefined" ? (window as any) : null;
+  return w && typeof w.__gmFixedDt === "number" ? w.__gmFixedDt : dt;
 }
 
 const tmpO = new THREE.Object3D();
@@ -407,7 +405,10 @@ function Members({ sim, ctrl, onPick }: { sim: GemeloSim; ctrl: WorldCtrl; onPic
     }
     for (let i = 0; i < ms.length; i++) {
       const m = ms[i];
-      if (m.phase === "fuera") {
+      const camD = Math.hypot(m.x - state.camera.position.x, 1.0 - state.camera.position.y, m.z - state.camera.position.z);
+      const tp = ctrl.tour.phase;
+      const clearSet = ctrl.preset === "tour" && (tp === "to_gate" || tp === "gate") && (m.phase === "fila" || m.phase === "validando" || m.phase === "llegando") && m.z > 7.5 && m.z < 14;
+      if (m.phase === "fuera" || (ctrl.preset === "tour" && camD < 2.7) || clearSet) {
         torso.current.setMatrixAt(i, ZERO);
         head.current.setMatrixAt(i, ZERO);
         legs.current.setMatrixAt(i * 2, ZERO);
@@ -526,90 +527,6 @@ function Members({ sim, ctrl, onPick }: { sim: GemeloSim; ctrl: WorldCtrl; onPic
   );
 }
 
-/* ---------- Torniquetes, kiosko y destellos ---------- */
-
-function Gates({ sim }: { sim: GemeloSim }) {
-  const L = sim.layout;
-  const flapL = useRef<(THREE.Mesh | null)[]>([]);
-  const flapR = useRef<(THREE.Mesh | null)[]>([]);
-  const pads = useRef<(THREE.Mesh | null)[]>([]);
-  const rings = useRef<(THREE.Mesh | null)[]>([]);
-  const screen = useRef<THREE.Mesh>(null!);
-  const base = useMemo(() => new THREE.Color("#16325c"), []);
-  const ok = useMemo(() => new THREE.Color("#22E0A1"), []);
-  const bad = useMemo(() => new THREE.Color("#FF4D6D"), []);
-  useFrame((state) => {
-    let kioskFlash = 0;
-    L.gates.forEach((g, i) => {
-      const open = Math.min(1, g.open / 0.25) * (g.open > 0 ? 1 : 0);
-      const ang = open * 1.45;
-      if (flapL.current[i]) flapL.current[i]!.rotation.y = ang;
-      if (flapR.current[i]) flapR.current[i]!.rotation.y = -ang;
-      const f = g.flash / 1.1;
-      const pad = pads.current[i];
-      if (pad) {
-        const mat = pad.material as THREE.MeshBasicMaterial;
-        mat.color.copy(base).lerp(g.flashOk ? ok : bad, Math.min(1, f * 1.6));
-      }
-      const r = rings.current[i];
-      if (r) {
-        r.visible = f > 0;
-        const s = 0.6 + (1 - f) * 2.4;
-        r.scale.set(s, s, s);
-        const mat = r.material as THREE.MeshBasicMaterial;
-        mat.opacity = f;
-        mat.color.copy(g.flashOk ? ok : bad);
-      }
-      if (g.flashOk) kioskFlash = Math.max(kioskFlash, f);
-    });
-    const sm = screen.current.material as THREE.MeshBasicMaterial;
-    const pulse = 0.5 + Math.sin(state.clock.elapsedTime * 2) * 0.1;
-    sm.color.setRGB(0.1 + kioskFlash * 0.1, 0.35 + pulse * 0.2 + kioskFlash * 0.5, 0.6 + kioskFlash * 0.1);
-  });
-  return (
-    <group>
-      {L.gates.map((g, i) => (
-        <group key={i} position={[g.x, 0, g.z]}>
-          <mesh ref={(el) => { pads.current[i] = el; }} position={[0, 0.03, 0]}>
-            <boxGeometry args={[1.6, 0.02, 1.3]} />
-            <meshBasicMaterial toneMapped={false} />
-          </mesh>
-          <mesh ref={(el) => { rings.current[i] = el; }} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.06, 0]}>
-            <ringGeometry args={[0.7, 0.85, 40]} />
-            <meshBasicMaterial transparent toneMapped={false} depthWrite={false} />
-          </mesh>
-          <group position={[-0.86, 0.75, 0]}>
-            <mesh ref={(el) => { flapL.current[i] = el; }}>
-              <boxGeometry args={[0.04, 0.6, 0.04]} />
-              <meshBasicMaterial visible={false} />
-              <mesh position={[0.4, 0, 0]}>
-                <boxGeometry args={[0.8, 0.55, 0.04]} />
-                <meshLambertMaterial color="#7dd3fc" transparent opacity={0.45} />
-              </mesh>
-            </mesh>
-          </group>
-          <group position={[0.86, 0.75, 0]}>
-            <mesh ref={(el) => { flapR.current[i] = el; }}>
-              <boxGeometry args={[0.04, 0.6, 0.04]} />
-              <meshBasicMaterial visible={false} />
-              <mesh position={[-0.4, 0, 0]}>
-                <boxGeometry args={[0.8, 0.55, 0.04]} />
-                <meshLambertMaterial color="#7dd3fc" transparent opacity={0.45} />
-              </mesh>
-            </mesh>
-          </group>
-        </group>
-      ))}
-      <mesh ref={screen} position={[L.kiosk.x, 1.58, L.kiosk.z + 0.05]}>
-        <boxGeometry args={[0.5, 0.74, 0.02]} />
-        <meshBasicMaterial toneMapped={false} />
-      </mesh>
-    </group>
-  );
-}
-
-/* ---------- Popups de eventos sobre el 3D ---------- */
-
 type Pop = { id: number; x: number; z: number; kind: string; title: string; detail: string; born: number };
 
 function Popups({ sim, enabled }: { sim: GemeloSim; enabled: boolean }) {
@@ -618,7 +535,7 @@ function Popups({ sim, enabled }: { sim: GemeloSim; enabled: boolean }) {
   const clock = useRef(0);
   const els = useRef<Map<number, HTMLDivElement>>(new Map());
   useFrame((_, dt) => {
-    clock.current += dt;
+    clock.current += fdt(dt);
     const fresh = sim.events.filter((e) => e.id > lastId.current);
     if (fresh.length) {
       lastId.current = fresh[fresh.length - 1].id;
@@ -684,7 +601,7 @@ function FollowCard({ sim, ctrl, onClose }: { sim: GemeloSim; ctrl: WorldCtrl; o
       g.current.visible = true;
       g.current.position.set(m.x, 2.35, m.z);
     } else g.current.visible = false;
-    acc.current += dt;
+    acc.current += fdt(dt);
     if (acc.current > 0.2) {
       acc.current = 0;
       const key = m ? `${id}|${m.phase}|${m.daysLeft}|${m.vencida}|${m.station}|${m.routine}` : "";
@@ -717,6 +634,11 @@ function FollowCard({ sim, ctrl, onClose }: { sim: GemeloSim; ctrl: WorldCtrl; o
                 <div><span>Visitas</span><b>{12 + ((m.id * 7) % 30)} este mes</b></div>
               </div>
             )}
+            {m.phase !== "staff" && (
+              <a className="gm-card-link" href={m.socioId ? `/clientes?socio=${encodeURIComponent(m.socioId)}` : "/clientes"} target="_blank" rel="noopener">
+                Ver en el panel →
+              </a>
+            )}
           </div>
         </Html>
       )}
@@ -730,13 +652,12 @@ function ZoneLabels({ L }: { L: Layout }) {
   const items = [
     ...L.zones.filter((z) => z.zone !== "lobby").map((z) => ({ t: z.label, x: (z.x0 + z.x1) / 2, z: z.z0 + 0.8 })),
     { t: "Recepción · Caja", x: L.reception.x, z: L.reception.z - 0.2 },
-    { t: "Torniquetes", x: 0, z: 7.2 },
-    { t: "Kiosko facial", x: L.kiosk.x, z: L.kiosk.z },
+    { t: "Torniquetes", x: 0, z: 6.7 },
   ];
   return (
     <>
       {items.map((it) => (
-        <Html key={it.t} position={[it.x, it.t === "Kiosko facial" ? 2.3 : 0.4, it.z]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
+        <Html key={it.t} position={[it.x, 0.4, it.z]} center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
           <div className="gm-label">{it.t}</div>
         </Html>
       ))}
@@ -773,6 +694,10 @@ function presetFor(p: CamPreset, L: Layout, aspect: number): { pos: THREE.Vector
       tgt = zc("funcional").add(new THREE.Vector3(0, 0.5, 0));
       off = portrait ? new THREE.Vector3(15 * m, 13, 4) : new THREE.Vector3(9 * m, 8, 10);
       break;
+    case "torniquete":
+      tgt = new THREE.Vector3(0.2, 0.85, 8.1);
+      off = portrait ? new THREE.Vector3(2.2, 1.35, 4.6) : new THREE.Vector3(2.9, 1.45, 4.4);
+      return { pos: tgt.clone().add(off), tgt };
     case "recepcion":
       tgt = new THREE.Vector3(L.reception.x, 0.8, L.reception.z + 0.5);
       off = portrait ? new THREE.Vector3(-3 * m, 9, 12) : new THREE.Vector3(-4 * m, 6, 9);
@@ -790,70 +715,165 @@ function presetFor(p: CamPreset, L: Layout, aspect: number): { pos: THREE.Vector
 
 const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
 
+function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; tgt: THREE.Vector3; k: number } {
+  const m = L.mirror;
+  const portrait = aspect < 0.9;
+  const P = new THREE.Vector3(tour.x, 0, tour.z);
+  const g = L.gates[tour.gate];
+  const ph = tour.phase;
+  const pt = tour.phaseT;
+  const panel = new THREE.Vector3(L.reception.x - 0.4 * m, 2.55, L.reception.z + 0.2);
+  const panelN = new THREE.Vector3(Math.sin(-0.35 * m), 0, Math.cos(-0.35 * m));
+  if (ph === "walk_in") {
+    const left = tour.phaseDur - pt;
+    if (left < 1.6) {
+      // empuje hacia el panel de recepción
+      const d = portrait ? 5.9 : 8.2;
+      const pos = panel.clone().addScaledVector(panelN, d + left * 1.6).add(new THREE.Vector3(0, 0.2 + left * 0.5, 0));
+      const tgt = panel.clone().lerp(P.clone().setY(1.2), Math.min(1, left / 1.6) * 0.6);
+      return { pos, tgt, k: 2.4 };
+    }
+    const crane = Math.max(0, 2.4 - pt) * 1.4;
+    const tgt = P.clone().add(new THREE.Vector3(-0.6 * m, 1.15, -0.4));
+    const off = portrait ? new THREE.Vector3(-2.3 * m, 1.55 + crane, 4.6 + crane * 0.6) : new THREE.Vector3(-2.7 * m, 1.45 + crane, 3.9 + crane * 0.6);
+    return { pos: P.clone().add(off), tgt, k: pt < 0.05 ? 50 : 3.2 };
+  }
+  if (ph === "form" || ph === "registered" || ph === "plan") {
+    const d = portrait ? 5.7 : 7.9;
+    const push = ph === "form" ? Math.max(0, 1 - pt / 7) * 0.5 : 0;
+    const lift = portrait ? 0.42 : 0.12;
+    const pos = panel.clone().addScaledVector(panelN, d + push).add(new THREE.Vector3(0, 0.05 + lift, 0));
+    const tgt = panel.clone().add(new THREE.Vector3(0, lift, 0));
+    if (!portrait) {
+      tgt.x += 0.9 * m;
+      pos.x += 0.9 * m;
+    }
+    return { pos, tgt, k: 2.6 };
+  }
+  if (ph === "phone" || ph === "enrolled") {
+    const tgt = P.clone().add(new THREE.Vector3(0.05 * m, 1.32, -0.25));
+    const pos = P.clone().add(portrait ? new THREE.Vector3(0.95 * m, 1.95, 1.7) : new THREE.Vector3(1.25 * m, 1.95, 2.1));
+    if (ph === "enrolled" && pt > tour.phaseDur - 0.6) pos.add(new THREE.Vector3(0.6 * m, 0.4, 1.0));
+    return { pos, tgt, k: ph === "phone" && pt < 1.0 ? 2.2 : 2.6 };
+  }
+  if (ph === "to_gate") {
+    const tgt = new THREE.Vector3(P.x * 0.6 + g.x * 0.4, 1.0, P.z * 0.6 + (g.z + 0.4) * 0.4);
+    const pos = portrait ? new THREE.Vector3(g.x + 2.3, 2.5, g.z + 6.0) : new THREE.Vector3(g.x + 2.8, 2.4, g.z + 6.2);
+    return { pos, tgt, k: 2.0 };
+  }
+  if (ph === "gate") {
+    const tgt = new THREE.Vector3(g.x + 0.28, 1.12, g.z + 0.45);
+    const pos = portrait ? new THREE.Vector3(g.x + 1.55, 1.68, g.z + 2.3) : new THREE.Vector3(g.x + 1.8, 1.65, g.z + 2.5);
+    return { pos, tgt, k: 2.4 };
+  }
+  if (ph === "enter") {
+    // contraplano desde adentro: la ve cruzar el torniquete y la sigue con la mirada
+    const tgt = P.clone().add(new THREE.Vector3(0, 1.0, 0)).lerp(new THREE.Vector3(g.x, 1.0, g.z), Math.max(0, 1 - pt / 1.2) * 0.5);
+    const pos = portrait ? new THREE.Vector3(g.x + 0.9 * m, 1.65, g.z - 3.9) : new THREE.Vector3(g.x + 1.4 * m, 1.7, g.z - 4.4);
+    return { pos, tgt, k: pt < 0.1 ? 50 : 3.0 };
+  }
+  // camino al equipo y entrenamiento
+  const tgt = P.clone().add(new THREE.Vector3(0, portrait ? 1.7 : 1.2, 0));
+  const pos = P.clone().add(portrait ? new THREE.Vector3(1.6 * m, 2.6, -3.6) : new THREE.Vector3(2.2 * m, 2.3, -3.6));
+  return { pos, tgt, k: 2.0 };
+}
+
 function CameraRig({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
-  const { camera, size } = useThree();
+  const { camera, size, gl } = useThree();
   const st = useRef({
     seq: -1,
     t: 1,
     dur: 1,
     fromP: new THREE.Vector3(),
     fromT: new THREE.Vector3(),
-    toP: new THREE.Vector3(),
-    toT: new THREE.Vector3(),
     curT: new THREE.Vector3(0, 0, 0.5),
     clock: 0,
     drag: { yaw: 0, pitch: 0 },
   });
-  const dragRef = useRef({ down: false, x: 0, y: 0 });
-  const { gl } = useThree();
+  const dragRef = useRef({ pts: new Map<number, { x: number; y: number }>(), pinch: 0 });
 
   useEffect(() => {
     const el = gl.domElement;
     const d = dragRef.current;
+    const can = () => ctrl.fullscreen || ctrl.explore;
     const down = (e: PointerEvent) => {
-      if (!ctrl.fullscreen) return;
-      d.down = true;
-      d.x = e.clientX;
-      d.y = e.clientY;
+      if (!can()) return;
+      d.pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (d.pts.size === 2) {
+        const [a, b] = [...d.pts.values()];
+        d.pinch = Math.hypot(a.x - b.x, a.y - b.y);
+      }
     };
     const move = (e: PointerEvent) => {
-      if (!d.down) return;
-      st.current.drag.yaw -= (e.clientX - d.x) * 0.004;
-      st.current.drag.pitch = Math.max(-0.35, Math.min(0.35, st.current.drag.pitch + (e.clientY - d.y) * 0.003));
-      d.x = e.clientX;
-      d.y = e.clientY;
+      const p = d.pts.get(e.pointerId);
+      if (!p) return;
+      if (d.pts.size >= 2) {
+        p.x = e.clientX;
+        p.y = e.clientY;
+        const [a, b] = [...d.pts.values()];
+        const dist = Math.hypot(a.x - b.x, a.y - b.y);
+        if (d.pinch > 0) ctrl.zoom = Math.max(0.35, Math.min(2.2, ctrl.zoom * (d.pinch / Math.max(1, dist))));
+        d.pinch = dist;
+        return;
+      }
+      st.current.drag.yaw -= (e.clientX - p.x) * 0.005;
+      st.current.drag.pitch = Math.max(-0.45, Math.min(0.6, st.current.drag.pitch + (e.clientY - p.y) * 0.003));
+      p.x = e.clientX;
+      p.y = e.clientY;
     };
-    const up = () => (d.down = false);
+    const up = (e: PointerEvent) => {
+      d.pts.delete(e.pointerId);
+      if (d.pts.size < 2) d.pinch = 0;
+    };
+    const wheel = (e: WheelEvent) => {
+      if (!can()) return;
+      e.preventDefault();
+      ctrl.zoom = Math.max(0.35, Math.min(2.2, ctrl.zoom * Math.exp(e.deltaY * 0.0012)));
+    };
     el.addEventListener("pointerdown", down);
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+    el.addEventListener("wheel", wheel, { passive: false });
     return () => {
       el.removeEventListener("pointerdown", down);
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      el.removeEventListener("wheel", wheel);
     };
   }, [gl, ctrl]);
 
   useFrame((_, dtRaw) => {
-    const dt = Math.min(dtRaw, 0.1);
+    const dt = Math.min(fdt(dtRaw), 0.1);
     const s = st.current;
     s.clock += dt;
     const aspect = size.width / Math.max(1, size.height);
     const cam = camera as THREE.PerspectiveCamera;
     const wantFov = aspect < 0.9 ? 44 : 30;
-    if (cam.fov !== wantFov) {
+    const wantNear = ctrl.preset === "tour" || ctrl.preset === "torniquete" ? 0.05 : 0.5;
+    if (cam.fov !== wantFov || cam.near !== wantNear) {
       cam.fov = wantFov;
+      cam.near = wantNear;
       cam.updateProjectionMatrix();
     }
+    const tour = ctrl.tour;
+    if (ctrl.preset === "tour" && !tour.active) ctrl.preset = "general";
     const followM = ctrl.follow >= 0 ? sim.members[ctrl.follow] : null;
+    let damp = ctrl.preset === "follow" ? 4 : 6;
     const targetFor = (): { pos: THREE.Vector3; tgt: THREE.Vector3 } => {
+      if (ctrl.preset === "tour" && tour.active) {
+        const r = tourShot(tour, sim.layout, aspect);
+        damp = r.k;
+        return r;
+      }
       if (ctrl.preset === "follow" && followM) {
         const portrait = aspect < 0.9;
         const tgt = new THREE.Vector3(followM.x, portrait ? 4.6 : 1.6, followM.z);
         const off = portrait ? new THREE.Vector3(3 * sim.layout.mirror, 8, 10.5) : new THREE.Vector3(6 * sim.layout.mirror, 7.5, 10.5);
         return { pos: tgt.clone().add(off), tgt };
       }
-      return presetFor(ctrl.preset === "follow" ? "general" : ctrl.preset, sim.layout, aspect);
+      return presetFor(ctrl.preset === "follow" || ctrl.preset === "tour" ? "general" : ctrl.preset, sim.layout, aspect);
     };
     if (ctrl.seq !== s.seq) {
       s.seq = ctrl.seq;
@@ -876,17 +896,28 @@ function CameraRig({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
       off.applyAxisAngle(new THREE.Vector3(0, 1, 0), s.drag.yaw);
       goal.pos.copy(goal.tgt).add(off);
     }
-    if (s.drag.pitch) goal.pos.y *= 1 + s.drag.pitch;
+    if (s.drag.pitch) {
+      const off = goal.pos.clone().sub(goal.tgt);
+      const r = off.length();
+      const el = Math.asin(Math.max(-1, Math.min(1, off.y / r)));
+      const ne = Math.max(0.06, Math.min(1.45, el + s.drag.pitch));
+      const hz = Math.hypot(off.x, off.z) || 1;
+      off.x *= (Math.cos(ne) * r) / hz;
+      off.z *= (Math.cos(ne) * r) / hz;
+      off.y = Math.sin(ne) * r;
+      goal.pos.copy(goal.tgt).add(off);
+    }
+    if (ctrl.zoom !== 1) goal.pos.sub(goal.tgt).multiplyScalar(ctrl.zoom).add(goal.tgt);
     if (s.t < 1) {
       s.t = Math.min(1, s.t + dt / s.dur);
       const e = ease(s.t);
       const p = s.fromP.clone().lerp(goal.pos, e);
-      const lift = Math.sin(Math.PI * e) * s.fromP.distanceTo(goal.pos) * 0.12;
+      const lift = ctrl.preset === "tour" ? 0 : Math.sin(Math.PI * e) * s.fromP.distanceTo(goal.pos) * 0.12;
       p.y += lift;
       camera.position.copy(p);
       s.curT.copy(s.fromT).lerp(goal.tgt, e);
     } else {
-      const k = 1 - Math.exp(-dt * (ctrl.preset === "follow" ? 4 : 6));
+      const k = 1 - Math.exp(-dt * damp);
       camera.position.lerp(goal.pos, k);
       s.curT.lerp(goal.tgt, k);
     }
@@ -895,17 +926,76 @@ function CameraRig({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
   return null;
 }
 
+/* ---------- Tarjeta del protagonista ---------- */
+
+function TourCard({ tour }: { tour: Tour }) {
+  const g = useRef<THREE.Group>(null!);
+  const el = useRef<HTMLDivElement>(null);
+  useFrame(() => {
+    const on = tour.active && (tour.phase === "training" || (tour.phase === "enter" && tour.phaseT > 1.4));
+    g.current.position.set(tour.x, 2.25, tour.z);
+    if (el.current) el.current.style.display = on ? "" : "none";
+  });
+  return (
+    <group ref={g}>
+      <Html center zIndexRange={[60, 50]} style={{ pointerEvents: "none" }}>
+        <div ref={el} className="gm-card gm-card-tour" style={{ display: "none" }}>
+          <div className="gm-card-h">
+            <span className="gm-dot" style={{ background: "#38BDF8" }} />
+            <div>
+              <div className="gm-card-n">{TOUR_PERSON.nombre}</div>
+              <div className="gm-card-s">Socia nueva · primer entrenamiento</div>
+            </div>
+          </div>
+          <div className="gm-card-g">
+            <div><span>Plan</span><b>Mensual · $120.000</b></div>
+            <div><span>Días restantes</span><b className="text-[#22E0A1]">30</b></div>
+            <div className="col-span-2"><span>Rutina del día</span><b>{TOUR_PERSON.routine}</b></div>
+            <div><span>Acceso</span><b>Facial ✓</b></div>
+            <div><span>Visitas</span><b>1 este mes</b></div>
+          </div>
+        </div>
+      </Html>
+    </group>
+  );
+}
+
+/* ---------- Captura determinista ---------- */
+
+function CaptureHook() {
+  const get = useThree((st) => st.get);
+  useEffect(() => {
+    // Modo captura: un render exacto por cuadro de video. El delta se fija contra
+    // el cuadro anterior (los screenshots pueden disparar renders internos que
+    // moverían el reloj de R3F).
+    let last = -1;
+    (window as any).__gemeloAdvance = (ms: number) => {
+      const t = ms / 1000;
+      (window as any).__gmFixedDt = last < 0 ? 1 / 30 : Math.max(0, Math.min(0.1, t - last));
+      last = t;
+      advance(t);
+    };
+    return () => {
+      delete (window as any).__gemeloAdvance;
+      delete (window as any).__gmFixedDt;
+    };
+  }, [get]);
+  return null;
+}
+
 /* ---------- Driver de simulación + pausa ---------- */
 
-function SimDriver({ sim }: { sim: GemeloSim }) {
+function SimDriver({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
   useFrame((_, dt) => {
-    sim.step(Math.min(dt, 0.1));
+    sim.step(Math.min(fdt(dt), 0.1));
+    ctrl.tour.step(Math.min(fdt(dt), 0.1));
   }, -1);
   return null;
 }
 
 function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: WorldCtrl; version: number; onPick: (id: number) => void; labels: boolean }) {
   const L = sim.layout;
+  const phoneRef = useRef<THREE.Object3D | null>(null);
   return (
     <>
       <color attach="background" args={["#060a15"]} />
@@ -913,9 +1003,14 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <hemisphereLight args={["#bcd7ff", "#1a1030", 1.15]} />
       <directionalLight position={[12, 24, 14]} intensity={1.6} color="#ffffff" />
       <directionalLight position={[-14, 10, -8]} intensity={0.5} color={L.accent2} />
-      <SimDriver sim={sim} />
+      <SimDriver sim={sim} ctrl={ctrl} />
+      <StudioEnv />
       <StaticWorld key={`s${version}`} L={L} />
-      <Gates key={`g${version}`} sim={sim} />
+      <Turnstiles key={`g${version}`} sim={sim} tour={ctrl.tour} />
+      <Human tour={ctrl.tour} phoneRef={phoneRef} />
+      <ClientesPanel3D sim={sim} tour={ctrl.tour} />
+      <PhoneOverlay tour={ctrl.tour} anchor={phoneRef} />
+      <TourCard tour={ctrl.tour} />
       <Members sim={sim} ctrl={ctrl} onPick={onPick} />
       {labels && <ZoneLabels key={`l${version}`} L={L} />}
       <Popups sim={sim} enabled={labels} />
@@ -946,14 +1041,6 @@ export default function World3D({
 }) {
   const [dpr, setDpr] = useState(1);
   useEffect(() => {
-    if (!capture) return;
-    // Modo captura: un render exacto por cuadro de video (paso fijo determinista).
-    (window as any).__gemeloAdvance = (t: number) => advance(t);
-    return () => {
-      delete (window as any).__gemeloAdvance;
-    };
-  }, [capture]);
-  useEffect(() => {
     const d = typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
     setDpr(capture ? Math.min(2, d) : Math.min(1.5, d));
   }, [capture]);
@@ -962,10 +1049,15 @@ export default function World3D({
       dpr={dpr}
       frameloop={capture ? "never" : active ? "always" : "never"}
       camera={{ fov: 30, near: 0.5, far: 200, position: [24, 27, 31] }}
+      onCreated={({ gl }) => {
+        gl.toneMapping = THREE.ACESFilmicToneMapping;
+        gl.toneMappingExposure = 1.05;
+      }}
       gl={{ antialias: !capture, powerPreference: "high-performance", alpha: false, stencil: false }}
-      style={{ touchAction: ctrl.fullscreen ? "none" : "pan-y" }}
+      style={{ touchAction: ctrl.fullscreen || ctrl.explore ? "none" : "pan-y" }}
       onPointerMissed={() => onBackgroundClick?.()}
     >
+      {capture && <CaptureHook />}
       <Scene sim={sim} ctrl={ctrl} version={version} onPick={onPick} labels={labels} />
     </Canvas>
   );
