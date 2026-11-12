@@ -46,6 +46,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icon.png|brand|logo.svg|kiosk|atlas|demos|models|api/v1|api/e/|api/auth/|api/cuenta/registro|api/turnstiles/heartbeat|api/turnstiles/jobs|api/turnstiles/pulse|api/turnstiles/inbox|api/invitaciones|api/mobile|invitar|ingreso|instalar|registro|maniqui|e/|x/).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|brand|logo.svg|kiosk|atlas|demos|models|api/v1|api/e/|api/auth/|api/cuenta/registro|api/turnstiles/heartbeat|api/turnstiles/jobs|api/turnstiles/pulse|api/turnstiles/inbox|api/invitaciones|api/mobile|invitar|ingreso|instalar|registro|maniqui|gemelo|e/|x/).*)",
   ],
 };

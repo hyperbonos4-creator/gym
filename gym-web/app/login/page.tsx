@@ -112,6 +112,14 @@ export default function LoginPage() {
           <p className="mt-4 text-center text-xs text-gym-muted">
             ¿Vas a abrir tu gimnasio aquí? <a href="/registro" className="font-semibold text-gym-primary">Crear cuenta</a>
           </p>
+          {process.env.NEXT_PUBLIC_GYM_DEMO_MODE === "1" && (
+            <a
+              href="/gemelo"
+              className="mt-3 flex items-center justify-center gap-2 rounded-xl border border-gym-primary/40 bg-gym-primary/10 px-3 py-2 text-xs font-bold text-gym-silver hover:border-gym-primary"
+            >
+              <span className="h-2 w-2 rounded-full bg-[#22E0A1]" /> Ver el gimnasio en vivo · Gemelo 3D →
+            </a>
+          )}
         </div>
       </div>
     </main>
