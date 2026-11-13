@@ -10,14 +10,15 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, advance, useFrame, useThree } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
+import { Html, PerformanceMonitor } from "@react-three/drei";
 import * as THREE from "three";
-import { MAX_MEMBERS, formatCOP, phaseLabel, type GemeloSim, type Layout, type StationKind } from "../../lib/gemelo/sim";
+import { formatCOP, phaseLabel, type GemeloSim, type Layout, type StationKind } from "../../lib/gemelo/sim";
 import type { WorldCtrl, CamPreset } from "../../lib/gemelo/ctrl";
 import type { Tour } from "../../lib/gemelo/tour";
 import { TOUR_PERSON, fridgeSpot, pinStand } from "../../lib/gemelo/tour";
 import { StudioEnv, Turnstiles } from "./Turnstiles";
 import { Human } from "./Human";
+import { Crowd } from "./Crowd";
 import { ClientesPanel3D, PhoneOverlay, StatusToast } from "./TourPanels";
 import { CoachPanel, PhoneEntreno } from "./TourPanels2";
 import { Fridge, Cashier, SaleBottle } from "./Caja3D";
@@ -119,51 +120,112 @@ function buildStatic(L: Layout) {
     };
     switch (s.kind as StationKind) {
       case "cinta":
-        LB(0, 0.1, 0.15, 0.95, 0.2, 2.1, "#1b2440");
-        LB(0, 0.21, 0.1, 0.72, 0.03, 1.8, "#070a12");
-        LB(-0.42, 0.75, 0.95, 0.07, 1.1, 0.07, "#334155");
-        LB(0.42, 0.75, 0.95, 0.07, 1.1, 0.07, "#334155");
-        LB(0, 1.32, 0.95, 0.95, 0.32, 0.14, "#263354");
-        LG(0, 1.36, 0.87, 0.62, 0.16, 0.02, L.accent2);
+        // cinta de correr: plataforma, banda, capó del motor, parales, pasamanos y consola
+        LB(0, 0.12, 0.05, 0.86, 0.16, 1.95, "#1b2440");
+        LB(0, 0.205, 0, 0.62, 0.02, 1.7, "#05070d");
+        LB(-0.37, 0.215, 0, 0.1, 0.03, 1.7, "#334155");
+        LB(0.37, 0.215, 0, 0.1, 0.03, 1.7, "#334155");
+        LB(0, 0.24, 0.92, 0.86, 0.26, 0.32, "#263354");
+        LB(-0.38, 0.78, 1.0, 0.06, 1.1, 0.08, "#475569");
+        LB(0.38, 0.78, 1.0, 0.06, 1.1, 0.08, "#475569");
+        LB(-0.38, 1.12, 0.74, 0.05, 0.05, 0.52, "#94a3b8");
+        LB(0.38, 1.12, 0.74, 0.05, 0.05, 0.52, "#94a3b8");
+        LB(0, 1.34, 1.02, 0.8, 0.28, 0.12, "#1e293b");
+        LG(0, 1.36, 0.955, 0.5, 0.16, 0.02, L.accent2);
         break;
       case "bici":
-        LB(0, 0.35, 0, 0.28, 0.5, 1.2, "#263354");
-        LB(0, 0.86, -0.32, 0.32, 0.08, 0.38, "#0f172a");
-        LB(0, 1.1, 0.5, 0.56, 0.06, 0.08, "#334155");
-        LC(0, 0.45, 0.5, 0.32, 0.12, "x", "#475569");
-        LG(0, 1.2, 0.56, 0.3, 0.12, 0.02, L.accent2);
+        // bicicleta estática: base, volante de inercia, sillín, manubrio y consola
+        LB(0, 0.04, -0.45, 0.6, 0.06, 0.08, "#1f2937");
+        LB(0, 0.04, 0.55, 0.6, 0.06, 0.08, "#1f2937");
+        LB(0, 0.2, 0.05, 0.1, 0.1, 1.05, "#334155");
+        LC(0, 0.45, 0.5, 0.25, 0.07, "x", "#475569");
+        LC(0, 0.42, 0.12, 0.07, 0.2, "x", "#94a3b8");
+        LB(0, 0.55, -0.3, 0.06, 0.55, 0.06, "#475569");
+        LB(0, 0.82, -0.3, 0.18, 0.06, 0.3, "#0f172a");
+        LB(0, 0.8, 0.45, 0.06, 0.62, 0.06, "#475569");
+        LB(0, 1.13, 0.49, 0.56, 0.04, 0.06, "#94a3b8");
+        LG(0, 1.2, 0.53, 0.22, 0.12, 0.02, L.accent2);
         break;
       case "banco":
-        LB(0, 0.24, 0, 0.42, 0.14, 1.35, "#2a3350");
-        LB(0, 0.1, 0.45, 0.3, 0.2, 0.1, "#334155");
-        LB(0, 0.1, -0.45, 0.3, 0.2, 0.1, "#334155");
-        LB(-0.62, 0.7, -0.6, 0.08, 1.4, 0.08, "#475569");
-        LB(0.62, 0.7, -0.6, 0.08, 1.4, 0.08, "#475569");
-        LC(0, 1.25, -0.6, 0.025, 1.8, "x", "#cbd5e1");
-        LC(-0.78, 1.25, -0.6, 0.22, 0.07, "x", "#111827");
-        LC(0.78, 1.25, -0.6, 0.22, 0.07, "x", "#b91c1c");
+        // banco plano con parales y ganchos (la barra la pone cada socio)
+        LB(0, 0.27, 0.05, 0.34, 0.08, 1.25, "#1e293b");
+        LB(0, 0.13, 0.05, 0.12, 0.2, 1.1, "#475569");
+        LB(0, 0.03, 0.55, 0.5, 0.06, 0.08, "#334155");
+        LB(0, 0.03, -0.45, 0.5, 0.06, 0.08, "#334155");
+        LB(0, 0.03, -0.62, 1.2, 0.05, 0.25, "#334155");
+        LB(-0.55, 0.6, -0.62, 0.07, 1.2, 0.07, "#475569");
+        LB(0.55, 0.6, -0.62, 0.07, 1.2, 0.07, "#475569");
+        LB(-0.55, 1.0, -0.58, 0.09, 0.05, 0.1, "#94a3b8");
+        LB(0.55, 1.0, -0.58, 0.09, 0.05, 0.1, "#94a3b8");
         break;
       case "rack":
-        for (const [lx, lz] of [[-0.75, -0.5], [0.75, -0.5], [-0.75, 0.45], [0.75, 0.45]] as const)
-          LB(lx, 1.1, lz, 0.09, 2.2, 0.09, "#475569");
-        LB(0, 2.2, -0.02, 1.6, 0.08, 1.05, "#334155");
-        LG(0, 2.26, -0.02, 1.62, 0.02, 0.05, L.accent);
-        LB(0, 0.02, 0, 1.6, 0.04, 1.3, "#1f2937");
-        LC(0, 1.52, -0.1, 0.025, 2.0, "x", "#cbd5e1");
-        LC(-0.92, 1.52, -0.1, 0.26, 0.08, "x", "#111827");
-        LC(0.92, 1.52, -0.1, 0.26, 0.08, "x", "#1d4ed8");
+        // power rack sobre plataforma de madera, ganchos, barras de seguridad y discos guardados
+        LB(0, 0.02, 0, 1.9, 0.04, 1.6, "#3b2a1a");
+        for (const [lx, lz] of [[-0.75, -0.5], [0.75, -0.5], [-0.75, 0.5], [0.75, 0.5]] as const)
+          LB(lx, 1.17, lz, 0.08, 2.3, 0.08, "#475569");
+        LB(0, 2.3, -0.5, 1.58, 0.07, 0.07, "#334155");
+        LB(0, 2.3, 0.5, 1.58, 0.07, 0.07, "#334155");
+        LB(-0.75, 2.3, 0, 0.07, 0.07, 1.07, "#334155");
+        LB(0.75, 2.3, 0, 0.07, 0.07, 1.07, "#334155");
+        LG(0, 2.36, 0, 1.6, 0.02, 0.04, L.accent);
+        LB(-0.75, 0.85, 0, 0.05, 0.05, 1.1, "#94a3b8");
+        LB(0.75, 0.85, 0, 0.05, 0.05, 1.1, "#94a3b8");
+        LB(-0.75, 1.38, -0.12, 0.1, 0.05, 0.1, "#94a3b8");
+        LB(0.75, 1.38, -0.12, 0.1, 0.05, 0.1, "#94a3b8");
+        for (const sx of [-1, 1]) {
+          LC(sx * 0.86, 0.3, -0.62, 0.22, 0.05, "x", "#111827");
+          LC(sx * 0.92, 0.3, -0.62, 0.22, 0.05, "x", "#111827");
+          LC(sx * 0.98, 0.25, -0.62, 0.16, 0.04, "x", "#1d4ed8");
+        }
+        break;
+      case "polea":
+        // jalón al pecho: columna, pila de pesas, viga con polea, asiento y rodillo de rodillas
+        LB(0, 0.03, 0.3, 0.62, 0.05, 1.1, "#334155");
+        LB(0, 1.1, 0.64, 0.5, 2.2, 0.1, "#334155");
+        LB(0, 0.46, 0.57, 0.32, 0.72, 0.2, "#111827");
+        LB(-0.13, 1.1, 0.57, 0.03, 2.0, 0.03, "#94a3b8");
+        LB(0.13, 1.1, 0.57, 0.03, 2.0, 0.03, "#94a3b8");
+        LB(0, 2.38, 0.42, 0.14, 0.1, 0.5, "#475569");
+        LC(0, 2.38, 0.24, 0.06, 0.05, "x", "#94a3b8");
+        LG(0, 2.0, 0.695, 0.4, 0.03, 0.02, L.accent);
+        LB(0, 0.24, 0, 0.08, 0.42, 0.08, "#475569");
+        LB(0, 0.46, 0, 0.42, 0.08, 0.4, "#1e293b");
+        LB(0, 0.6, 0.3, 0.06, 0.2, 0.06, "#475569");
+        LC(0, 0.7, 0.3, 0.06, 0.5, "x", "#1e293b");
         break;
       case "mancuernas":
-        LB(0, 0.35, 0.85, 1.3, 0.7, 0.45, "#1f2937");
-        for (let i = 0; i < 4; i++) LC(-0.45 + i * 0.3, 0.76, 0.85, 0.08, 0.26, "x", i % 2 ? "#334155" : "#475569");
+        // soporte de dos niveles con pares de mancuernas
+        LB(-0.68, 0.42, 0.88, 0.06, 0.84, 0.46, "#334155");
+        LB(0.68, 0.42, 0.88, 0.06, 0.84, 0.46, "#334155");
+        LB(0, 0.42, 0.82, 1.4, 0.05, 0.36, "#1f2937");
+        LB(0, 0.74, 0.96, 1.4, 0.05, 0.28, "#1f2937");
+        for (let i = 0; i < 6; i++) {
+          const x = -0.55 + i * 0.22;
+          LC(x, 0.5, 0.82, 0.05 + i * 0.005, 0.26, "z", "#111827");
+          LC(x, 0.81, 0.96, 0.04 + i * 0.004, 0.2, "z", "#1f2937");
+        }
+        break;
+      case "kettle":
+        LB(0, 0.015, 0.1, 1.2, 0.03, 1.3, "#1e3a5f");
+        LB(0, 0.24, -0.78, 0.9, 0.05, 0.32, "#334155");
+        LB(-0.42, 0.12, -0.78, 0.05, 0.24, 0.3, "#475569");
+        LB(0.42, 0.12, -0.78, 0.05, 0.24, 0.3, "#475569");
+        for (const x of [-0.28, 0, 0.28]) LC(x, 0.34, -0.78, 0.085, 0.15, "y", "#111827");
         break;
       case "tapete":
-        LB(0, 0.02, 0, 1.05, 0.04, 1.9, "#1e3a5f");
-        LC(0.7, 0.12, 0.7, 0.13, 0.22, "y", "#f59e0b");
+        LB(0, 0.015, 0, 0.75, 0.03, 1.8, "#1e3a5f");
+        LC(0.5, 0.09, 0.75, 0.08, 0.5, "x", "#f59e0b");
         break;
       case "cajon":
-        LB(0, 0.3, 0.75, 0.75, 0.6, 0.75, "#9a3412");
-        LG(0, 0.61, 0.75, 0.76, 0.02, 0.76, "#fb923c");
+        LB(0, 0.015, 0.25, 1.2, 0.03, 1.7, "#1e3a5f");
+        LB(0, 0.3, 0.75, 0.75, 0.6, 0.75, "#7c2d12");
+        LB(0, 0.605, 0.75, 0.7, 0.012, 0.7, "#9a3412");
+        LG(0, 0.612, 0.75, 0.76, 0.01, 0.04, "#fb923c");
+        break;
+      case "cuerdas":
+        LB(0, 0.015, 1.3, 1.3, 0.03, 3.0, "#1e3a5f");
+        LB(0, 0.28, 2.65, 0.26, 0.56, 0.26, "#334155");
+        LC(0, 0.22, 2.5, 0.06, 0.04, "z", "#94a3b8");
         break;
     }
   }
@@ -266,286 +328,6 @@ function BrandSign({ L }: { L: Layout }) {
 
 /* ---------- Socios instanciados por partes ---------- */
 
-const M_base = new THREE.Matrix4();
-const M_tmp = new THREE.Matrix4();
-const M_rot = new THREE.Matrix4();
-const V_pos = new THREE.Vector3();
-const Q_rot = new THREE.Quaternion();
-const E_rot = new THREE.Euler();
-const V_one = new THREE.Vector3(1, 1, 1);
-const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
-const SHADOW_ROT = new THREE.Matrix4().makeRotationX(-Math.PI / 2);
-
-type Pose = { y: number; legL: [number, number]; legR: [number, number]; armL: [number, number]; armR: [number, number]; lean: number };
-
-function pose(kind: string, a: number, moving: boolean, phase: string): Pose {
-  const p: Pose = { y: 0, legL: [0, 0], legR: [0, 0], armL: [0, 0.06], armR: [0, -0.06], lean: 0 };
-  if (phase !== "entrenando") {
-    if (moving) {
-      const s = Math.sin(a);
-      p.legL[0] = s * 0.55;
-      p.legR[0] = -s * 0.55;
-      p.armL[0] = -s * 0.45;
-      p.armR[0] = s * 0.45;
-      p.y = Math.abs(Math.cos(a)) * 0.05;
-    } else {
-      p.armL[1] = 0.08 + Math.sin(a) * 0.02;
-      p.armR[1] = -0.08 - Math.sin(a) * 0.02;
-    }
-    return p;
-  }
-  switch (kind) {
-    case "cinta": {
-      const s = Math.sin(a * 2.6);
-      p.y = 0.21 + Math.abs(Math.cos(a * 2.6)) * 0.08;
-      p.legL[0] = s * 0.75;
-      p.legR[0] = -s * 0.75;
-      p.armL[0] = -s * 0.8;
-      p.armR[0] = s * 0.8;
-      p.lean = 0.12;
-      break;
-    }
-    case "bici": {
-      const s = Math.sin(a * 2);
-      p.y = 0.05;
-      p.legL[0] = -1.0 + s * 0.45;
-      p.legR[0] = -1.0 - s * 0.45;
-      p.armL[0] = -1.1;
-      p.armR[0] = -1.1;
-      p.lean = 0.35;
-      break;
-    }
-    case "banco": {
-      const s = (1 - Math.cos(a * 1.4)) / 2;
-      p.y = -0.38;
-      p.legL[0] = -1.45;
-      p.legR[0] = -1.45;
-      p.armL[0] = -0.2 - s * 1.5;
-      p.armR[0] = -0.2 - ((1 - Math.cos(a * 1.4 + 1.6)) / 2) * 1.5;
-      break;
-    }
-    case "rack": {
-      const s = (1 - Math.cos(a * 1.1)) / 2;
-      p.y = -s * 0.38;
-      p.legL[0] = -s * 0.9;
-      p.legR[0] = -s * 0.9;
-      p.legL[1] = 0.12;
-      p.legR[1] = -0.12;
-      p.armL = [-2.7, 0.35];
-      p.armR = [-2.7, -0.35];
-      p.lean = s * 0.35;
-      break;
-    }
-    case "mancuernas": {
-      const s = (1 - Math.cos(a * 1.3)) / 2;
-      p.armL = [0, 0.4 + s * 2.4];
-      p.armR = [0, -0.4 - s * 2.4];
-      break;
-    }
-    case "tapete": {
-      const s = (1 - Math.cos(a * 2.2)) / 2;
-      p.y = Math.sin(a * 2.2) > 0 ? Math.sin(a * 2.2) * 0.12 : 0;
-      p.armL = [0, 0.15 + s * 2.6];
-      p.armR = [0, -0.15 - s * 2.6];
-      p.legL = [0, s * 0.35];
-      p.legR = [0, -s * 0.35];
-      break;
-    }
-    case "cajon": {
-      const c = (a * 0.9) % (Math.PI * 2);
-      const jump = Math.max(0, Math.sin(c));
-      p.y = jump * 0.75;
-      p.legL[0] = -jump * 0.9;
-      p.legR[0] = -jump * 0.9;
-      p.armL[0] = -1.4 + jump * -1.2;
-      p.armR[0] = -1.4 + jump * -1.2;
-      break;
-    }
-    default: {
-      const s = Math.sin(a * 0.8);
-      p.armL = [-2.9, 0.2 + s * 0.2];
-      p.armR = [-2.9, -0.2 - s * 0.2];
-      p.lean = s * 0.15;
-    }
-  }
-  return p;
-}
-
-function limb(target: THREE.Matrix4, base: THREE.Matrix4, px: number, py: number, rx: number, rz: number, len: number) {
-  target.copy(base);
-  M_tmp.makeTranslation(px, py, 0);
-  target.multiply(M_tmp);
-  E_rot.set(rx, 0, rz);
-  M_rot.makeRotationFromEuler(E_rot);
-  target.multiply(M_rot);
-  M_tmp.makeTranslation(0, -len / 2, 0);
-  target.multiply(M_tmp);
-}
-
-function Members({ sim, ctrl, onPick }: { sim: GemeloSim; ctrl: WorldCtrl; onPick: (id: number) => void }) {
-  const torso = useRef<THREE.InstancedMesh>(null!);
-  const head = useRef<THREE.InstancedMesh>(null!);
-  const legs = useRef<THREE.InstancedMesh>(null!);
-  const arms = useRef<THREE.InstancedMesh>(null!);
-  const shadow = useRef<THREE.InstancedMesh>(null!);
-  const hit = useRef<THREE.InstancedMesh>(null!);
-  const ring = useRef<THREE.Mesh>(null!);
-  const colorsVersion = useRef("");
-  const M = useMemo(() => new THREE.Matrix4(), []);
-
-  useFrame((state) => {
-    const ms = sim.members;
-    // Colores (solo cuando cambian identidades)
-    const sig = ms.map((m) => m.shirt + m.pants).join("|") + sim.version;
-    if (sig !== colorsVersion.current) {
-      colorsVersion.current = sig;
-      ms.forEach((m, i) => {
-        torso.current.setColorAt(i, tmpC.set(m.shirt));
-        head.current.setColorAt(i, tmpC.set(m.skin));
-        legs.current.setColorAt(i * 2, tmpC.set(m.pants));
-        legs.current.setColorAt(i * 2 + 1, tmpC.set(m.pants));
-        arms.current.setColorAt(i * 2, tmpC.set(m.shirt));
-        arms.current.setColorAt(i * 2 + 1, tmpC.set(m.shirt));
-      });
-      for (const r of [torso, head, legs, arms]) if (r.current.instanceColor) r.current.instanceColor.needsUpdate = true;
-    }
-    for (let i = 0; i < ms.length; i++) {
-      const m = ms[i];
-      const camD = Math.hypot(m.x - state.camera.position.x, 1.0 - state.camera.position.y, m.z - state.camera.position.z);
-      const tp = ctrl.tour.phase;
-      const clearSet = ctrl.preset === "tour" && (tp === "to_gate" || tp === "gate") && (m.phase === "fila" || m.phase === "validando" || m.phase === "llegando") && m.z > 7.5 && m.z < 14;
-      // en el recorrido, nadie se cruza entre la cámara y la protagonista
-      let blocks = false;
-      if (ctrl.preset === "tour" && ctrl.tour.active && tp !== "form" && tp !== "phone" && tp !== "app" && tp !== "food" && tp !== "coach") {
-        const cx = state.camera.position.x, cz = state.camera.position.z;
-        const vx = ctrl.tour.x - cx, vz = ctrl.tour.z - cz;
-        const L2 = vx * vx + vz * vz;
-        if (L2 > 0.01) {
-          const u = ((m.x - cx) * vx + (m.z - cz) * vz) / L2;
-          if (u > 0 && u < 0.92) {
-            const dx = cx + vx * u - m.x, dz = cz + vz * u - m.z;
-            blocks = dx * dx + dz * dz < 0.75 * 0.75;
-          }
-        }
-      }
-      if (m.phase === "fuera" || (ctrl.preset === "tour" && camD < 2.7) || clearSet || blocks) {
-        torso.current.setMatrixAt(i, ZERO);
-        head.current.setMatrixAt(i, ZERO);
-        legs.current.setMatrixAt(i * 2, ZERO);
-        legs.current.setMatrixAt(i * 2 + 1, ZERO);
-        arms.current.setMatrixAt(i * 2, ZERO);
-        arms.current.setMatrixAt(i * 2 + 1, ZERO);
-        shadow.current.setMatrixAt(i, ZERO);
-        hit.current.setMatrixAt(i, ZERO);
-        continue;
-      }
-      const P = pose(m.kind, m.anim, m.moving, m.phase);
-      const st = m.station >= 0 ? sim.layout.stations[m.station] : null;
-      let ox = 0;
-      let oz = 0;
-      if (m.phase === "entrenando" && st) {
-        const lz = st.kind === "banco" ? 0.35 : st.kind === "bici" ? -0.3 : st.kind === "cajon" ? -0.1 : 0;
-        ox = Math.sin(st.rot) * lz;
-        oz = Math.cos(st.rot) * lz;
-      }
-      V_pos.set(m.x + ox, P.y, m.z + oz);
-      E_rot.set(P.lean, m.h, 0, "YXZ");
-      Q_rot.setFromEuler(E_rot);
-      M_base.compose(V_pos, Q_rot, V_one);
-      // torso
-      M.copy(M_base);
-      M_tmp.makeTranslation(0, 1.2, 0);
-      M.multiply(M_tmp);
-      M_tmp.makeScale(0.5, 0.64, 0.28);
-      M.multiply(M_tmp);
-      torso.current.setMatrixAt(i, M);
-      M.copy(M_base);
-      M_tmp.makeTranslation(0, 1.7, 0);
-      M.multiply(M_tmp);
-      M_tmp.makeScale(0.17, 0.19, 0.17);
-      M.multiply(M_tmp);
-      head.current.setMatrixAt(i, M);
-      limb(M, M_base, -0.13, 0.9, P.legL[0], -P.legL[1], 0.86);
-      M_tmp.makeScale(0.19, 0.86, 0.2);
-      M.multiply(M_tmp);
-      legs.current.setMatrixAt(i * 2, M);
-      limb(M, M_base, 0.13, 0.9, P.legR[0], -P.legR[1], 0.86);
-      M_tmp.makeScale(0.19, 0.86, 0.2);
-      M.multiply(M_tmp);
-      legs.current.setMatrixAt(i * 2 + 1, M);
-      limb(M, M_base, -0.33, 1.47, P.armL[0], -P.armL[1], 0.62);
-      M_tmp.makeScale(0.13, 0.62, 0.13);
-      M.multiply(M_tmp);
-      arms.current.setMatrixAt(i * 2, M);
-      limb(M, M_base, 0.33, 1.47, P.armR[0], -P.armR[1], 0.62);
-      M_tmp.makeScale(0.13, 0.62, 0.13);
-      M.multiply(M_tmp);
-      arms.current.setMatrixAt(i * 2 + 1, M);
-      M.makeTranslation(m.x + ox, 0.02, m.z + oz);
-      M.multiply(SHADOW_ROT);
-      M_tmp.makeScale(0.55, 0.55, 1);
-      M.multiply(M_tmp);
-      shadow.current.setMatrixAt(i, M);
-      M.makeTranslation(m.x + ox, 1.0, m.z + oz);
-      M_tmp.makeScale(1.1, 2.0, 1.1);
-      M.multiply(M_tmp);
-      hit.current.setMatrixAt(i, M);
-    }
-    for (const r of [torso, head, legs, arms, shadow, hit]) r.current.instanceMatrix.needsUpdate = true;
-    hit.current.boundingSphere = null;
-    // Anillo de selección
-    const sel = ctrl.selected >= 0 ? ms[ctrl.selected] : null;
-    if (sel && sel.phase !== "fuera") {
-      ring.current.visible = true;
-      ring.current.position.set(sel.x, 0.04, sel.z);
-      const s = 1 + Math.sin(state.clock.elapsedTime * 5) * 0.08;
-      ring.current.scale.set(s, s, s);
-    } else ring.current.visible = false;
-  });
-
-  return (
-    <group>
-      <instancedMesh ref={torso} args={[undefined, undefined, MAX_MEMBERS]} frustumCulled={false}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshLambertMaterial />
-      </instancedMesh>
-      <instancedMesh ref={head} args={[undefined, undefined, MAX_MEMBERS]} frustumCulled={false}>
-        <icosahedronGeometry args={[1, 1]} />
-        <meshLambertMaterial flatShading />
-      </instancedMesh>
-      <instancedMesh ref={legs} args={[undefined, undefined, MAX_MEMBERS * 2]} frustumCulled={false}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshLambertMaterial />
-      </instancedMesh>
-      <instancedMesh ref={arms} args={[undefined, undefined, MAX_MEMBERS * 2]} frustumCulled={false}>
-        <boxGeometry args={[1, 1, 1]} />
-        <meshLambertMaterial />
-      </instancedMesh>
-      <instancedMesh ref={shadow} args={[undefined, undefined, MAX_MEMBERS]} frustumCulled={false}>
-        <circleGeometry args={[1, 16]} />
-        <meshBasicMaterial color="#000000" transparent opacity={0.35} depthWrite={false} />
-      </instancedMesh>
-      <instancedMesh
-        ref={hit}
-        args={[undefined, undefined, MAX_MEMBERS]}
-        frustumCulled={false}
-        onClick={(e) => {
-          e.stopPropagation();
-          if (e.instanceId !== undefined) onPick(e.instanceId);
-        }}
-        onPointerOver={() => (document.body.style.cursor = "pointer")}
-        onPointerOut={() => (document.body.style.cursor = "")}
-      >
-        <boxGeometry args={[1, 1, 1]} />
-        <meshBasicMaterial colorWrite={false} depthWrite={false} />
-      </instancedMesh>
-      <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} visible={false}>
-        <ringGeometry args={[0.55, 0.72, 32]} />
-        <meshBasicMaterial color="#A3E635" toneMapped={false} transparent opacity={0.95} />
-      </mesh>
-    </group>
-  );
-}
 
 type Pop = { id: number; x: number; z: number; kind: string; title: string; detail: string; born: number };
 
@@ -616,6 +398,8 @@ function Popups({ sim, enabled, tour }: { sim: GemeloSim; enabled: boolean; tour
 
 /** En celular la tarjeta se acopla abajo (bottom sheet sobre la barra de navegación) */
 const DOCK_W = 768;
+/** Segundos que se lee la tarjeta de un socio antes de desvanecerse. */
+const CARD_SECS = 4.5;
 function dockPos(bottom: number) {
   return (_el: THREE.Object3D, _cam: THREE.Camera, size: { width: number; height: number }) => [size.width / 2, size.height - bottom];
 }
@@ -628,11 +412,24 @@ function FollowCard({ sim, ctrl, onClose }: { sim: GemeloSim; ctrl: WorldCtrl; o
   const g = useRef<THREE.Group>(null!);
   const [snap, setSnap] = useState<{ id: number; key: string } | null>(null);
   const acc = useRef(0);
+  const card = useRef<HTMLDivElement>(null);
+  const shown = useRef({ id: -1, seq: -1, age: 0 });
   const width = useThree((st) => st.size.width);
   const docked = width < DOCK_W && !(typeof window !== "undefined" && /[?&]ad=1/.test(window.location.search));
   useEffect(() => () => setCardFlag("gm-card-follow", false), []);
   useFrame((_, dt) => {
-    const id = ctrl.selected;
+    const id0 = ctrl.selected;
+    // la tarjeta se lee unos segundos y se desvanece (vuelve al tocar de nuevo a la persona)
+    const seq = (ctrl as any).pickSeq || 0;
+    const sh = shown.current;
+    if (id0 !== sh.id || seq !== sh.seq) {
+      sh.id = id0;
+      sh.seq = seq;
+      sh.age = 0;
+    } else sh.age += fdt(dt);
+    const fade = sh.age < CARD_SECS ? 1 : Math.max(0, 1 - (sh.age - CARD_SECS) / 0.6);
+    if (card.current) card.current.style.opacity = String(fade);
+    const id = fade > 0 ? id0 : -1;
     // nunca dos tarjetas: la de la protagonista del recorrido tiene prioridad
     const tourCard = ctrl.tour.active && (ctrl.tour.phase === "training" || ctrl.tour.phase === "enter");
     const m = id >= 0 && !tourCard ? sim.members[id] : null;
@@ -658,7 +455,7 @@ function FollowCard({ sim, ctrl, onClose }: { sim: GemeloSim; ctrl: WorldCtrl; o
           zIndexRange={[75, 74]}
           style={{ pointerEvents: "auto" }}
         >
-          <div className={`gm-card ${docked ? "gm-card-dock" : ""}`}>
+          <div ref={card} className={`gm-card ${docked ? "gm-card-dock" : ""}`} style={{ transition: "opacity .25s linear" }}>
             <div className="gm-card-h">
               <span className="gm-dot" style={{ background: m.shirt }} />
               <div>
@@ -1098,12 +895,20 @@ function TourCard({ tour }: { tour: Tour }) {
   const visits = useRef<HTMLElement>(null);
   const width = useThree((st) => st.size.width);
   const docked = width < DOCK_W && !(typeof window !== "undefined" && /[?&]ad=1/.test(window.location.search));
+  const age = useRef(-1);
   useEffect(() => () => setCardFlag("gm-card-tour-on", false), []);
-  useFrame(() => {
-    // después de la tarjeta de Accesos (nunca dos tarjetas a la vez)
-    const on = tour.active && (tour.phase === "training" || (tour.phase === "enter" && tour.phaseT > 6.6));
+  useFrame((_, dt) => {
+    // después de la tarjeta de Accesos (nunca dos tarjetas a la vez); se lee ~4,5 s y se desvanece
+    const want = tour.active && (tour.phase === "training" || (tour.phase === "enter" && tour.phaseT > 6.6));
+    if (!want) age.current = -1;
+    else age.current = age.current < 0 ? 0 : age.current + fdt(dt);
+    const fade = !want ? 0 : age.current < CARD_SECS ? 1 : Math.max(0, 1 - (age.current - CARD_SECS) / 0.6);
+    const on = fade > 0;
     g.current.position.set(tour.x, 2.25, tour.z);
-    if (el.current) el.current.style.display = on ? "" : "none";
+    if (el.current) {
+      el.current.style.display = on ? "" : "none";
+      el.current.style.opacity = String(fade);
+    }
     setCardFlag("gm-card-tour-on", on);
     if (on && sub.current && days.current && visits.current) {
       const ch4 = tour.chapter === 4;
@@ -1211,7 +1016,7 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <AerialCounters key={`o${version}`} L={L} tour={ctrl.tour} />
       <OwnerPanel tour={ctrl.tour} />
       <OwnerPhone tour={ctrl.tour} />
-      <Members sim={sim} ctrl={ctrl} onPick={onPick} />
+      <Crowd key={`m${version}`} sim={sim} ctrl={ctrl} onPick={onPick} />
       {labels && <ZoneLabels key={`l${version}`} L={L} />}
       <Popups sim={sim} enabled={labels} tour={ctrl.tour} />
       <FollowCard sim={sim} ctrl={ctrl} onClose={() => onPick(-1)} />
@@ -1257,6 +1062,7 @@ export default function World3D({
       style={{ touchAction: ctrl.fullscreen || ctrl.explore ? "none" : "pan-y" }}
       onPointerMissed={() => onBackgroundClick?.()}
     >
+      {!capture && <PerformanceMonitor onDecline={() => setDpr(1)} />}
       {capture && <CaptureHook />}
       <Scene sim={sim} ctrl={ctrl} version={version} onPick={onPick} labels={labels} />
     </Canvas>

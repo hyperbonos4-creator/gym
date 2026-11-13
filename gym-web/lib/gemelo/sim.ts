@@ -6,7 +6,7 @@ import { DEMO_SOCIOS, SEDE_IDS } from "./demoSocios";
  */
 
 export type Zone = "pesas" | "cardio" | "funcional";
-export type StationKind = "cinta" | "bici" | "banco" | "rack" | "mancuernas" | "tapete" | "cajon" | "estira";
+export type StationKind = "cinta" | "bici" | "banco" | "rack" | "polea" | "mancuernas" | "tapete" | "cajon" | "kettle" | "cuerdas" | "estira";
 export type Phase =
   | "fuera"
   | "llegando"
@@ -52,6 +52,12 @@ export type Member = {
   shirt: string;
   pants: string;
   skin: string;
+  /** Figura humana: mujer u hombre, peinado (0..2), color de pelo, complexión 0..1, pantalón corto */
+  female: boolean;
+  hairStyle: number;
+  hair: string;
+  build: number;
+  shorts: boolean;
   x: number;
   z: number;
   y: number;
@@ -123,6 +129,7 @@ const ROUTINES: Record<Zone, string[]> = {
 };
 const SHIRTS = ["#38BDF8", "#A78BFA", "#F472B6", "#A3E635", "#FBBF24", "#F87171", "#34D399", "#E8EEFC", "#60A5FA", "#FB923C", "#22D3EE", "#C084FC"];
 const PANTS = ["#1F2937", "#111827", "#334155", "#3B2F63", "#0F3A4A", "#27272A"];
+const HAIRS = ["#1b120c", "#2a1a12", "#3b2416", "#5a3a22", "#7a4b2a", "#141414", "#a0703f"];
 const SKINS = ["#F1C27D", "#E0AC69", "#C68642", "#8D5524", "#FFDBAC", "#D29B6C"];
 const SALES = [
   { item: "Agua", price: 4000 },
@@ -144,7 +151,8 @@ export function mulberry32(seed: number) {
   };
 }
 
-export const MAX_MEMBERS = 78;
+/** Pocas personas, bien hechas: ~10 entrenando + quienes entran o salen. */
+export const MAX_MEMBERS = 20;
 
 /** Ocupación objetivo (0..1) según la hora del día. */
 export function occupancyCurve(hour: number): number {
@@ -170,31 +178,23 @@ function buildLayout(index: number): Layout {
   const st: Station[] = [];
   const add = (x: number, z: number, rot: number, kind: StationKind, zone: Zone) =>
     st.push({ x: x * m, z, rot: m === 1 ? rot : -rot, kind, zone, occ: -1 });
-  const [nP, nC, nF] = S.mix;
-  // Pesas (lado izquierdo en la sede base)
-  const racksX = [-15.5, -12.5, -9.5, -6.5];
-  racksX.forEach((x) => add(x, -10.6, 0, "rack", "pesas"));
-  const benchCols = nP >= 14 ? [-15, -12, -9, -6] : [-14.5, -10.5, -6.5];
-  for (const z of [-5.5, -1.5]) benchCols.forEach((x) => add(x, z, 0, "banco", "pesas"));
-  const dbCount = Math.max(2, nP - racksX.length - benchCols.length * 2);
-  for (let i = 0; i < dbCount; i++) add(-15 + i * (10 / Math.max(1, dbCount - 1)), 3.6, Math.PI, "mancuernas", "pesas");
-  // Cardio (derecha, fondo)
-  const cRow = Math.ceil(nC / 2);
-  for (let r = 0; r < 2; r++) {
-    for (let i = 0; i < cRow && st.filter((s) => s.zone === "cardio").length < nC; i++) {
-      const x = 4.6 + i * (11.4 / Math.max(1, cRow - 1));
-      add(x, r === 0 ? -10.8 : -6.6, Math.PI, r === 0 ? "cinta" : i % 2 ? "bici" : "cinta", "cardio");
-    }
-  }
-  // Funcional (derecha, frente)
-  const fCols = Math.ceil(nF / 2);
-  for (let r = 0; r < 2; r++) {
-    for (let i = 0; i < fCols && st.filter((s) => s.zone === "funcional").length < nF; i++) {
-      const x = 4.8 + i * (11 / Math.max(1, fCols - 1));
-      const kind: StationKind = i === fCols - 1 && r === 1 ? "cajon" : i === 0 && r === 0 && nF > 10 ? "cajon" : "tapete";
-      add(x, r === 0 ? -1.2 : 3.2, Math.PI * 0.5 * (r === 0 ? 0 : 0), kind, "funcional");
-    }
-  }
+  // Distribución fija y ordenada (igual en las 3 sedes; el espejo cambia el lado)
+  // Pesas: 2 racks de sentadilla, 1 polea, 2 bancos de press, 2 puestos de mancuernas
+  add(-15.2, -10.4, 0, "rack", "pesas");
+  add(-11.6, -10.4, 0, "rack", "pesas");
+  add(-7.4, -10.2, Math.PI / 2, "polea", "pesas");
+  add(-14.2, -5.4, 0, "banco", "pesas");
+  add(-9.6, -5.4, 0, "banco", "pesas");
+  add(-10.5, 3.6, Math.PI, "mancuernas", "pesas");
+  add(-5, 3.6, Math.PI, "mancuernas", "pesas");
+  // Cardio: 3 cintas y 2 bicicletas
+  for (const x of [6.2, 9.6, 13]) add(x, -10.8, Math.PI, "cinta", "cardio");
+  for (const x of [7.9, 11.3]) add(x, -6.6, Math.PI, "bici", "cardio");
+  // Funcional: kettlebell, cajón, cuerdas y un tapete de movilidad
+  add(6, -1.6, 0, "kettle", "funcional");
+  add(10.2, -1.6, 0, "cajon", "funcional");
+  add(14.6, -2.2, 0, "cuerdas", "funcional");
+  add(8, 3.2, Math.PI / 2, "tapete", "funcional");
   const zones: ZoneRect[] = ([
     { zone: "pesas", label: "Pesas", x0: -17.4 * m, z0: -12.4, x1: -3.2 * m, z1: 5.4 },
     { zone: "cardio", label: "Cardio", x0: 3.2 * m, z0: -12.4, x1: 17.4 * m, z1: -4.4 },
@@ -294,9 +294,16 @@ export class GemeloSim {
     const pref = this.pick<Zone>(["pesas", "pesas", "cardio", "funcional"]);
     const mr = this.rng();
     const real = m.id !== undefined && m.id >= 1 && m.id <= 14 ? DEMO_SOCIOS[SEDE_IDS[this.layout.index]]?.[m.id - 1] : undefined;
+    const name = real ? `${real[1].split(" ")[0]} ${real[1].split(" ")[1]?.charAt(0) ?? ""}.` : `${this.pick(FIRST)} ${this.pick(LAST)}`;
+    const female = /a$/i.test(name.split(" ")[0]);
     Object.assign(m, {
       socioId: real ? real[0] : undefined,
-      name: real ? `${real[1].split(" ")[0]} ${real[1].split(" ")[1]?.charAt(0) ?? ""}.` : `${this.pick(FIRST)} ${this.pick(LAST)}`,
+      name,
+      female,
+      hairStyle: Math.floor(this.rng() * 3),
+      hair: this.pick(HAIRS),
+      build: this.rng(),
+      shorts: this.rng() < (female ? 0.3 : 0.55),
       plan: plan.name,
       planPrice: plan.price,
       daysLeft: Math.max(1, Math.round(this.r(1, plan.days))),
@@ -336,10 +343,18 @@ export class GemeloSim {
     // Arranque en caliente: gente ya entrenando
     const target = Math.round(this.targetInside() * 0.92);
     let placed = 0;
+    // primero una persona por tipo de ejercicio (se ve todo el gimnasio trabajando)
+    const order = ["banco", "rack", "cinta", "polea", "mancuernas", "kettle", "bici", "cajon", "cuerdas", "cinta", "mancuernas", "banco", "tapete", "rack", "bici", "cinta"];
+    const used = new Set<number>();
+    const initial = order.map((k) => {
+      const i = L.stations.findIndex((st, j) => st.kind === k && !used.has(j));
+      if (i >= 0) used.add(i);
+      return i;
+    }).filter((i) => i >= 0);
     for (let i = 1; i < MAX_MEMBERS && placed < target; i++) {
       const m = this.members[i];
       m.vencida = false;
-      const s = this.chooseStation(m);
+      const s = placed < initial.length ? initial[placed] : this.chooseStation(m);
       if (s < 0) break;
       const S = L.stations[s];
       S.occ = m.id;
@@ -349,12 +364,13 @@ export class GemeloSim {
       m.h = S.rot;
       m.phase = "entrenando";
       m.kind = S.kind;
+      m.routine = routineFor(S.kind, m.id);
       m.timer = this.r(30, 420);
       m.session = this.r(300, 3600);
       placed++;
     }
     // Algunos caminando adentro
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 2; i++) {
       const m = this.members.find((mm) => mm.phase === "fuera");
       if (!m) break;
       m.vencida = false;
@@ -372,7 +388,7 @@ export class GemeloSim {
   }
 
   targetInside() {
-    return Math.round(occupancyCurve(this.hour()) * 62);
+    return Math.round(occupancyCurve(this.hour()) * 12);
   }
   hour() {
     return (this.t % 86400) / 3600;
@@ -415,7 +431,7 @@ export class GemeloSim {
       tz = S.z;
       rot = S.rot;
       kind = S.kind;
-      if (S.zone !== m.pref && this.rng() < 0.5) m.routine = this.pick(ROUTINES[S.zone]);
+      m.routine = routineFor(S.kind, m.id);
     } else {
       m.station = -1;
       const fz = L.zones.find((z) => z.zone === "funcional")!;
@@ -564,7 +580,7 @@ export class GemeloSim {
     if (this.spawnCd <= 0) {
       let incoming = 0;
       for (const m of this.members) if (m.phase === "llegando" || m.phase === "fila") incoming++;
-      if (this.stats.aforo + incoming < this.targetInside() + 4 && incoming < 14) this.spawn();
+      if (this.stats.aforo + incoming < this.targetInside() + 2 && incoming < 3) this.spawn();
       this.spawnCd = this.r(2, 6) * Math.max(1, this.speed / 10) * 0.6 + 0.4;
     }
 
@@ -759,6 +775,22 @@ export class GemeloSim {
   trainingIn(zone: Zone): number {
     const c = this.members.filter((m) => m.phase === "entrenando" && m.station >= 0 && this.layout.stations[m.station].zone === zone);
     return c.length ? c[Math.floor(c.length / 2)].id : -1;
+  }
+}
+
+/** Rutina del día coherente con lo que la persona hace en su estación. */
+export function routineFor(kind: StationKind, id: number): string {
+  switch (kind) {
+    case "rack": return "Pierna · Sentadilla 4×10";
+    case "banco": return "Empuje · Press banca 4×8";
+    case "polea": return "Tirón · Jalón al pecho 4×10";
+    case "mancuernas": return id % 2 ? "Brazo · Curl con mancuernas 3×12" : "Hombro · Press con mancuernas 3×12";
+    case "cinta": return id % 2 ? "Zona 2 · 35 min" : "Intervalos 10×1 min";
+    case "bici": return "Bici · 30 min";
+    case "kettle": return "Kettlebell swing 5×15";
+    case "cajon": return "Box jumps 5×8";
+    case "cuerdas": return "Cuerdas · 8×30 s";
+    default: return "Core + movilidad";
   }
 }
 

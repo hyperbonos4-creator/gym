@@ -631,7 +631,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
           </div>
           <div className="gm-hud-stats">
             <div><span>Ventas cobradas</span><b className="text-[#A3E635]"><AnimatedNumber value={stats.ingresosHoy} format={formatCOP} /></b></div>
-            <div><span>Intentos de acceso</span><b><AnimatedNumber value={stats.accesosOk} format={fmtInt} /> <em className="text-[#FF4D6D]">✕{stats.accesosNeg}</em></b></div>
+            <div><span>Intentos de acceso</span><b><AnimatedNumber value={stats.accesosOk + stats.accesosNeg} format={fmtInt} /> <em className="text-[#FF4D6D]">✕{stats.accesosNeg}</em></b></div>
             <div><span>Sin plan vigente</span><b className="text-[#FFB02E]"><AnimatedNumber value={stats.porVencer} format={fmtInt} /></b></div>
             <div><span>Habilitados</span><b>{fmtInt(HABILITADOS[sede] ?? HABILITADOS[0])}</b></div>
           </div>
