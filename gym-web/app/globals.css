@@ -883,8 +883,11 @@ body {
 .gm-o6m-drawer .it.on { color: #38BDF8; background: rgba(56,189,248,.14); }
 .gm-o6m-drawer .it i { width: 8px; height: 8px; border-radius: 50%; }
 .gm-o6m-drawer .it i.ok { background: #34d399; } .gm-o6m-drawer .it i.warn { background: #fbbf24; }
-.gm-o6-count.p { min-width: 0; padding: 6px 9px; border-radius: 12px; transform: scale(.72); }
-.gm-o6-count.p b { font-size: 18px; } .gm-o6-count.p i { display: none; }
+.gm-o6-row { position: absolute; top: 112px; transform: translateX(-50%); display: flex; gap: 8px; width: min(360px, 92vw); }
+.gm-o6-row .gm-o6-count.p { flex: 1; min-width: 0; padding: 8px 10px; border-radius: 12px; transform: none; }
+.gm-o6-row .gm-o6-count.p b { font-size: 19px; }
+.gm-o6-row .gm-o6-count.p em { font-size: 10.5px; }
+.gm-o6-row .gm-o6-count.p i { display: block; font-size: 9.5px; line-height: 1.25; }
 .gm-o6-strip.p { flex-wrap: nowrap; gap: 5px; top: 70px; }
 .gm-o6-strip.p span { padding: 4px 8px; font-size: 0; }
 .gm-o6-strip.p span b { font-size: 10.5px; }

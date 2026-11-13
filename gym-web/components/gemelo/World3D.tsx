@@ -569,7 +569,7 @@ function Popups({ sim, enabled, tour }: { sim: GemeloSim; enabled: boolean; tour
           x: e.x,
           z: e.z,
           kind: e.kind,
-          title: e.kind === "ok" ? "✔ Acceso concedido" : e.kind === "deny" ? "✕ Acceso denegado" : e.kind === "renew" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "sale" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "lost" ? "Dinero en riesgo" : "",
+          title: e.kind === "ok" ? "✔ Entrada autorizada" : e.kind === "deny" ? "✕ Acceso rechazado" : e.kind === "renew" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "sale" ? `+ ${formatCOP(e.amount || 0)}` : e.kind === "lost" ? "Plan vencido" : "",
           detail: e.kind === "ok" || e.kind === "deny" ? `${e.name} · ${e.detail.split(" · ").slice(-2).join(" · ")}` : e.detail,
           born: clock.current,
         }));

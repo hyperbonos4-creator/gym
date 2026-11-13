@@ -574,7 +574,7 @@ export class GemeloSim {
       const sale = this.pick(SALES);
       S.ingresosHoy += sale.price;
       S.ventasPos++;
-      this.emit({ kind: "sale", name: "Caja", detail: `Venta POS · ${sale.item}`, amount: sale.price, x: L.reception.x, z: L.reception.z, member: -1 });
+      this.emit({ kind: "sale", name: "Caja", detail: `Punto de venta · ${sale.item}`, amount: sale.price, x: L.reception.x, z: L.reception.z, member: -1 });
       this.saleCd = this.r(120, 420);
     }
 
@@ -622,14 +622,14 @@ export class GemeloSim {
               g.open = 1.5;
               S.accesosOk++;
               m.visits++;
-              this.emit({ kind: "ok", name: m.name, detail: m.method === "PIN" ? "Invitado · PIN de un solo uso" : `Acceso facial · ${m.plan} · ${m.daysLeft} días`, x: g.x, z: g.z, member: m.id });
+              this.emit({ kind: "ok", name: m.name, detail: m.method === "PIN" ? "Invitado · PIN de respaldo · un solo uso" : `Entrada autorizada · ${m.plan} · Membresía vigente · rostro reconocido`, x: g.x, z: g.z, member: m.id });
               m.path = [{ x: g.x, z: g.z - 1.2 }];
               this.goToStationAfterGate(m);
               setTimeoutLike(g);
             } else {
               g.flashOk = false;
               S.accesosNeg++;
-              this.emit({ kind: "deny", name: m.name, detail: "Membresía vencida o sin plan", x: g.x, z: g.z, member: m.id });
+              this.emit({ kind: "deny", name: m.name, detail: "Membresía vencida", x: g.x, z: g.z, member: m.id });
               g.busy = false;
               m.path = [
                 { x: g.x, z: g.z + 1.6 },
@@ -662,7 +662,7 @@ export class GemeloSim {
               S.renovaciones++;
               S.porVencer = Math.max(0, S.porVencer - 1);
               S.dineroRiesgo = Math.max(0, S.dineroRiesgo - m.planPrice);
-              this.emit({ kind: "renew", name: m.name, detail: `Renovación ${m.plan}`, amount: m.planPrice, x: L.reception.x, z: L.reception.z, member: m.id });
+              this.emit({ kind: "renew", name: m.name, detail: `Renovación · ${m.plan}`, amount: m.planPrice, x: L.reception.x, z: L.reception.z, member: m.id });
               const g = this.pickGate();
               m.gate = g;
               m.path = [{ x: L.gates[g].x, z: 12.2 }];
@@ -671,7 +671,7 @@ export class GemeloSim {
             } else {
               S.dineroRiesgo += m.planPrice;
               S.porVencer++;
-              this.emit({ kind: "lost", name: m.name, detail: `No renovó · ${formatCOP(m.planPrice)} en riesgo`, amount: m.planPrice, x: L.reception.x, z: L.reception.z, member: m.id });
+              this.emit({ kind: "lost", name: m.name, detail: `Plan ${m.plan} vencido · sin renovar`, x: L.reception.x, z: L.reception.z, member: m.id });
               m.path = [{ x: this.r(-3, 3), z: 13.8 }, { x: this.r(-15, 15), z: 19.5 }];
               m.phase = "saliendo";
               m.kind = "walk";

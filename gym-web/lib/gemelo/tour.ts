@@ -476,7 +476,7 @@ export class Tour {
           g.flashOk = true;
           (g as any)._tour = 1;
           sim.stats.accesosOk++;
-          sim.emit({ kind: "ok", name: TOUR_PERSON.first + " R.", detail: `Acceso facial · ${TOUR_PERSON.plan} · 30 días`, x: g.x, z: g.z, member: -3 });
+          sim.emit({ kind: "ok", name: TOUR_PERSON.first + " R.", detail: `Entrada autorizada · ${TOUR_PERSON.plan} · Membresía vigente · rostro reconocido`, x: g.x, z: g.z, member: -3 });
         }
         g.open = 1.6;
       }

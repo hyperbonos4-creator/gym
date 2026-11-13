@@ -63,16 +63,22 @@ export function AerialCounters({ L, tour }: { L: Layout; tour: Tour }) {
   const door = useRef<HTMLDivElement>(null);
   const caja = useRef<HTMLDivElement>(null);
   const strip = useRef<HTMLDivElement>(null);
+  const row = useRef<HTMLDivElement>(null);
   const { size } = useThree();
   const gx = L.gates.reduce((a, g) => a + g.x, 0) / L.gates.length;
   const gz = L.gates[0].z;
   useFrame(() => {
     const on = tour.active && tour.chapter === 6 && (tour.phase === "own_aerial" ? tour.phaseT > 2.6 : tour.phase === "own_end");
     const portrait = size.width < size.height;
+    // en vertical la recepción queda fuera del encuadre: los contadores van fijos bajo las sedes
     for (const el of [door.current, caja.current]) {
       if (!el) continue;
-      el.style.display = on ? "" : "none";
-      el.classList.toggle("p", portrait);
+      el.style.display = on && !portrait ? "" : "none";
+    }
+    const r = row.current;
+    if (r) {
+      r.style.display = on && portrait ? "" : "none";
+      r.style.left = `${size.width / 2}px`;
     }
     const s = strip.current;
     if (s) {
@@ -98,6 +104,12 @@ export function AerialCounters({ L, tour }: { L: Layout; tour: Tour }) {
           </div>
         </Html>
       </group>
+      <Html calculatePosition={fixedPos} zIndexRange={[73, 72]} style={{ pointerEvents: "none" }}>
+        <div ref={row} className="gm-o6-row" style={{ display: "none" }}>
+          <div className="gm-o6-count p"><span>Hoy</span><b>{N.ventas}</b><em>Ventas cobradas</em><i>Wompi $1.080.000 · incluye la renovación de Valentina</i></div>
+          <div className="gm-o6-count p"><span>Puerta</span><b>{N.intentos}</b><em>Intentos de acceso</em><i>{N.ok} aprobados · {N.no} rechazados</i></div>
+        </div>
+      </Html>
       <Html calculatePosition={fixedPos} zIndexRange={[73, 72]} style={{ pointerEvents: "none" }}>
         <div ref={strip} className="gm-o6-strip" style={{ display: "none" }}>
           {SEDES6.map((sd, i) => (

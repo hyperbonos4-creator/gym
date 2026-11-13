@@ -157,7 +157,7 @@ export default function DashboardPage() {
       <div className="px-6 py-6">
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gym-muted">{publicBrand().name} / Operaciónn</p>
+            <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-gym-muted">{publicBrand().name} / Operación</p>
             <h2 className="mt-1 text-2xl font-extrabold tracking-tight text-white">Centro de operaciones</h2>
             <p className="mt-1 text-sm text-gym-silver">{sede} · {now || "…"}</p>
           </div>

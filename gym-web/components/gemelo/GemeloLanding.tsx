@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { GemeloSim, SEDES, formatClock, formatCOP, occupancyCurve, type SimEvent, type Stats } from "../../lib/gemelo/sim";
+import { GemeloSim, SEDES, formatClock, formatCOP, type SimEvent, type Stats } from "../../lib/gemelo/sim";
 import { WorldCtrl, type CamPreset } from "../../lib/gemelo/ctrl";
 
 // three.js solo se descarga en esta ruta y solo en el cliente.
@@ -47,24 +47,19 @@ function seeded(i: number) {
   const x = Math.sin(i * 12.9898) * 43758.5453;
   return x - Math.floor(x);
 }
-const DAYS14 = Array.from({ length: 14 }, (_, i) => {
-  const dow = (i + 3) % 7;
-  const base = dow === 6 ? 1.6 : dow === 5 ? 2.9 : 3.6;
-  return Math.round((base + seeded(i + 4) * 1.2) * 1_000_000 / 10000) * 10000;
-});
-const DOW = ["L", "M", "X", "J", "V", "S", "D"];
-const HOURS = Array.from({ length: 17 }, (_, i) => 5 + i);
-const HEAT = DOW.map((_, d) => HOURS.map((h) => {
-  const f = d === 6 ? 0.45 : d === 5 ? 0.7 : d === 4 ? 0.85 : 1;
-  const shift = d >= 5 ? 2.5 : 0;
-  return Math.min(1, occupancyCurve(h - (d >= 5 && h < 12 ? -shift : 0)) * f * (0.88 + seeded(d * 31 + h) * 0.2));
-}));
-const PLAN_MIX = [
-  { name: "Mensual", v: 55, c: "#38BDF8" },
-  { name: "Trimestral", v: 22, c: "#7C3AED" },
-  { name: "Anual", v: 11, c: "#A3E635" },
-  { name: "Pase del día", v: 12, c: "#FBBF24" },
+/* Cifras de la sede Norte del gemelo, mismas que la Parte 6 (Dashboard y Reportes del panel). */
+const MEDIOS = [
+  { name: "Efectivo", v: 1164000, c: "#38BDF8" },
+  { name: "Wompi", v: 1080000, c: "#A78BFA" },
+  { name: "Tarjeta", v: 696000, c: "#A3E635" },
+  { name: "Transferencia", v: 240000, c: "#FBBF24" },
 ];
+const RECHAZOS = [
+  { name: "Identidad desconocida", v: 4 },
+  { name: "Membresía", v: 4 },
+  { name: "Prueba de vida", v: 1 },
+];
+const HABILITADOS = [487, 608, 414];
 const POR_VENCER = [
   { n: "Mariana P.", p: "Mensual", d: 1 },
   { n: "Sebastián R.", p: "Trimestral", d: 2 },
@@ -133,14 +128,14 @@ const AREAS = [
     k: "01",
     t: "Operación",
     d: "La recepción deja de ser un cuello de botella. Cada entrada se valida sola y la caja cuadra al final del día.",
-    items: ["Control de acceso: torniquetes con reconocimiento facial", "Recepción y caja (POS)", "Clases y reservas", "Inventario y proveedores"],
+    items: ["Control de acceso: torniquetes con reconocimiento facial", "Recepción y caja (POS)", "Historial de accesos", "Inventario y proveedores"],
     c: "#38BDF8",
   },
   {
     k: "02",
     t: "Gimnasio",
     d: "El entrenamiento también se gestiona: rutinas por socio, ejercicios en 3D y seguimiento de progreso.",
-    items: ["Rutinas por objetivo", "Biblioteca de ejercicios con maniquí 3D", "Valoraciones físicas", "Planes de nutrición"],
+    items: ["Rutinas con versiones y asignación", "Biblioteca de ejercicios con maniquí 3D", "Valoraciones físicas", "Planes de nutrición"],
     c: "#A78BFA",
   },
   {
@@ -153,126 +148,33 @@ const AREAS = [
   {
     k: "04",
     t: "Sistema",
-    d: "Una sola plataforma para todas tus sedes, con permisos por rol y respaldos automáticos.",
-    items: ["Multisede", "Usuarios y roles", "WhatsApp automatizado", "Respaldos y auditoría"],
+    d: "Una sola plataforma para tus sedes: cambias de sede desde el encabezado, cada usuario con su rol y su alcance.",
+    items: ["Varias sedes, una a la vez", "Usuarios con rol por sede", "Avisos de vencimiento por WhatsApp", "Respaldo descargable de la sede"],
     c: "#FBBF24",
   },
   {
     k: "05",
     t: "Experiencia del socio",
-    d: "Tu gimnasio en el bolsillo de cada socio: entra con el celular y ve su rutina del día.",
-    items: ["App móvil del socio", "Ingreso con el rostro · invitados con PIN de un uso", "Rutina del día en el celular", "Pagos en línea e invitaciones"],
+    d: "Tu gimnasio en el bolsillo de cada socio: su membresía, su rutina y sus pagos en el celular. En la puerta entra con su rostro.",
+    items: ["App móvil del socio", "Ingreso con el rostro · invitados con PIN de un uso", "Rutina del día en el celular", "Pago con Wompi e invitaciones desde la app"],
     c: "#F472B6",
   },
 ];
 
 /* ---------- Componentes de tablero ---------- */
 
-function BarsChart({ today }: { today: number }) {
-  const data = [...DAYS14.slice(0, 13), today];
-  const max = Math.max(...data) * 1.1;
+function MediosBars() {
+  const max = Math.max(...MEDIOS.map((m) => m.v));
   return (
-    <svg viewBox="0 0 560 120" className="h-40 w-full" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="gmb" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#38BDF8" />
-          <stop offset="1" stopColor="#7C3AED" />
-        </linearGradient>
-      </defs>
-      {data.map((v, i) => {
-        const h = (v / max) * 100;
-        const last = i === data.length - 1;
-        return (
-          <g key={i}>
-            <rect x={8 + i * 39.4} y={108 - h} width={28} height={h} rx={3} fill={last ? "#A3E635" : "url(#gmb)"} opacity={last ? 1 : 0.85} />
-          </g>
-        );
-      })}
-      <line x1="0" x2="560" y1="108.5" y2="108.5" stroke="#1E2A44" />
-    </svg>
-  );
-}
-
-function Heatmap() {
-  return (
-    <div className="gm-heat">
-      <div />
-      {HOURS.map((h) => (
-        <div key={h} className="gm-heat-h">{h % 3 === 0 ? h : ""}</div>
-      ))}
-      {DOW.map((d, di) => (
-        <FragmentRow key={d} d={d} row={HEAT[di]} />
+    <div className="flex flex-col gap-2.5">
+      {MEDIOS.map((m) => (
+        <div key={m.name} className="grid grid-cols-[96px_1fr_92px] items-center gap-3 text-xs">
+          <span className="font-semibold text-gym-muted">{m.name}</span>
+          <span className="h-3 rounded-full bg-[#1E2A44]"><i className="block h-3 rounded-full" style={{ width: `${(m.v / max) * 100}%`, background: m.c }} /></span>
+          <b className="text-right text-white">{formatCOP(m.v)}</b>
+        </div>
       ))}
     </div>
-  );
-}
-function FragmentRow({ d, row }: { d: string; row: number[] }) {
-  return (
-    <>
-      <div className="gm-heat-d">{d}</div>
-      {row.map((v, i) => (
-        <div
-          key={i}
-          className="gm-heat-c"
-          style={{ background: `rgba(${Math.round(56 + v * 120)}, ${Math.round(189 - v * 130)}, ${Math.round(248 - v * 10)}, ${0.12 + v * 0.88})` }}
-          title={`${Math.round(v * 100)}%`}
-        />
-      ))}
-    </>
-  );
-}
-
-function AforoLine({ hist }: { hist: { t: number; aforo: number }[] }) {
-  if (hist.length < 2) return null;
-  const W = 280;
-  const H = 110;
-  const max = 80;
-  const pts = hist.map((p, i) => [(i / (hist.length - 1)) * W, H - (p.aforo / max) * (H - 10)] as const);
-  const d = pts.map(([x, y], i) => `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
-  const last = pts[pts.length - 1];
-  return (
-    <svg viewBox={`0 0 ${W} ${H + 10}`} className="h-36 w-full">
-      <defs>
-        <linearGradient id="gma" x1="0" x2="0" y1="0" y2="1">
-          <stop offset="0" stopColor="#38BDF8" stopOpacity="0.45" />
-          <stop offset="1" stopColor="#38BDF8" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <path d={`${d} L${W},${H} L0,${H} Z`} fill="url(#gma)" />
-      <path d={d} fill="none" stroke="#38BDF8" strokeWidth="2.2" strokeLinejoin="round" />
-      <circle cx={last[0]} cy={last[1]} r="4" fill="#A3E635" />
-      <circle cx={last[0]} cy={last[1]} r="8" fill="none" stroke="#A3E635" strokeOpacity="0.5" />
-    </svg>
-  );
-}
-
-function Donut() {
-  let acc = 0;
-  const R = 42;
-  const C = 2 * Math.PI * R;
-  return (
-    <svg viewBox="0 0 120 120" className="h-32 w-32 shrink-0">
-      <circle cx="60" cy="60" r={R} fill="none" stroke="#1E2A44" strokeWidth="14" />
-      {PLAN_MIX.map((p) => {
-        const len = (p.v / 100) * C;
-        const el = (
-          <circle
-            key={p.name}
-            cx="60"
-            cy="60"
-            r={R}
-            fill="none"
-            stroke={p.c}
-            strokeWidth="14"
-            strokeDasharray={`${len - 2} ${C - len + 2}`}
-            strokeDashoffset={-acc}
-            transform="rotate(-90 60 60)"
-          />
-        );
-        acc += len;
-        return el;
-      })}
-    </svg>
   );
 }
 
@@ -288,8 +190,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
   const [stats, setStats] = useState<Stats>(() => ({ ...sim.stats }));
   const [clock, setClock] = useState(sim.t);
   const [feed, setFeed] = useState<SimEvent[]>([]);
-  const [hist, setHist] = useState(sim.history.slice());
-  const [selected, setSelected] = useState(-1);
+    const [selected, setSelected] = useState(-1);
   const [tourPhase, setTourPhase] = useState<string>("off");
   const [reduced, setReduced] = useState(false);
   const [webgl, setWebgl] = useState(true);
@@ -356,7 +257,6 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       setStats({ ...sim.stats });
       setClock(sim.t);
       setFeed(sim.events.slice(-6).reverse());
-      setHist(sim.history.slice());
       setTourPhase(ctrl.tour.active ? ctrl.tour.phase : "off");
     }, 250);
     return () => clearInterval(id);
@@ -582,7 +482,6 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
   const contact = contactUrl || "/login";
   const contactLabel = "Agenda una demo";
   const S = SEDES[sede];
-  const ingresos14 = DAYS14.slice(0, 13).reduce((a, b) => a + b, 0) + stats.ingresosHoy;
 
   return (
     <main className={`gm-root ${capture ? "gm-capture" : ""} ${ad ? "gm-ad" : ""}`}>
@@ -608,7 +507,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             <span className="gm-grad">cuenta.</span>
           </h1>
           <p className="gm-sub">
-            Tu gimnasio, convertido en un sistema vivo. Accesos, aforo, membresías y caja en tiempo real, en una sola pantalla.
+            Tu gimnasio en un solo panel: cada intento de acceso en la puerta, las membresías que vencen y la caja de cada sede.
             <b className="text-white"> VISIONYX: inteligencia que conecta el mundo real.</b>
           </p>
           <div className="mt-6 flex flex-wrap gap-3">
@@ -637,26 +536,27 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
           </div>
           <div className="gm-widgets">
             <div className="gm-w">
-              <div className="gm-w-l">Aforo ahora</div>
-              <div className="gm-w-v"><AnimatedNumber value={stats.aforo} format={fmtInt} /><small> / 120</small></div>
-              <div className="gm-bar"><i style={{ width: `${Math.min(100, (stats.aforo / 120) * 100)}%` }} /></div>
-            </div>
-            <div className="gm-w">
-              <div className="gm-w-l">Ingresos hoy</div>
+              <div className="gm-w-l">Ventas cobradas · hoy</div>
               <div className="gm-w-v text-[#A3E635]"><AnimatedNumber value={stats.ingresosHoy} format={formatCOP} /></div>
-              <div className="gm-w-s">{fmtInt(stats.renovaciones)} renovaciones · {fmtInt(stats.ventasPos)} ventas</div>
+              <div className="gm-w-s">{fmtInt(stats.renovaciones)} renovaciones · {fmtInt(stats.ventasPos)} ventas en caja</div>
             </div>
             <div className="gm-w">
-              <div className="gm-w-l">Accesos hoy</div>
-              <div className="gm-w-v"><AnimatedNumber value={stats.accesosOk} format={fmtInt} /></div>
-              <div className="gm-w-s"><span className="text-[#22E0A1]">✓ permitidos</span> · <span className="text-[#FF4D6D]">✕ {fmtInt(stats.accesosNeg)} denegados</span></div>
+              <div className="gm-w-l">Intentos de acceso</div>
+              <div className="gm-w-v"><AnimatedNumber value={stats.accesosOk + stats.accesosNeg} format={fmtInt} /></div>
+              <div className="gm-w-s"><span className="text-[#22E0A1]">{fmtInt(stats.accesosOk)} aprobados</span> · <span className="text-[#FF4D6D]">{fmtInt(stats.accesosNeg)} rechazados</span></div>
+            </div>
+            <div className="gm-w">
+              <div className="gm-w-l">Socios habilitados</div>
+              <div className="gm-w-v">{fmtInt(HABILITADOS[sede] ?? HABILITADOS[0])}</div>
+              <div className="gm-w-s">Plan vigente y rostro registrado</div>
             </div>
             <div className="gm-w gm-w-risk">
-              <div className="gm-w-l">Dinero que se te va hoy</div>
-              <div className="gm-w-v text-[#FFB02E]"><AnimatedNumber value={stats.dineroRiesgo} format={formatCOP} /></div>
-              <div className="gm-w-s">{fmtInt(stats.porVencer)} membresías vencidas sin renovar</div>
+              <div className="gm-w-l">Socios sin plan vigente</div>
+              <div className="gm-w-v text-[#FFB02E]"><AnimatedNumber value={stats.porVencer} format={fmtInt} /></div>
+              <div className="gm-w-s">Asignar o renovar</div>
             </div>
           </div>
+          <div className="gm-demo-tag mt-3 inline-block">Gemelo simulado · datos de demostración</div>
         </div>
 
         <div id="mundo" ref={slotRef} className="gm-slot">
@@ -730,17 +630,17 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             </div>
           </div>
           <div className="gm-hud-stats">
-            <div><span>Aforo</span><b><AnimatedNumber value={stats.aforo} format={fmtInt} /></b></div>
-            <div><span>Ingresos hoy</span><b className="text-[#A3E635]"><AnimatedNumber value={stats.ingresosHoy} format={formatCOP} /></b></div>
-            <div><span>Accesos</span><b><AnimatedNumber value={stats.accesosOk} format={fmtInt} /> <em className="text-[#FF4D6D]">✕{stats.accesosNeg}</em></b></div>
-            <div><span>En riesgo</span><b className="text-[#FFB02E]"><AnimatedNumber value={stats.dineroRiesgo} format={formatCOP} /></b></div>
+            <div><span>Ventas cobradas</span><b className="text-[#A3E635]"><AnimatedNumber value={stats.ingresosHoy} format={formatCOP} /></b></div>
+            <div><span>Intentos de acceso</span><b><AnimatedNumber value={stats.accesosOk} format={fmtInt} /> <em className="text-[#FF4D6D]">✕{stats.accesosNeg}</em></b></div>
+            <div><span>Sin plan vigente</span><b className="text-[#FFB02E]"><AnimatedNumber value={stats.porVencer} format={fmtInt} /></b></div>
+            <div><span>Habilitados</span><b>{fmtInt(HABILITADOS[sede] ?? HABILITADOS[0])}</b></div>
           </div>
           <div className="gm-hud-feed">
             {feed.slice(0, 4).map((e) => (
               <div key={e.id} className={`gm-feed-i k-${e.kind}`}>
                 <b>{e.kind === "ok" ? "✓" : e.kind === "deny" ? "✕" : e.kind === "lost" ? "!" : "$"}</b>
                 <span>{e.name}</span>
-                <em>{e.amount ? formatCOP(e.amount) : e.detail.split(" · ")[0]}</em>
+                <em>{e.amount ? formatCOP(e.amount) : e.detail.split(" · ").slice(-1)[0]}</em>
               </div>
             ))}
           </div>
@@ -782,7 +682,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       {/* Feed en vivo */}
       <section className="gm-section">
         <div className="gm-feedrow" data-rv="0">
-          <div className="gm-kicker">Lo que pasa ahora mismo</div>
+          <div className="gm-kicker">Lo que pasa ahora mismo en el gemelo</div>
           <div className="gm-feedlist">
             {feed.slice(0, 5).map((e) => (
               <div key={e.id} className={`gm-feed-c k-${e.kind}`}>
@@ -800,9 +700,9 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
         <h2 className="gm-h2" data-rv="0">El mundo real, <span className="gm-grad">conectado.</span></h2>
         <div className="gm-steps">
           {[
-            ["Llega", "Con su rostro. Sin carnés, sin filas en recepción.", "#38BDF8"],
-            ["Valida", "Membresía, días restantes y saldo, al instante. El torniquete abre solo.", "#A3E635"],
-            ["Entrena", "Su rutina del día aparece en su celular. Tú ves el aforo en vivo.", "#A78BFA"],
+            ["Llega", "Entra con su rostro. Sin carné ni tarjeta.", "#38BDF8"],
+            ["Valida", "Rostro, prueba de vida y membresía vigente. Si todo está bien, el torniquete abre.", "#A3E635"],
+            ["Entrena", "Su rutina del día está en la app. Tú ves cada intento de acceso en el panel.", "#A78BFA"],
           ].map(([t, d, c], i) => (
             <div key={t} className="gm-step" data-rv={String(i * 0.15)}>
               <div className="gm-step-n" style={{ color: c }}>0{i + 1}</div>
@@ -821,10 +721,10 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
         </div>
         <div className="gm-kpis">
           {[
-            ["Socios activos", "1.248", "+38 este mes"],
-            ["Ingresos 14 días", formatCOP(ingresos14), "membresías + POS"],
-            ["Retención 90 días", "81%", "+4 pts vs trimestre"],
-            ["Ocupación pico", "92%", "jueves 18:00–19:00"],
+            ["Ventas cobradas · hoy", formatCOP(stats.ingresosHoy), "Membresías y punto de venta"],
+            ["Intentos de acceso · hoy", fmtInt(stats.accesosOk + stats.accesosNeg), `${fmtInt(stats.accesosOk)} aprobados · ${fmtInt(stats.accesosNeg)} rechazados`],
+            ["Socios habilitados", fmtInt(HABILITADOS[sede] ?? HABILITADOS[0]), "Plan vigente y rostro registrado"],
+            ["Enrolamiento facial", "97,7%", "502 de 514 con rostro"],
           ].map(([l, v, s], i) => (
             <div key={l} className="gm-kpi" data-rv={String(i * 0.08)}>
               <div className="gm-w-l">{l}</div>
@@ -835,38 +735,47 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
         </div>
         <div className="gm-dash">
           <div className="gm-card2 lg:col-span-2" data-rv="0">
-            <div className="gm-card2-h"><b>Ingresos diarios</b><span>Últimos 14 días · <b className="text-[#A3E635]">hoy en vivo</b></span></div>
-            <BarsChart today={stats.ingresosHoy} />
+            <div className="gm-card2-h"><b>Medios de pago</b><span>Reportes · VISIONYX Norte · ejemplo del domingo 13 de diciembre ($3.180.000) · Wompi no entra al cajón</span></div>
+            <MediosBars />
           </div>
           <div className="gm-card2" data-rv="0.1">
-            <div className="gm-card2-h"><b>Aforo hoy</b><span>Cada 5 min · {fmtInt(stats.aforo)} ahora</span></div>
-            <AforoLine hist={hist} />
+            <div className="gm-card2-h"><b>Intentos de acceso rechazados</b><span>Requiere atención · mismo día: 9 de 321</span></div>
+            <div className="flex flex-col gap-2 text-xs">
+              {RECHAZOS.map((r) => (
+                <div key={r.name} className="flex items-center justify-between rounded-lg border border-[#1E2A44] px-3 py-2"><span className="text-gym-muted">{r.name}</span><b className="text-white">{r.v}</b></div>
+              ))}
+            </div>
           </div>
           <div className="gm-card2 lg:col-span-2" data-rv="0">
-            <div className="gm-card2-h"><b>Hora pico</b><span>Ocupación promedio por día y hora</span></div>
-            <Heatmap />
+            <div className="gm-card2-h"><b>Caja de hoy</b><span>Dashboard · mismo día · turno abierto</span></div>
+            <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+              {[
+                ["Base inicial", 200000],
+                ["Ventas en efectivo", 1164000],
+                ["Egresos en efectivo", 35000],
+                ["Efectivo esperado", 1329000],
+              ].map(([l, v]) => (
+                <div key={l as string} className="rounded-lg border border-[#1E2A44] px-3 py-2"><div className="text-gym-muted">{l}</div><b className="text-base text-white">{formatCOP(v as number)}</b></div>
+              ))}
+            </div>
+            <p className="mt-2 text-[11px] text-gym-muted">Una venta con tarjeta o Wompi no entra a esa cuenta.</p>
           </div>
           <div className="gm-card2" data-rv="0.1">
-            <div className="gm-card2-h"><b>Renovaciones</b><span>Mezcla de planes del mes</span></div>
-            <div className="flex items-center gap-4">
-              <Donut />
-              <div className="flex flex-col gap-1.5 text-xs">
-                <div className="text-2xl font-black text-white">{fmtInt(186 + stats.renovaciones)}</div>
-                {PLAN_MIX.map((p) => (
-                  <div key={p.name} className="flex items-center gap-2 text-gym-muted"><i className="inline-block h-2 w-2 rounded-full" style={{ background: p.c }} />{p.name} <b className="text-white">{p.v}%</b></div>
-                ))}
-              </div>
+            <div className="gm-card2-h"><b>Membresías</b><span>Con membresía · clientes con plan activo</span></div>
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-lg border border-[#1E2A44] px-3 py-2"><div className="text-gym-muted">Vigentes</div><b className="text-2xl text-white">{fmtInt(498)}</b><div className="text-gym-muted">Plan activo</div></div>
+              <div className="rounded-lg border border-[#1E2A44] px-3 py-2"><div className="text-gym-muted">Vencidas</div><b className="text-2xl text-[#FFB02E]">{fmtInt(stats.porVencer)}</b><div className="text-gym-muted">Hay que renovar</div></div>
             </div>
           </div>
           <div className="gm-card2 lg:col-span-3" data-rv="0">
-            <div className="gm-card2-h"><b>Por vencer esta semana</b><span>El sistema les recuerda por WhatsApp antes de que se vayan</span></div>
+            <div className="gm-card2-h"><b>Vence en 7 días</b><span>Recepción les avisa por WhatsApp desde Membresías: «Enviar recordatorio» (vencen en 3 días o menos) o el botón WhatsApp de cada socio (hasta 7 días)</span></div>
             <div className="gm-table">
               {POR_VENCER.map((r) => (
                 <div key={r.n} className="gm-tr">
                   <span className="font-semibold text-white">{r.n}</span>
                   <span>{r.p}</span>
                   <span className={r.d <= 2 ? "text-[#FF4D6D]" : "text-[#FFB02E]"}>{r.d === 1 ? "Vence mañana" : `${r.d} días`}</span>
-                  <span className="gm-chip">Recordatorio programado</span>
+                  <span className="gm-chip">WhatsApp</span>
                 </div>
               ))}
             </div>
@@ -895,7 +804,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       <section id="agenda" className="gm-cta">
         <div className="gm-cta-in" data-rv="0">
           <img src="/brand/vx-icon-color.svg" alt="" className="mx-auto h-16 w-16" />
-          <h2 className="gm-h1 text-center">Tu gimnasio,<br /><span className="gm-grad">en vivo.</span></h2>
+          <h2 className="gm-h1 text-center">Tu gimnasio,<br /><span className="gm-grad">en un solo panel.</span></h2>
           <p className="gm-sub mx-auto text-center">Te mostramos VISIONYX funcionando con tus sedes, tus planes y tus números. 30 minutos.</p>
           <div className="mt-7 flex flex-wrap justify-center gap-3">
             <a href={contact} className="gm-btn gm-btn-xl">{contactLabel} <span aria-hidden>→</span></a>
