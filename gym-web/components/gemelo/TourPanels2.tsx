@@ -60,11 +60,12 @@ const CURL = {
 export const APP_T = { list: 0, tap: 4.0, lesson: 4.6, scroll: 13.6, end: 18.2 };
 export const COACH_T = { studio: 0, pub: 4.6, rutina: 8.2, valor: 16.0, nutri: 24.4, end: 31.2 };
 
-function Mannequin({ on, h }: { on: boolean; h: number }) {
+function Mannequin({ on, h, onReady, loadRef }: { on: boolean; h: number; onReady?: () => void; loadRef?: (el: HTMLDivElement | null) => void }) {
   // Componente real del maniquí (MannequinClip, el mismo de /maniqui y de la app: modo "bare").
   return (
-    <div style={{ height: h, background: "#000", display: "flex", flexDirection: "column" }}>
-      {on && <MannequinClip clipKey="curl" bare frameClassName="min-h-0 flex-1" />}
+    <div style={{ height: h, background: "#e6e9ee", display: "flex", flexDirection: "column", position: "relative" }}>
+      {on && <MannequinClip clipKey="curl" bare frameClassName="min-h-0 flex-1" onReady={onReady} />}
+      <div ref={loadRef} className="gm-mq-load">Cargando el maniquí 3D…</div>
     </div>
   );
 }
@@ -78,6 +79,8 @@ export function PhoneEntreno({ tour }: { tour: Tour }) {
     f.current[k] = el;
   };
   const [mount, setMount] = useState(false);
+  const readyP = useRef(false);
+  const waitT = useRef(0);
   const { size } = useThree();
   const ad = isAd();
   useFrame(() => {
@@ -85,8 +88,15 @@ export function PhoneEntreno({ tour }: { tour: Tour }) {
     if (!el) return;
     const ch2 = tour.active && tour.chapter === 2;
     const ph = tour.phase;
-    const want = ch2 && ph === "app";
+    // se monta desde que empieza la Parte 2 para que el modelo ya esté listo al abrir la lección
+    const want = ch2 && (ph === "to_gate" || ph === "gate" || ph === "enter" || ph === "app");
     if (want !== mount) setMount(want);
+    // si el modelo aún no carga, el recorrido espera en la lección (máx. 25 s) en vez de mostrar un recuadro vacío
+    const waiting = want && ph === "app" && tour.phaseT >= APP_T.lesson + 0.4 && !readyP.current && waitT.current < 25;
+    if (waiting) waitT.current += 1 / 60;
+    tour.hold = waiting;
+    if (f.current.loadP) f.current.loadP.style.display = readyP.current ? "none" : "";
+    if (!ch2) { readyP.current = false; waitT.current = 0; }
     const on = ch2 && (ph === "app" || ph === "food");
     el.style.display = on ? "" : "none";
     if (!on) return;
@@ -163,7 +173,7 @@ export function PhoneEntreno({ tour }: { tour: Tour }) {
           <div className="gm-app-bar"><span className="gm-app-back">‹</span><b className="gm-app-title">{ROUTINE.items[0].name}</b></div>
           <div className="gm-app-scroll">
             <div ref={reg("lessonBody")}>
-              <Mannequin on={mount} h={250} />
+              <Mannequin on={mount} h={250} onReady={() => { readyP.current = true; }} loadRef={reg("loadP")} />
               <div className="gm-app-body">
                 <div className="gm-app-note">Maniquí 3D. Puedes girarlo. El recorrido no certifica la técnica.</div>
                 <div className="gm-app-k" style={{ color: "#38BDF8" }}>Tren superior · Inicio · Bíceps</div>
@@ -216,6 +226,7 @@ const PANEL_H = 560;
 const PANEL_HP = 610;
 
 export function CoachPanel({ tour }: { tour: Tour }) {
+  const readyC = useRef(false);
   const root = useRef<HTMLDivElement>(null);
   const f = useRef<Record<string, HTMLElement | null>>({});
   const reg = (k: string) => (el: HTMLElement | null) => {
@@ -229,9 +240,11 @@ export function CoachPanel({ tour }: { tour: Tour }) {
     if (!el) return;
     const ch2 = tour.active && tour.chapter === 2;
     const on = ch2 && tour.phase === "coach";
-    // el maniquí carga durante "train" para que el panel ya lo muestre al aparecer
-    const want = ch2 && (tour.phase === "train" || on);
+    // se monta con el panel visible (con el panel oculto el lienzo nace sin tamaño); el GLB ya viene en caché de la lección
+    const want = on;
     if (want !== mount) setMount(want);
+    if (!want) readyC.current = false;
+    if (f.current.loadC) f.current.loadC.style.display = readyC.current ? "none" : "";
     el.style.display = on ? "" : "none";
     if (!on) return;
     const t = tour.phaseT;
@@ -343,7 +356,7 @@ export function CoachPanel({ tour }: { tour: Tour }) {
             </div>
             <div>
               <div className="gm-co-tabs"><span className="on">Maniquí 3D</span><span>Editor de poses</span></div>
-              <div className="gm-co-view"><Mannequin on={mount} h={262} /></div>
+              <div className="gm-co-view"><Mannequin on={mount} h={262} loadRef={reg("loadC")} onReady={() => { readyC.current = true; tour.curl0 = tour.t; }} /></div>
               <div className="gm-co-row"><span ref={reg("pose")} className="gm-co-btn">Guardar pose aquí</span><span className="gm-co-btn">Igualar brazos</span></div>
             </div>
           </div>

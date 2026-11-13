@@ -20,6 +20,7 @@ import { StudioEnv, Turnstiles } from "./Turnstiles";
 import { Human } from "./Human";
 import { ClientesPanel3D, PhoneOverlay, StatusToast } from "./TourPanels";
 import { CoachPanel, PhoneEntreno } from "./TourPanels2";
+import { CajaPanel } from "./TourPanels3";
 
 type Box = { p: [number, number, number]; s: [number, number, number]; r: number; c: string };
 type Cyl = { p: [number, number, number]; rad: number; h: number; axis: "x" | "y" | "z"; r: number; c: string };
@@ -764,9 +765,9 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
   const pt = tour.phaseT;
   const panel = new THREE.Vector3(L.reception.x - 0.4 * m, 2.55, L.reception.z + 0.2);
   const panelN = new THREE.Vector3(Math.sin(-0.35 * m), 0, Math.cos(-0.35 * m));
-  if (ph === "walk_in") {
+  if (ph === "walk_in" || ph === "to_desk") {
     const left = tour.phaseDur - pt;
-    if (left < 1.6) {
+    if (left < 1.6 && ph === "walk_in") {
       // empuje hacia el panel de recepción
       const d = portrait ? 5.9 : 8.2;
       const pos = panel.clone().addScaledVector(panelN, d + left * 1.6).add(new THREE.Vector3(0, 0.2 + left * 0.5, 0));
@@ -777,6 +778,13 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     const tgt = P.clone().add(new THREE.Vector3(-0.6 * m, 1.15, -0.4));
     const off = portrait ? new THREE.Vector3(-2.3 * m, 1.55 + crane, 4.6 + crane * 0.6) : new THREE.Vector3(-2.7 * m, 1.45 + crane, 3.9 + crane * 0.6);
     return { pos: P.clone().add(off), tgt, k: pt < 0.05 ? 50 : 3.2 };
+  }
+  if (ph === "pos" || ph === "dian" || ph === "stock" || ph === "order" || ph === "close" || ph === "desk_end") {
+    // Parte 3: plano de recepción con deriva lenta; el panel de caja va en pantalla
+    const tt = tour.t;
+    const pos = panel.clone().addScaledVector(panelN, portrait ? 7.4 : 9.4).add(new THREE.Vector3(Math.sin(tt * 0.05) * 1.4 * m, portrait ? 1.6 : 1.1, 0));
+    const tgt = panel.clone().add(new THREE.Vector3(portrait ? 0 : -1.6 * m, portrait ? 1.2 : 0.2, 0));
+    return { pos, tgt, k: 1.4 };
   }
   if (ph === "form" || ph === "registered" || ph === "plan") {
     const d = portrait ? 5.7 : ph === "form" ? 8.1 : 7.2;
@@ -1084,6 +1092,7 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <StatusToast tour={ctrl.tour} />
       <PhoneEntreno tour={ctrl.tour} />
       <CoachPanel tour={ctrl.tour} />
+      <CajaPanel tour={ctrl.tour} />
       <Members sim={sim} ctrl={ctrl} onPick={onPick} />
       {labels && <ZoneLabels key={`l${version}`} L={L} />}
       <Popups sim={sim} enabled={labels} tour={ctrl.tour} />

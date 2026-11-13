@@ -22,10 +22,17 @@ export type TourPhase =
   | "train"
   | "coach"
   | "food"
+  | "to_desk"
+  | "pos"
+  | "dian"
+  | "stock"
+  | "order"
+  | "close"
+  | "desk_end"
   | "training";
 
 /** Capítulos del recorrido: 1 = Inscripción, 2 = Entrenamiento (rutina en la app, maniquí 3D, Motion Studio, valoración y nutrición). */
-export type TourChapter = 1 | 2;
+export type TourChapter = 1 | 2 | 3;
 
 export const TOUR_PERSON = {
   nombre: "Valentina Ríos Gómez",
@@ -51,6 +58,8 @@ const DUR: Record<string, number> = { form: 12.0, registered: 3.4, plan: 8.4, ph
 const DUR_FAST: Record<string, number> = DUR;
 /** Parte 2 · Entrenamiento: tiempos del celular y del panel del entrenador (s). Ver TourPanels2.tsx. */
 export const DUR2: Record<string, number> = { gate: 2.4, app: 18.2, train: 6.4, coach: 31.2, food: 8.4 };
+/** Parte 3 · Caja y ventas: punto de venta, factura DIAN, inventario, pedido al proveedor y cierre de caja (s). Ver TourPanels3.tsx. */
+export const DUR3: Record<string, number> = { pos: 17.0, dian: 9.6, stock: 8.6, order: 10.0, close: 8.4 };
 
 function pathLen(p: Pt[]) {
   let d = 0;
@@ -91,11 +100,15 @@ export class Tour {
   private sim: GemeloSim | null = null;
 
   chapter: TourChapter = 1;
+  /** inicio del ciclo del curl (s del recorrido); se alinea con el maniquí cuando éste carga */
+  curl0 = 0;
+  /** pausa el recorrido (p. ej. mientras carga el maniquí 3D de la lección) */
+  hold = false;
   private dur = DUR;
   start(sim: GemeloSim, opts: { compact?: boolean; chapter?: TourChapter } = {}) {
     this.stop();
-    this.chapter = opts.chapter === 2 ? 2 : 1;
-    this.dur = this.chapter === 2 ? DUR2 : opts.compact ? DUR_FAST : DUR;
+    this.chapter = opts.chapter === 2 || opts.chapter === 3 ? opts.chapter : 1;
+    this.dur = this.chapter === 2 ? DUR2 : this.chapter === 3 ? DUR3 : opts.compact ? DUR_FAST : DUR;
     const D = this.dur;
     this.sim = sim;
     const L = sim.layout;
@@ -149,6 +162,21 @@ export class Tour {
       this.marks.push({ phase, t0: t, t1: t + dur, path });
       t += dur;
     };
+    if (this.chapter === 3) {
+      // Parte 3: llega a recepción a comprar; la caja cobra, factura, cuadra inventario y pide al proveedor.
+      push("to_desk", pathLen(walkIn) / WALK, walkIn);
+      push("pos", D.pos);
+      push("dian", D.dian);
+      push("stock", D.stock);
+      push("order", D.order);
+      push("close", D.close);
+      push("desk_end", 1e9);
+      this.active = true;
+      this.t = 0;
+      this.walk = 0;
+      this.update(0);
+      return;
+    }
     if (this.chapter === 2) {
       // Parte 2: ya es socia. Llega por la entrada, pasa con su rostro y va a su zona.
       const arrive: Pt[] = [{ x: g.x + 0.9 * m, z: g.z + 6.6 }, { x: g.x, z: g.z + 2.2 }, { x: g.x, z: g.z + 1.15 }];
@@ -161,6 +189,7 @@ export class Tour {
       push("coach", D.coach);
       push("food", D.food);
       push("training", 1e9);
+      this.curl0 = this.startOf("train");
       this.active = true;
       this.t = 0;
       this.walk = 0;
@@ -177,6 +206,7 @@ export class Tour {
     push("gate", D.gate);
     push("enter", pathLen(enter) / WALK, enter);
     push("training", 1e9);
+    this.curl0 = this.startOf("training");
     this.active = true;
     this.t = 0;
     this.walk = 0;
@@ -188,6 +218,7 @@ export class Tour {
       this.sim.reserveGate(-1);
     }
     this.active = false;
+    this.hold = false;
     this.phase = "off";
     this.marks = [];
     this.station = -1;
@@ -199,7 +230,7 @@ export class Tour {
   }
 
   step(dt: number) {
-    if (!this.active) return;
+    if (!this.active || this.hold) return;
     this.update(dt);
   }
 
@@ -258,7 +289,7 @@ export class Tour {
 
   /** tiempo "nominal" dentro de la fase (las pantallas usan la escala de la versión normal) */
   get nt() {
-    if (this.chapter === 2) return this.phaseT;
+    if (this.chapter !== 1) return this.phaseT;
     const nom = DUR[this.phase];
     const cur = this.dur[this.phase];
     return nom && cur ? this.phaseT * (nom / cur) : this.phaseT;

@@ -46,7 +46,7 @@ export function ClientesPanel3D({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
   };
   useFrame(() => {
     const L = sim.layout;
-    const on = tour.active && (tour.phase === "form" || tour.phase === "registered" || tour.phase === "plan" || (tour.phase === "walk_in" && tour.phaseDur - tour.phaseT < 1.2));
+    const on = tour.active && tour.chapter === 1 && (tour.phase === "form" || tour.phase === "registered" || tour.phase === "plan" || (tour.phase === "walk_in" && tour.phaseDur - tour.phaseT < 1.2));
     grp.current.visible = on;
     const el = root.current;
     if (!el) return;

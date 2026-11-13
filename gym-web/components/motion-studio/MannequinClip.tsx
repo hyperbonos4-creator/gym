@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { ContactShadows, OrbitControls } from "@react-three/drei";
 import { MOTION_STUDIO_SOURCES, sceneCamera, type MotionCamera } from "../../lib/motion-studio/models";
@@ -43,8 +43,11 @@ export function MannequinClip({
   compact = false,
   bare = false,
   frameClassName,
+  onReady,
 }: {
   clipKey: string;
+  /** Avisa cuando el modelo terminó de cargar (lo usa el recorrido del gemelo). */
+  onReady?: () => void;
   compact?: boolean;
   /** Solo el ciclo, sin botones. Lo usa la app del celular. */
   bare?: boolean;
@@ -63,6 +66,12 @@ export function MannequinClip({
   const duration = useRef(1);
   const [progress, setProgress] = useState<number | null>(0);
   const [error, setError] = useState<string | null>(null);
+  const readyRef = useRef(onReady);
+  readyRef.current = onReady;
+  const handleProgress = useCallback((ratio: number | null) => {
+    setProgress(ratio);
+    if (ratio === 1) readyRef.current?.();
+  }, []);
 
   useEffect(() => {
     setPlaying(true);
@@ -140,7 +149,7 @@ export function MannequinClip({
               }}
               onMuscleSelect={setPicked}
               onLoadError={setError}
-              onProgress={setProgress}
+              onProgress={handleProgress}
             />
           </Suspense>
           <CameraBookmark shot={shot} />

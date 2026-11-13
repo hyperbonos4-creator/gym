@@ -565,7 +565,8 @@ body {
 .gm-app-foot { margin-top: 8px; font-size: 10.5px; color: #64748b; }
 .gm-coach .gm-phone-chip { bottom: calc(100% + 14px); }
 .gm-co { padding: 18px 22px; font-size: 13px; }
-.gm-co-grid { display: grid; grid-template-columns: 210px 1fr; gap: 16px; }
+.gm-co-grid { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 16px; }
+.gm-co-grid > div { min-width: 0; }
 .gm-co-sec { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #94a3b8; margin-bottom: 8px; }
 .gm-co-li { display: flex; flex-direction: column; padding: 8px 10px; margin-bottom: 6px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02); }
 .gm-co-li b { color: #fff; font-size: 12.5px; }
@@ -604,9 +605,41 @@ body {
 .gm-co-steps .done { color: #22e0a1; border-color: rgba(34,224,161,0.4); }
 .gm-co-mgrid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; }
 .gm-coach-p .gm-co { padding: 14px 16px; }
-.gm-coach-p .gm-co-grid { grid-template-columns: 1fr; gap: 8px; }
+.gm-coach-p .gm-co-grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
 .gm-coach-p .gm-co-grid > div:first-child .gm-co-li:not(.on), .gm-coach-p .gm-co-grid > div:first-child .gm-co-tip { display: none; }
 .gm-coach-p .gm-co-th, .gm-coach-p .gm-co-tr { grid-template-columns: 1fr 40px 46px 52px 44px; gap: 4px; }
 .gm-coach-p .gm-co-th { font-size: 9.5px; line-height: 1.15; }
 .gm-coach-p .gm-co-mgrid { grid-template-columns: 1fr 1fr; }
 .gm-coach-p .gm-co-steps span { padding: 3px 8px; font-size: 11px; }
+.gm-mq-load { position: absolute; inset: 0; display: grid; place-items: center; color: #334155; font-size: 13px; font-weight: 700; background: #e6e9ee; pointer-events: none; }
+/* ---- Gemelo · Parte 3 · Caja y ventas ---- */
+.gm-caja .gm-ph-holder { color: #5b6785; }
+.gm-cj-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+.gm-cj-card { display: flex; flex-direction: column; padding: 9px 11px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.09); background: rgba(255,255,255,0.03); transition: all .12s; }
+.gm-cj-card b { color: #fff; font-size: 12.5px; }
+.gm-cj-card span { color: #38bdf8; font-weight: 800; font-size: 14px; }
+.gm-cj-card em { font-style: normal; font-size: 10.5px; color: #94a3b8; }
+.gm-cj-card.gm-tap2 { transform: scale(0.96); border-color: #38bdf8; box-shadow: 0 0 0 3px rgba(56,189,248,0.3); }
+.gm-cj-line { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: baseline; padding: 7px 4px; border-bottom: 1px solid rgba(255,255,255,0.07); animation: gmPop .3s ease-out both; }
+.gm-cj-line span { color: #fff; font-weight: 700; }
+.gm-cj-line em { font-style: normal; color: #94a3b8; font-size: 12px; }
+.gm-cj-line b { color: #fff; }
+.gm-cj-total { display: flex; justify-content: space-between; align-items: baseline; padding: 10px 4px 0; font-weight: 700; }
+.gm-cj-total b { font-size: 26px; font-weight: 900; color: #38bdf8; }
+.gm-cj-modes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+.gm-cj-modes span { display: grid; place-items: center; min-height: 48px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.1); font-weight: 700; font-size: 12px; color: #cbd5e1; transition: all .12s; }
+.gm-cj-modes .on { border-color: #38bdf8; background: rgba(56,189,248,0.15); color: #fff; }
+.gm-cj-change { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); }
+.gm-cj-change b { font-size: 24px; font-weight: 900; color: #fff; }
+.gm-cj-q { margin: 12px 0 6px; font-weight: 700; color: #fff; font-size: 14px; }
+.gm-cj-th, .gm-cj-tr { display: grid; grid-template-columns: 1fr 64px 64px 60px; gap: 6px; align-items: center; }
+.gm-cj-th { margin-top: 10px; padding: 0 10px 4px; font-size: 10.5px; font-weight: 700; color: #94a3b8; }
+.gm-cj-tr { padding: 8px 10px; margin-bottom: 5px; border-radius: 10px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); }
+.gm-cj-tr span { color: #fff; font-weight: 700; font-size: 12.5px; }
+.gm-cj-tr b { color: #e2e8f0; font-size: 13px; }
+.gm-cj-tr b.warn { color: #fbbf24; }
+.gm-cj-banner { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 10px; padding: 9px 12px; border-radius: 12px; border: 1px solid rgba(251,191,36,0.5); background: rgba(251,191,36,0.08); color: #fde68a; font-weight: 700; font-size: 12.5px; animation: gmPop .3s ease-out both; }
+.gm-cj-kv { display: flex; justify-content: space-between; padding: 7px 4px; border-bottom: 1px solid rgba(255,255,255,0.07); color: #cbd5e1; }
+.gm-cj-kv b { color: #fff; }
+.gm-cj-kv.ok b { color: #22e0a1; font-size: 18px; }
+.gm-coach-p .gm-cj-th, .gm-coach-p .gm-cj-tr { grid-template-columns: 1fr 56px 52px 50px; }

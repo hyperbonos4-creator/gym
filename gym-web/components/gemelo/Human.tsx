@@ -7,6 +7,7 @@
  * y contra-rotación del torso. También poses de "mirar el celular" y ejercicio.
  */
 
+import { curlElbow } from "../../lib/gemelo/curl";
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
@@ -123,12 +124,12 @@ export function Human({ tour, phoneRef }: { tour: Tour; phoneRef?: React.Mutable
       showPhone = true;
     }
     if (ph === "training" || ph === "train" || ph === "coach") {
-      const c = (1 - Math.cos(t * 2.2)) / 2;
-      const c2 = (1 - Math.cos(t * 2.2 + Math.PI)) / 2;
-      shoulderL = -0.15;
-      shoulderR = -0.15;
-      elbowL = -0.2 - c * 2.0;
-      elbowR = -0.2 - c2 * 2.0;
+      // misma curva y mismo ciclo (5 s, ambos brazos) que el clip "Curl con mancuernas" del maniquí
+      const flex = curlElbow(tour.t - tour.curl0);
+      shoulderL = -0.12 - flex * 0.05;
+      shoulderR = -0.12 - flex * 0.05;
+      elbowL = -0.12 - flex;
+      elbowR = -0.12 - flex;
       armOutL = -0.14;
       armOutR = 0.14;
       thighL = -0.05;
