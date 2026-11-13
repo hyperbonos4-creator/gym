@@ -81,8 +81,8 @@ export function Human({ tour, phoneRef, handRef, look }: { tour: Tour; phoneRef?
 
   useFrame(() => {
     const r = root.current;
-    r.visible = tour.active;
-    if (!tour.active) return;
+    r.visible = tour.active && tour.chapter !== 6;
+    if (!r.visible) return;
     r.position.set(tour.x, 0, tour.z);
     r.rotation.y = tour.h;
     const w = tour.walk;

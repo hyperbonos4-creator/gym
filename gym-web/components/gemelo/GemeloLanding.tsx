@@ -112,6 +112,13 @@ const TOUR_STEPS4 = [
   { l: "Paga con Wompi", p: ["wompi"] },
   { l: "Vuelve a entrar", p: ["back_gate", "gate", "enter", "training"] },
 ];
+const TOUR_STEPS6 = [
+  { l: "Vista aérea de la sede", p: ["own_aerial"] },
+  { l: "Centro de operaciones", p: ["own_dash"] },
+  { l: "Cambia de sede", p: ["own_sede"] },
+  { l: "Reportes y gastos", p: ["own_rep"] },
+  { l: "Desde el celular", p: ["own_phone", "own_end"] },
+];
 const TOUR_STEPS5 = [
   { l: "Valentina invita a Ana", p: ["invite"] },
   { l: "Ana registra su rostro", p: ["guest_enroll"] },
@@ -419,7 +426,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
     document.documentElement.style.overflow = "";
   }, [ctrl]);
   const speedBeforeTour = useRef(10);
-  const startTour = useCallback((compact?: boolean, chapter: 1 | 2 | 3 | 4 | 5 = 1) => {
+  const startTour = useCallback((compact?: boolean, chapter: 1 | 2 | 3 | 4 | 5 | 6 = 1) => {
     if (!webgl) return;
     setWant3d(true);
     setFull(true);
@@ -431,7 +438,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
     ctrl.zoom = 1;
     ctrl.startTour(compact === true, chapter);
     if (compact === true) ctrl.go("tour", 0.0001);
-    setTourPhase(chapter === 2 ? "to_gate" : chapter === 3 ? "to_fridge" : chapter === 4 ? "aviso" : chapter === 5 ? "invite" : "walk_in");
+    setTourPhase(chapter === 2 ? "to_gate" : chapter === 3 ? "to_fridge" : chapter === 4 ? "aviso" : chapter === 5 ? "invite" : chapter === 6 ? "own_aerial" : "walk_in");
     setSelected(-1);
     setPreset("tour");
   }, [ctrl, sim, webgl]);
@@ -500,7 +507,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       enter,
       exit,
       go,
-      tour: (compact = true, chapter: 1 | 2 | 3 | 4 | 5 = 1) => startTour(compact, chapter),
+      tour: (compact = true, chapter: 1 | 2 | 3 | 4 | 5 | 6 = 1) => startTour(compact, chapter),
       tourStop: () => stopTour(),
       tourT: () => ctrl.tour.t,
       tourStartOf: (p: string) => ctrl.tour.startOf(p as any),
@@ -622,6 +629,9 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             </button>
             <button onClick={() => startTour(false, 5)} className="gm-btn-ghost gm-btn-tour" disabled={!webgl}>
               ▶ Ver invitados
+            </button>
+            <button onClick={() => startTour(false, 6)} className="gm-btn-ghost gm-btn-tour" disabled={!webgl}>
+              ▶ Ver dueño
             </button>
             <a href={contact} className="gm-btn-ghost">{contactLabel}</a>
           </div>
@@ -751,12 +761,13 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             <button className={preset === "tour" && ctrl.tour.chapter === 3 ? "on" : ""} onClick={() => startTour(false, 3)}>▶ Ver caja y ventas</button>
             <button className={preset === "tour" && ctrl.tour.chapter === 4 ? "on" : ""} onClick={() => startTour(false, 4)}>▶ Ver membresía vencida</button>
             <button className={preset === "tour" && ctrl.tour.chapter === 5 ? "on" : ""} onClick={() => startTour(false, 5)}>▶ Ver invitados</button>
+            <button className={preset === "tour" && ctrl.tour.chapter === 6 ? "on" : ""} onClick={() => startTour(false, 6)}>▶ Ver dueño</button>
           </div>
           {selected < 0 && !capture && tourPhase === "off" && <div className="gm-hint">Arrastra para girar · rueda o pellizco para zoom · toca un socio</div>}
           {tourPhase !== "off" && !ad && (
             <div className="gm-tourbar">
               <div className={`gm-tourbar-steps${ctrl.tour.chapter === 3 ? " many" : ""}`}>
-                {(ctrl.tour.chapter === 5 ? TOUR_STEPS5 : ctrl.tour.chapter === 4 ? TOUR_STEPS4 : ctrl.tour.chapter === 3 ? TOUR_STEPS3 : ctrl.tour.chapter === 2 ? TOUR_STEPS2 : TOUR_STEPS).map((st, i, arr) => (
+                {(ctrl.tour.chapter === 6 ? TOUR_STEPS6 : ctrl.tour.chapter === 5 ? TOUR_STEPS5 : ctrl.tour.chapter === 4 ? TOUR_STEPS4 : ctrl.tour.chapter === 3 ? TOUR_STEPS3 : ctrl.tour.chapter === 2 ? TOUR_STEPS2 : TOUR_STEPS).map((st, i, arr) => (
                   <span key={st.l} className={st.p.includes(tourPhase) ? "on" : arr.findIndex((x) => x.p.includes(tourPhase)) > i ? "done" : ""}>
                     <b>{i + 1}</b>{st.l}
                   </span>

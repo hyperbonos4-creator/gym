@@ -24,6 +24,7 @@ import { Fridge, Cashier, SaleBottle } from "./Caja3D";
 import { CajaPanel } from "./TourPanels3";
 import { PhoneAviso, MembresiaPanel } from "./TourPanels4";
 import { Guests3D, PhoneInv, IngresoPanel } from "./TourPanels5";
+import { Owner3D, AerialCounters, OwnerPanel, OwnerPhone } from "./TourPanels6";
 
 type Box = { p: [number, number, number]; s: [number, number, number]; r: number; c: string };
 type Cyl = { p: [number, number, number]; rad: number; h: number; axis: "x" | "y" | "z"; r: number; c: string };
@@ -768,6 +769,26 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
   const pt = tour.phaseT;
   const panel = new THREE.Vector3(L.reception.x - 0.4 * m, 2.55, L.reception.z + 0.2);
   const panelN = new THREE.Vector3(Math.sin(-0.35 * m), 0, Math.cos(-0.35 * m));
+  if (tour.chapter === 6) {
+    // Parte 6: grúa desde el dueño hasta la vista aérea; panel en recepción; celular del dueño
+    const F = tour.focus;
+    const Q = new THREE.Vector3(F.x, 0, F.z);
+    const air = presetFor("general", L, aspect);
+    if (ph === "own_aerial" || ph === "own_end") {
+      const close = { pos: Q.clone().add(new THREE.Vector3(1.4 * m, 2.2, 3.2)), tgt: Q.clone().add(new THREE.Vector3(0, 1.3, 0)) };
+      const u = ph === "own_end" ? 1 : ease(Math.min(1, Math.max(0, (pt - 0.8) / 5.5)));
+      return { pos: close.pos.clone().lerp(air.pos, u), tgt: close.tgt.clone().lerp(air.tgt, u), k: pt < 0.05 && ph === "own_aerial" ? 50 : 3.0 };
+    }
+    if (ph === "own_phone") {
+      const tgt = Q.clone().add(new THREE.Vector3(0.05 * m, 1.32, -0.25));
+      const pos = Q.clone().add(portrait ? new THREE.Vector3(0.95 * m, 1.95, 1.7) : new THREE.Vector3(1.25 * m, 1.95, 2.1));
+      return { pos, tgt, k: 2.2 };
+    }
+    const tt = tour.t;
+    const pos = panel.clone().addScaledVector(panelN, portrait ? 7.4 : 9.4).add(new THREE.Vector3(Math.sin(tt * 0.05) * 1.4 * m, portrait ? 1.6 : 1.1, 0));
+    const tgt = panel.clone().add(new THREE.Vector3(portrait ? 0 : -1.6 * m, portrait ? 1.2 : 0.2, 0));
+    return { pos, tgt, k: 1.4 };
+  }
   if (tour.chapter === 5) {
     // Parte 5: la cámara sigue a quien actúa (Valentina, Ana o Camilo)
     const F = tour.focus;
@@ -1186,6 +1207,10 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <Guests3D key={`v${version}`} L={L} tour={ctrl.tour} />
       <PhoneInv tour={ctrl.tour} />
       <IngresoPanel tour={ctrl.tour} />
+      <Owner3D tour={ctrl.tour} />
+      <AerialCounters key={`o${version}`} L={L} tour={ctrl.tour} />
+      <OwnerPanel tour={ctrl.tour} />
+      <OwnerPhone tour={ctrl.tour} />
       <Members sim={sim} ctrl={ctrl} onPick={onPick} />
       {labels && <ZoneLabels key={`l${version}`} L={L} />}
       <Popups sim={sim} enabled={labels} tour={ctrl.tour} />

@@ -36,6 +36,12 @@ export type TourPhase =
   | "camilo_in"
   | "ledger"
   | "g_end"
+  | "own_aerial"
+  | "own_dash"
+  | "own_sede"
+  | "own_rep"
+  | "own_phone"
+  | "own_end"
   | "gate_deny"
   | "to_recep"
   | "accesos"
@@ -59,7 +65,7 @@ export type TourPhase =
   | "training";
 
 /** Capítulos del recorrido: 1 = Inscripción, 2 = Entrenamiento (rutina en la app, maniquí 3D, Motion Studio, valoración y nutrición). */
-export type TourChapter = 1 | 2 | 3 | 4 | 5;
+export type TourChapter = 1 | 2 | 3 | 4 | 5 | 6;
 
 export const TOUR_PERSON = {
   nombre: "Valentina Ríos Gómez",
@@ -89,6 +95,7 @@ export const DUR2: Record<string, number> = { gate: 2.4, app: 18.2, train: 6.4, 
 /** Parte 4 · Membresía vencida: aviso por WhatsApp, rechazo en la puerta, renovación en caja y reingreso (s). Ver TourPanels4.tsx. */
 export const DUR4: Record<string, number> = { aviso: 8.0, gate_deny: 5.6, accesos: 6.4, login: 9.4, wompi: 16.0, gate: 2.6 };
 /** Parte 5 · Invitados y kiosko: invitación desde la app, rostro del invitado, PIN de respaldo en /ingreso (s). Ver TourPanels5.tsx. */
+export const DUR6: Record<string, number> = { own_aerial: 9.0, own_dash: 13.0, own_sede: 10.0, own_rep: 11.0, own_phone: 11.0 };
 export const DUR5: Record<string, number> = { invite: 12.0, guest_enroll: 20.5, gate_g: 2.8, invite2: 10.0, pin: 9.0, ledger: 9.0 };
 /** Invitados de la Parte 5 (nombres y documentos de demostración) */
 export const GUESTS = [
@@ -167,8 +174,8 @@ export class Tour {
   private dur = DUR;
   start(sim: GemeloSim, opts: { compact?: boolean; chapter?: TourChapter } = {}) {
     this.stop();
-    this.chapter = opts.chapter === 2 || opts.chapter === 3 || opts.chapter === 4 || opts.chapter === 5 ? opts.chapter : 1;
-    this.dur = this.chapter === 2 ? DUR2 : this.chapter === 3 ? DUR3 : this.chapter === 4 ? DUR4 : this.chapter === 5 ? DUR5 : opts.compact ? DUR_FAST : DUR;
+    this.chapter = opts.chapter === 2 || opts.chapter === 3 || opts.chapter === 4 || opts.chapter === 5 || opts.chapter === 6 ? opts.chapter : 1;
+    this.dur = this.chapter === 2 ? DUR2 : this.chapter === 3 ? DUR3 : this.chapter === 4 ? DUR4 : this.chapter === 5 ? DUR5 : this.chapter === 6 ? DUR6 : opts.compact ? DUR_FAST : DUR;
     this.guests.forEach((w) => (w.on = false));
     (this as any)._paid = false;
     this.gpaths = {};
@@ -247,6 +254,26 @@ export class Tour {
       // la recepcionista de la simulación cede su puesto a la cajera del recorrido
       const staff = sim.members.find((mm) => mm.phase === "staff");
       if (staff) staff.x = 900;
+      this.active = true;
+      this.t = 0;
+      this.walk = 0;
+      this.update(0);
+      return;
+    }
+    if (this.chapter === 6) {
+      // Parte 6: el dueño. Vista aérea de la sede, Centro de operaciones, cambio de sede, Reportes y el panel en el celular.
+      const own = this.guests[0];
+      const O = { x: L.reception.x + 2.2 * m, z: L.reception.z + 3.0 };
+      Object.assign(own, { x: O.x, z: O.z, h: Math.PI - 0.5 * m, walk: 0, moving: false, on: true });
+      this.x = O.x;
+      this.z = O.z;
+      this.h = Math.PI;
+      push("own_aerial", D.own_aerial);
+      push("own_dash", D.own_dash);
+      push("own_sede", D.own_sede);
+      push("own_rep", D.own_rep);
+      push("own_phone", D.own_phone);
+      push("own_end", 1e9);
       this.active = true;
       this.t = 0;
       this.walk = 0;
@@ -529,6 +556,7 @@ export class Tour {
   /** Estado de la tablet del torniquete del recorrido */
   /** a quién sigue la cámara en la Parte 5 */
   get focus(): { x: number; z: number } {
+    if (this.chapter === 6) return this.guests[0];
     if (this.chapter === 5) {
       const ph = this.phase;
       if (ph === "guest_enroll" || ph === "ana_gate" || ph === "gate_g" || ph === "ana_in") return this.guests[0];
