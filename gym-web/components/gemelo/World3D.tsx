@@ -22,6 +22,7 @@ import { ClientesPanel3D, PhoneOverlay, StatusToast } from "./TourPanels";
 import { CoachPanel, PhoneEntreno } from "./TourPanels2";
 import { Fridge, Cashier, SaleBottle } from "./Caja3D";
 import { CajaPanel } from "./TourPanels3";
+import { PhoneAviso, MembresiaPanel } from "./TourPanels4";
 
 type Box = { p: [number, number, number]; s: [number, number, number]; r: number; c: string };
 type Cyl = { p: [number, number, number]; rad: number; h: number; axis: "x" | "y" | "z"; r: number; c: string };
@@ -780,11 +781,11 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     const off = portrait ? new THREE.Vector3(-2.3 * m, 1.55 + crane, 4.6 + crane * 0.6) : new THREE.Vector3(-2.7 * m, 1.45 + crane, 3.9 + crane * 0.6);
     return { pos: P.clone().add(off), tgt, k: pt < 0.05 ? 50 : 3.2 };
   }
-  if (ph === "to_fridge" || ph === "to_counter") {
+  if (ph === "to_fridge" || ph === "to_counter" || ph === "to_recep") {
     // Parte 3: sigue a Valentina hacia la nevera y de vuelta a la caja
     const tgt = P.clone().add(new THREE.Vector3(0, 1.15, -0.3));
     const off = portrait ? new THREE.Vector3(1.2 * m, 2.5, 4.4) : new THREE.Vector3(1.4 * m, 2.35, 3.9);
-    if (ph === "to_counter") off.set((portrait ? 1.6 : 2.0) * m, 2.9, portrait ? 3.8 : 3.2);
+    if (ph === "to_counter" || ph === "to_recep") off.set((portrait ? 1.6 : 2.0) * m, 2.9, portrait ? 3.8 : 3.2);
     if (ph === "to_fridge") off.add(new THREE.Vector3(0, Math.max(0, 2.4 - pt) * 1.4, Math.max(0, 2.4 - pt) * 0.8));
     return { pos: P.clone().add(off), tgt, k: ph === "to_fridge" && pt < 0.05 ? 50 : 3.0 };
   }
@@ -801,7 +802,7 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     const pos = portrait ? new THREE.Vector3(cx + 1.5 * m, 2.0, L.reception.z + 3.1) : new THREE.Vector3(cx + 1.9 * m, 1.85, L.reception.z + 2.5);
     return { pos, tgt, k: 2.4 };
   }
-  if (ph === "pos" || ph === "fact" || ph === "cliente" || ph === "items" || ph === "files" || ph === "dian" || ph === "stock" || ph === "order" || ph === "close" || ph === "desk_end") {
+  if (ph === "accesos" || ph === "renew" || ph === "pos" || ph === "fact" || ph === "cliente" || ph === "items" || ph === "files" || ph === "dian" || ph === "stock" || ph === "order" || ph === "close" || ph === "desk_end") {
     // Parte 3: plano de recepción con deriva lenta; el panel de caja va en pantalla
     const tt = tour.t;
     const pos = panel.clone().addScaledVector(panelN, portrait ? 7.4 : 9.4).add(new THREE.Vector3(Math.sin(tt * 0.05) * 1.4 * m, portrait ? 1.6 : 1.1, 0));
@@ -820,18 +821,18 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     }
     return { pos, tgt, k: 2.6 };
   }
-  if (ph === "phone" || ph === "enrolled") {
+  if (ph === "phone" || ph === "enrolled" || ph === "aviso") {
     const tgt = P.clone().add(new THREE.Vector3(0.05 * m, 1.32, -0.25));
     const pos = P.clone().add(portrait ? new THREE.Vector3(0.95 * m, 1.95, 1.7) : new THREE.Vector3(1.25 * m, 1.95, 2.1));
     if (ph === "enrolled" && pt > tour.phaseDur - 0.6) pos.add(new THREE.Vector3(0.6 * m, 0.4, 1.0));
     return { pos, tgt, k: ph === "phone" && pt < 1.0 ? 2.2 : 2.6 };
   }
-  if (ph === "to_gate") {
+  if (ph === "to_gate" || ph === "back_gate") {
     const tgt = new THREE.Vector3(P.x * 0.6 + g.x * 0.4, 1.0, P.z * 0.6 + (g.z + 0.4) * 0.4);
     const pos = portrait ? new THREE.Vector3(g.x + 2.3, 2.5, g.z + 6.0) : new THREE.Vector3(g.x + 2.8, 2.4, g.z + 6.2);
     return { pos, tgt, k: 2.0 };
   }
-  if (ph === "gate") {
+  if (ph === "gate" || ph === "gate_deny") {
     const tgt = new THREE.Vector3(g.x + 0.28, 1.12, g.z + 0.45);
     const pos = portrait ? new THREE.Vector3(g.x + 1.55, 1.68, g.z + 2.3) : new THREE.Vector3(g.x + 1.8, 1.65, g.z + 2.5);
     return { pos, tgt, k: 2.4 };
@@ -1021,6 +1022,9 @@ function CameraRig({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
 function TourCard({ tour }: { tour: Tour }) {
   const g = useRef<THREE.Group>(null!);
   const el = useRef<HTMLDivElement>(null);
+  const sub = useRef<HTMLDivElement>(null);
+  const days = useRef<HTMLElement>(null);
+  const visits = useRef<HTMLElement>(null);
   const width = useThree((st) => st.size.width);
   const docked = width < DOCK_W && !(typeof window !== "undefined" && /[?&]ad=1/.test(window.location.search));
   useEffect(() => () => setCardFlag("gm-card-tour-on", false), []);
@@ -1030,6 +1034,12 @@ function TourCard({ tour }: { tour: Tour }) {
     g.current.position.set(tour.x, 2.25, tour.z);
     if (el.current) el.current.style.display = on ? "" : "none";
     setCardFlag("gm-card-tour-on", on);
+    if (on && sub.current && days.current && visits.current) {
+      const ch4 = tour.chapter === 4;
+      sub.current.textContent = ch4 ? "Membresía renovada · de vuelta a entrenar" : "Socia nueva · primer entrenamiento";
+      days.current.textContent = ch4 ? "29" : "30";
+      visits.current.textContent = ch4 ? "Hoy, tras renovar" : "1 este mes";
+    }
   });
   return (
     <group ref={g}>
@@ -1044,15 +1054,15 @@ function TourCard({ tour }: { tour: Tour }) {
             <span className="gm-dot" style={{ background: "#38BDF8" }} />
             <div>
               <div className="gm-card-n">{TOUR_PERSON.nombre}</div>
-              <div className="gm-card-s">Socia nueva · primer entrenamiento</div>
+              <div ref={sub} className="gm-card-s">Socia nueva · primer entrenamiento</div>
             </div>
           </div>
           <div className="gm-card-g">
             <div><span>Plan</span><b>Mensual · $120.000</b></div>
-            <div><span>Días restantes</span><b className="text-[#22E0A1]">30</b></div>
+            <div><span>Días restantes</span><b ref={days} className="text-[#22E0A1]">30</b></div>
             <div className="col-span-2"><span>Rutina del día</span><b>{TOUR_PERSON.routine}</b></div>
             <div><span>Acceso</span><b>Facial ✓</b></div>
-            <div><span>Visitas</span><b>1 este mes</b></div>
+            <div><span>Visitas</span><b ref={visits}>1 este mes</b></div>
           </div>
         </div>
       </Html>
@@ -1121,6 +1131,8 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <PhoneEntreno tour={ctrl.tour} />
       <CoachPanel tour={ctrl.tour} />
       <CajaPanel tour={ctrl.tour} />
+      <PhoneAviso tour={ctrl.tour} />
+      <MembresiaPanel tour={ctrl.tour} />
       <Members sim={sim} ctrl={ctrl} onPick={onPick} />
       {labels && <ZoneLabels key={`l${version}`} L={L} />}
       <Popups sim={sim} enabled={labels} tour={ctrl.tour} />

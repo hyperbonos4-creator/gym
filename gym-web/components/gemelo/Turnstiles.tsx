@@ -446,7 +446,7 @@ export function Turnstiles({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
       if (t.back) st = "back";
       else {
         const g = L.gates[t.lane];
-        if (tour.active && t.lane === tour.gate && tour.tablet !== "idle") st = tour.tablet === "ok" ? "okv" : "scan";
+        if (tour.active && t.lane === tour.gate && tour.tablet !== "idle") st = tour.tablet === "ok" ? "okv" : tour.tablet === "deny" ? "deny" : "scan";
         else if (g.flash > 0) st = g.flashOk ? "ok" : "deny";
       }
       const tex = mats.tex[st];

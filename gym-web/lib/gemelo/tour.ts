@@ -24,6 +24,12 @@ export type TourPhase =
   | "food"
   | "to_desk"
   | "to_fridge"
+  | "aviso"
+  | "gate_deny"
+  | "to_recep"
+  | "accesos"
+  | "renew"
+  | "back_gate"
   | "fridge"
   | "to_counter"
   | "scan"
@@ -40,7 +46,7 @@ export type TourPhase =
   | "training";
 
 /** Capítulos del recorrido: 1 = Inscripción, 2 = Entrenamiento (rutina en la app, maniquí 3D, Motion Studio, valoración y nutrición). */
-export type TourChapter = 1 | 2 | 3;
+export type TourChapter = 1 | 2 | 3 | 4;
 
 export const TOUR_PERSON = {
   nombre: "Valentina Ríos Gómez",
@@ -67,6 +73,8 @@ const DUR_FAST: Record<string, number> = DUR;
 /** Parte 2 · Entrenamiento: tiempos del celular y del panel del entrenador (s). Ver TourPanels2.tsx. */
 export const DUR2: Record<string, number> = { gate: 2.4, app: 18.2, train: 6.4, coach: 31.2, food: 8.4 };
 /** Parte 3 · Caja y ventas: punto de venta, factura DIAN, inventario, pedido al proveedor y cierre de caja (s). Ver TourPanels3.tsx. */
+/** Parte 4 · Membresía vencida: aviso por WhatsApp, rechazo en la puerta, renovación en caja y reingreso (s). Ver TourPanels4.tsx. */
+export const DUR4: Record<string, number> = { aviso: 8.0, gate_deny: 5.6, accesos: 6.4, renew: 11.0, gate: 2.6 };
 export const DUR3: Record<string, number> = {
   fridge: 5.0, scan: 6.0, pos: 10.6, fact: 7.0, cliente: 9.0, items: 7.4, dian: 7.0, files: 6.4, stock: 8.6, order: 10.0, close: 8.4,
 };
@@ -125,8 +133,8 @@ export class Tour {
   private dur = DUR;
   start(sim: GemeloSim, opts: { compact?: boolean; chapter?: TourChapter } = {}) {
     this.stop();
-    this.chapter = opts.chapter === 2 || opts.chapter === 3 ? opts.chapter : 1;
-    this.dur = this.chapter === 2 ? DUR2 : this.chapter === 3 ? DUR3 : opts.compact ? DUR_FAST : DUR;
+    this.chapter = opts.chapter === 2 || opts.chapter === 3 || opts.chapter === 4 ? opts.chapter : 1;
+    this.dur = this.chapter === 2 ? DUR2 : this.chapter === 3 ? DUR3 : this.chapter === 4 ? DUR4 : opts.compact ? DUR_FAST : DUR;
     const D = this.dur;
     this.sim = sim;
     const L = sim.layout;
@@ -202,6 +210,33 @@ export class Tour {
       // la recepcionista de la simulación cede su puesto a la cajera del recorrido
       const staff = sim.members.find((mm) => mm.phase === "staff");
       if (staff) staff.x = 900;
+      this.active = true;
+      this.t = 0;
+      this.walk = 0;
+      this.update(0);
+      return;
+    }
+    if (this.chapter === 4) {
+      // Parte 4: le llega el aviso de vencimiento, días después la puerta la rechaza, renueva en caja y vuelve a entrar.
+      const start: Pt = { x: g.x + 0.9 * m, z: g.z + 6.6 };
+      const arrive: Pt[] = [start, { x: g.x, z: g.z + 2.2 }, { x: g.x, z: g.z + 1.15 }];
+      const c4: Pt = { x: rx + 1.0 * m, z: rz + 1.45 };
+      const toRecep: Pt[] = [{ x: g.x, z: g.z + 1.15 }, { x: g.x + 0.4 * m, z: g.z + 2.4 }, { x: rx + 1.8 * m, z: rz + 2.0 }, c4];
+      const back: Pt[] = [c4, { x: g.x, z: g.z + 2.2 }, { x: g.x, z: g.z + 1.15 }];
+      this.x = start.x;
+      this.z = start.z;
+      this.h = Math.PI;
+      push("aviso", D.aviso);
+      push("to_gate", pathLen(arrive) / WALK, arrive);
+      push("gate_deny", D.gate_deny);
+      push("to_recep", pathLen(toRecep) / WALK, toRecep);
+      push("accesos", D.accesos);
+      push("renew", D.renew);
+      push("back_gate", pathLen(back) / WALK, back);
+      push("gate", D.gate);
+      push("enter", pathLen(enter) / WALK, enter);
+      push("training", 1e9);
+      this.curl0 = this.startOf("training");
       this.active = true;
       this.t = 0;
       this.walk = 0;
@@ -313,10 +348,23 @@ export class Tour {
         }
         g.open = 1.6;
       }
+    } else if (this.phase === "gate_deny") {
+      // reconoce el rostro, pero la membresía está vencida: luz roja, el vidrio no abre
+      g.busy = true;
+      if (this.phaseT >= 1.2 && !(g as any)._deny) {
+        (g as any)._deny = 1;
+        g.flash = 1.1;
+        g.flashOk = false;
+        sim.emit({ kind: "deny", name: TOUR_PERSON.first + " R.", detail: "Membresía vencida o sin plan", x: g.x, z: g.z, member: -3 });
+      }
+      if (this.phaseT >= 1.2 && this.phaseT < 4.6) g.flash = Math.max(g.flash, 0.5);
+    } else if (this.phase === "to_recep") {
+      g.busy = false;
     } else if (this.phase === "enter") {
       if (this.phaseT < 1.7) g.open = Math.max(g.open, 0.6);
       else g.busy = false;
       delete (g as any)._tour;
+      delete (g as any)._deny;
     }
   }
 
@@ -334,8 +382,10 @@ export class Tour {
   }
 
   /** Estado de la tablet del torniquete del recorrido */
-  get tablet(): "idle" | "scan" | "ok" {
+  get tablet(): "idle" | "scan" | "ok" | "deny" {
     if (!this.active) return "idle";
+    if (this.phase === "gate_deny") return this.phaseT < 1.2 ? "scan" : "deny";
+    if (this.phase === "back_gate" && this.phaseDur - this.phaseT < 0.9) return "scan";
     if (this.phase === "gate") return this.nt < 0.95 ? "scan" : "ok";
     if (this.phase === "enter" && this.phaseT < 1.6) return "ok";
     if (this.phase === "to_gate" && this.phaseDur - this.phaseT < 0.9) return "scan";

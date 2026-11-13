@@ -603,7 +603,7 @@ export function StatusToast({ tour }: { tour: Tour }) {
     if (!el) return;
     const ph = tour.phase;
     const pt = tour.phaseT;
-    const ficha = tour.active && ph === "to_gate" && pt < 3.3;
+    const ficha = tour.active && tour.chapter !== 4 && ph === "to_gate" && pt < 3.3;
     const log = tour.active && ph === "enter" && pt > 0.9 && pt < 6.6;
     el.style.display = ficha || log ? "" : "none";
     show(f.current.ficha, ficha, "block");

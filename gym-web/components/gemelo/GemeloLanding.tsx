@@ -104,6 +104,14 @@ const TOUR_STEPS3 = [
   { l: "Cierre de caja", p: ["close", "desk_end"] },
 ];
 
+const TOUR_STEPS4 = [
+  { l: "Aviso por WhatsApp", p: ["aviso"] },
+  { l: "La puerta la rechaza", p: ["to_gate", "gate_deny"] },
+  { l: "Accesos lo registra", p: ["to_recep", "accesos"] },
+  { l: "Renueva en caja", p: ["renew"] },
+  { l: "Vuelve a entrar", p: ["back_gate", "gate", "enter", "training"] },
+];
+
 const AREAS = [
   {
     k: "01",
@@ -402,7 +410,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
     document.documentElement.style.overflow = "";
   }, [ctrl]);
   const speedBeforeTour = useRef(10);
-  const startTour = useCallback((compact?: boolean, chapter: 1 | 2 | 3 = 1) => {
+  const startTour = useCallback((compact?: boolean, chapter: 1 | 2 | 3 | 4 = 1) => {
     if (!webgl) return;
     setWant3d(true);
     setFull(true);
@@ -414,7 +422,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
     ctrl.zoom = 1;
     ctrl.startTour(compact === true, chapter);
     if (compact === true) ctrl.go("tour", 0.0001);
-    setTourPhase(chapter === 2 ? "to_gate" : chapter === 3 ? "to_fridge" : "walk_in");
+    setTourPhase(chapter === 2 ? "to_gate" : chapter === 3 ? "to_fridge" : chapter === 4 ? "aviso" : "walk_in");
     setSelected(-1);
     setPreset("tour");
   }, [ctrl, sim, webgl]);
@@ -483,7 +491,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
       enter,
       exit,
       go,
-      tour: (compact = true, chapter: 1 | 2 | 3 = 1) => startTour(compact, chapter),
+      tour: (compact = true, chapter: 1 | 2 | 3 | 4 = 1) => startTour(compact, chapter),
       tourStop: () => stopTour(),
       tourT: () => ctrl.tour.t,
       tourStartOf: (p: string) => ctrl.tour.startOf(p as any),
@@ -599,6 +607,9 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             </button>
             <button onClick={() => startTour(false, 3)} className="gm-btn-ghost gm-btn-tour" disabled={!webgl}>
               ▶ Ver caja y ventas
+            </button>
+            <button onClick={() => startTour(false, 4)} className="gm-btn-ghost gm-btn-tour" disabled={!webgl}>
+              ▶ Ver membresía vencida
             </button>
             <a href={contact} className="gm-btn-ghost">{contactLabel}</a>
           </div>
@@ -726,12 +737,13 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             ))}
             <button className={preset === "tour" && ctrl.tour.chapter === 2 ? "on" : ""} onClick={() => startTour(false, 2)}>▶ Ver entrenamiento</button>
             <button className={preset === "tour" && ctrl.tour.chapter === 3 ? "on" : ""} onClick={() => startTour(false, 3)}>▶ Ver caja y ventas</button>
+            <button className={preset === "tour" && ctrl.tour.chapter === 4 ? "on" : ""} onClick={() => startTour(false, 4)}>▶ Ver membresía vencida</button>
           </div>
           {selected < 0 && !capture && tourPhase === "off" && <div className="gm-hint">Arrastra para girar · rueda o pellizco para zoom · toca un socio</div>}
           {tourPhase !== "off" && !ad && (
             <div className="gm-tourbar">
               <div className={`gm-tourbar-steps${ctrl.tour.chapter === 3 ? " many" : ""}`}>
-                {(ctrl.tour.chapter === 3 ? TOUR_STEPS3 : ctrl.tour.chapter === 2 ? TOUR_STEPS2 : TOUR_STEPS).map((st, i, arr) => (
+                {(ctrl.tour.chapter === 4 ? TOUR_STEPS4 : ctrl.tour.chapter === 3 ? TOUR_STEPS3 : ctrl.tour.chapter === 2 ? TOUR_STEPS2 : TOUR_STEPS).map((st, i, arr) => (
                   <span key={st.l} className={st.p.includes(tourPhase) ? "on" : arr.findIndex((x) => x.p.includes(tourPhase)) > i ? "done" : ""}>
                     <b>{i + 1}</b>{st.l}
                   </span>

@@ -117,7 +117,7 @@ export function Human({ tour, phoneRef, handRef }: { tour: Tour; phoneRef?: Reac
       shoulderR = -0.02;
     }
     const ph = tour.phase;
-    if (ph === "phone" || ph === "enrolled" || ph === "app" || ph === "food" || (ph === "plan" && tour.phaseDur - tour.phaseT < 0.6)) {
+    if (ph === "phone" || ph === "enrolled" || ph === "app" || ph === "food" || ph === "aviso" || (ph === "plan" && tour.phaseDur - tour.phaseT < 0.6)) {
       // sostiene el celular frente al rostro
       shoulderR = -0.95;
       elbowR = -1.35;

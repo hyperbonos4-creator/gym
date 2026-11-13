@@ -667,3 +667,31 @@ body {
 .gm-cj-sel span { padding: 3px 9px; border-radius: 8px; border: 1px solid #334155; color: #94a3b8; font-size: 11px; }
 .gm-cj-sel span.on { border-color: #38bdf8; color: #fff; background: rgba(56,189,248,.18); }
 .gm-coach-p .gm-cj-cli { grid-template-columns: 1fr 1fr !important; }
+/* ---- Gemelo · Parte 4 · Membresía vencida ---- */
+.gm-m4-cap { position: absolute; top: 74px; transform: translateX(-50%); width: max-content; max-width: min(92vw, 620px); box-sizing: border-box; padding: 9px 16px; border-radius: 14px; background: rgba(5, 9, 20, 0.88); border: 1px solid rgba(56, 189, 248, 0.45); color: #e2e8f0; font: 700 14px/1.4 Inter, Arial, sans-serif; text-align: center; white-space: normal; }
+.gm-m4-cap.deny { border-color: #ff4d6d; box-shadow: 0 0 22px rgba(255, 77, 109, 0.45); }
+.gm-m4-cap.deny b { color: #ff4d6d; }
+.gm-m4-cap.ok { border-color: #22e0a1; color: #bbf7d0; }
+.gm-m4-cap span { display: block; margin-top: 3px; font-weight: 600; font-size: 13px; color: #fecdd3; }
+.gm-m4-att { margin-top: 8px; padding: 10px 12px; border-radius: 14px; border: 1px solid rgba(245, 158, 11, 0.45); background: rgba(245, 158, 11, 0.1); }
+.gm-m4-att .k { color: #f59e0b; font-weight: 800; font-size: 13px; }
+.gm-m4-att .n { color: #fff; font-size: 13px; margin-top: 2px; }
+.gm-m4-att .w { color: #cbd5e1; font-size: 12px; }
+.gm-m4-link { display: inline-block; margin-top: 6px; padding: 2px 6px; margin-left: -6px; border-radius: 8px; color: #38bdf8; font-size: 12px; font-weight: 700; }
+.gm-m4-link.gm-press { background: rgba(56, 189, 248, 0.2); }
+.gm-m4-card { padding: 12px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.03); }
+.gm-m4-card .row { display: flex; align-items: flex-start; gap: 10px; }
+.gm-m4-card .av { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #fff; background: linear-gradient(135deg, #0284c7, #7c3aed); }
+.gm-m4-card .n { color: #fff; font-weight: 700; font-size: 14px; }
+.gm-m4-card .d { color: #7c8aa8; font-size: 11px; }
+.gm-m4-card .det { margin: 8px 0 0; color: #cbd5e1; font-size: 13px; }
+.gm-m4-badge { padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+.gm-m4-badge.err { background: rgba(255, 77, 109, 0.15); color: #ff4d6d; }
+.gm-m4-badge.ok { background: rgba(34, 224, 161, 0.15); color: #22e0a1; }
+.gm-m4-plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.gm-coach-p .gm-m4-plans { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.gm-m4-plans > div { padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; }
+.gm-m4-plans > div.on { border-color: #38bdf8; background: rgba(56, 189, 248, 0.1); }
+.gm-m4-plans em { font-style: normal; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; }
+.gm-m4-plans b { color: #fff; font-size: 14px; }
+.gm-m4-plans span { color: #94a3b8; font-size: 11px; }
