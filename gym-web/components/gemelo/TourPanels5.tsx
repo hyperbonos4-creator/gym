@@ -32,7 +32,16 @@ const typed = (s: string, t: number, t0: number, t1: number) => (t <= t0 ? "" : 
 /* tiempos (s) dentro de cada fase */
 const I1 = { tap: 1.2, form: 1.6, n0: 2.0, n1: 3.2, d0: 3.4, d1: 4.4, gen: 4.8, issued: 6.0, wa: 8.8, share: 9.6, sent: 10.2 };
 const I2 = { tap: 1.0, form: 1.4, n0: 1.7, n1: 2.8, d0: 3.0, d1: 3.8, gen: 4.2, issued: 5.4, pinHi: 6.4 };
-const EN = { tap: 1.8, idle: 2.2, start: 3.6, verify: 4.2, ok: 6.4 };
+/** registro facial de Ana: mismo guion que la Parte 1 (enroll.html / enroll.js), más corto */
+const EN = { tap: 1.8, idle: 2.2, start: 4.2, perm: 4.6, steps: 7.1, verif: 16.7, ok: 18.1 };
+const EN_STEPS = [
+  { icon: "◎", title: "Mira al frente", hint: "Rostro recto, ojos a la cámara", yaw: 0 },
+  { icon: "⬅️", title: "Gira a la izquierda", hint: "Lleva el mentón hacia tu hombro izquierdo", yaw: -1 },
+  { icon: "➡️", title: "Gira a la derecha", hint: "Lleva el mentón hacia tu hombro derecho", yaw: 1 },
+  { icon: "😉", title: "Parpadea", hint: "Cierra y abre los ojos con naturalidad", yaw: 0 },
+].map((sp, i) => ({ ...sp, t0: EN.steps + i * 2.4, t1: EN.steps + (i + 1) * 2.4 }));
+const ANA_SKIN = "#e0a67c";
+const ANA_HAIR = "#6b3a1f";
 const KP = { d: [0.8, 1.2, 1.6, 2.0], ok: 2.5, receipt: 3.0 };
 const LEDGER_PHONE = 4.6;
 
@@ -197,12 +206,18 @@ export function PhoneInv({ tour }: { tour: Tour }) {
     let scr = "tab";
     if (ph === "invite") scr = t < I1.form ? "tab" : t < I1.issued ? "form" : t < I1.share ? "issued" : "share";
     if (ph === "invite2") scr = t < I2.form ? "tab" : t < I2.issued ? "form" : "issued";
-    if (ph === "guest_enroll") scr = t < EN.idle ? "anaWa" : t < EN.verify ? "idle" : t < EN.ok ? "verify" : "ok";
-    for (const k of ["tab", "form", "issued", "share", "anaWa", "idle", "verify", "ok"]) show(F[k], k === scr, "flex");
+    if (ph === "guest_enroll") scr = t < EN.idle ? "anaWa" : t < EN.perm ? "idle" : t < EN.ok ? "stage" : "ok";
+    for (const k of ["tab", "form", "issued", "share", "anaWa", "idle", "stage", "ok"]) show(F[k], k === scr, "flex");
     show(F.chip, !ad, "block");
     F.chip!.textContent =
       ph === "guest_enroll"
-        ? scr === "anaWa" ? "Celular de Ana · le llegó el enlace" : "Celular de Ana · registra su rostro (descuenta 1 ingreso)"
+        ? scr === "anaWa"
+          ? "Celular de Ana · le llegó el enlace"
+          : scr === "ok"
+            ? "✓ Rostro de Ana registrado · se descontó 1 ingreso del pase"
+            : t < EN.steps
+              ? "Celular de Ana · inicia el reconocimiento y permite la cámara"
+              : t < EN.verif ? "Prueba de vida: mira al frente, gira y parpadea" : "Verificando…"
         : ph === "ledger"
           ? "App de Valentina · registro de invitados"
           : scr === "share"
@@ -242,8 +257,59 @@ export function PhoneInv({ tour }: { tour: Tour }) {
     if (scr === "share") show(F.shBubble, t > I1.sent, "block");
     if (ph === "guest_enroll") {
       F.anaLink!.classList.toggle("gm-press", t > EN.tap && t < EN.tap + 0.3);
-      F.enStart!.classList.toggle("gm-press", t > EN.start && t < EN.start + 0.3);
-      F.enFlag!.textContent = t < EN.verify + 1.0 ? "Mira a la cámara" : t < EN.verify + 1.6 ? "Gira un poco la cabeza" : "Verificando…";
+      // arranque y botón (igual que la Parte 1)
+      const boot = Math.min(1, Math.max(0.08, (t - EN.idle - 0.2) / 1.4));
+      F.bootBar!.style.width = `${boot * 100}%`;
+      F.bootLbl!.textContent = boot >= 1 ? "Motor listo. Ya puedes iniciar." : boot > 0.3 ? "Preparando el motor de visión…" : "Comprobando tu acceso…";
+      F.enStart!.classList.toggle("gm-dis", boot < 1);
+      F.enStart!.classList.toggle("gm-press", t > EN.start && t < EN.start + 0.35);
+      if (scr === "stage") {
+        const perm = t < EN.steps;
+        show(F.perm, perm && t > EN.perm + 0.3 && t < EN.perm + 1.9, "flex");
+        F.permOk!.classList.toggle("gm-tap", t > EN.perm + 1.4 && t < EN.perm + 1.9);
+        const camOn = t > EN.perm + 1.9;
+        F.camWrap!.style.opacity = camOn ? String(Math.min(1, (t - EN.perm - 1.9) / 0.4)) : "0";
+        const i = Math.max(0, EN_STEPS.findIndex((sp) => t < sp.t1));
+        const sp = t >= EN.verif || perm ? null : EN_STEPS[i];
+        const lt = sp ? t - sp.t0 : 0;
+        if (perm) {
+          F.cueIcon!.textContent = "◎";
+          F.cueTitle!.textContent = camOn ? "Activando reconocimiento" : "Abriendo la cámara";
+          F.cueHint!.textContent = camOn ? "La cámara ya está encendida" : "Permite el acceso cuando el celular lo pida";
+          F.enFlag!.textContent = camOn ? "Motor de visión…" : "Cámara…";
+          F.enFlag!.className = "gm-flag";
+          F.face!.style.transform = "";
+          F.guide!.classList.remove("ok");
+        } else if (sp) {
+          const dur = sp.t1 - sp.t0;
+          F.cueIcon!.textContent = sp.icon;
+          F.cueTitle!.textContent = sp.title;
+          F.cueHint!.textContent = sp.hint;
+          const hold = lt > 0.9;
+          F.enFlag!.textContent =
+            sp.title === "Parpadea"
+              ? lt < 0.7 ? "Mírame con los ojos abiertos" : lt < 1.6 ? "Ahora parpadea" : "¡Perfecto!"
+              : lt > dur - 0.5 ? "¡Perfecto!" : hold ? `Mantén la posición… ${Math.max(1, Math.ceil(dur - 0.5 - lt))}s` : sp.yaw ? "Ahora gira" : "Prepárate…";
+          F.enFlag!.className = `gm-flag ${hold ? "ok" : ""}`;
+          const turn = sp.yaw * Math.min(1, Math.max(0, (lt - 0.2) / 0.6)) * (lt > dur - 0.35 ? 0.6 : 1);
+          F.face!.style.transform = `translateX(${-turn * 18}px) rotateY(${-turn * 32}deg)`;
+          const blink = sp.title === "Parpadea" && lt > 0.95 && lt < 1.2;
+          F.eyes!.style.transform = `scaleY(${blink ? 0.1 : 1})`;
+          F.guide!.classList.toggle("ok", hold);
+        } else {
+          F.cueIcon!.textContent = "⏳";
+          F.cueTitle!.textContent = "Verificando…";
+          F.cueHint!.textContent = "Revalidando prueba de vida y enrolando el rostro";
+          F.enFlag!.textContent = "Procesando";
+          F.enFlag!.className = "gm-flag";
+          F.face!.style.transform = "";
+          F.guide!.classList.remove("ok");
+        }
+        const done = perm ? 0 : sp ? i + Math.min(1, Math.max(0, (t - sp.t0) / (sp.t1 - sp.t0))) : 4;
+        (F.ring as unknown as SVGCircleElement).style.strokeDashoffset = String(238.76 * (1 - done / 4));
+        const fs = EN_STEPS.find((s2) => t > s2.t1 - 0.15 && t < s2.t1 + 0.25);
+        F.shutter!.style.opacity = fs ? String(Math.max(0, 0.85 - (t - (fs.t1 - 0.15)) * 2.2)) : "0";
+      }
     }
   });
   return (
@@ -330,25 +396,87 @@ export function PhoneInv({ tour }: { tour: Tour }) {
             </div>
           </div>
         </div>
-        {/* registro facial (enroll de /e/{code}) */}
+        {/* registro facial (enroll de /e/{code}): mismas pantallas que la Parte 1 */}
         <div ref={reg("idle")} className="gm-scr gm-en" style={{ display: "none" }}>
           <EnrollTop />
           <div className="gm-en-idle">
             <div className="gm-en-icon">◎</div>
             <h1>Registra tu rostro</h1>
             <p>La cámara de tu celular hace la prueba de vida. Cada gesto aparece cuando te toca.</p>
+            <div className="gm-boot"><div className="gm-boot-track"><div ref={reg("bootBar")} className="gm-boot-bar" /></div><p ref={reg("bootLbl")}>Comprobando tu acceso…</p></div>
             <div ref={reg("enStart")} className="gm-en-btn">Iniciar reconocimiento</div>
           </div>
         </div>
-        <div ref={reg("verify")} className="gm-scr gm-en" style={{ display: "none" }}>
+        <div ref={reg("stage")} className="gm-scr gm-en" style={{ display: "none" }}>
           <EnrollTop />
-          <div className="gm-g5-cam"><i /><span ref={reg("enFlag")}>Mira a la cámara</span></div>
+          <div className="gm-stage">
+            <div className="gm-cam">
+              <svg ref={reg("camWrap") as any} viewBox="0 0 200 260" className="gm-cam-face">
+                <defs>
+                  <radialGradient id="gmbg5" cx="50%" cy="40%" r="70%"><stop offset="0" stopColor="#3a4a63" /><stop offset="1" stopColor="#111827" /></radialGradient>
+                </defs>
+                <rect width="200" height="260" fill="url(#gmbg5)" />
+                <ellipse cx="100" cy="250" rx="92" ry="50" fill="#F472B6" />
+                <rect x="86" y="160" width="28" height="40" fill={ANA_SKIN} />
+                <g ref={reg("face") as any} style={{ transformOrigin: "100px 130px", transformBox: "view-box" } as any}>
+                  <ellipse cx="100" cy="118" rx="62" ry="74" fill={ANA_HAIR} />
+                  <ellipse cx="100" cy="128" rx="44" ry="54" fill={ANA_SKIN} />
+                  <path d="M56 116 Q100 46 144 116 Q138 74 100 66 Q62 74 56 116Z" fill={ANA_HAIR} />
+                  <g ref={reg("eyes") as any} style={{ transformOrigin: "100px 124px", transformBox: "view-box" } as any}>
+                    <ellipse cx="83" cy="124" rx="5.5" ry="4.5" fill="#1d1410" />
+                    <ellipse cx="117" cy="124" rx="5.5" ry="4.5" fill="#1d1410" />
+                  </g>
+                  <path d="M83 112 q6 -4 12 0 M105 112 q6 -4 12 0" stroke={ANA_HAIR} strokeWidth="2.5" fill="none" />
+                  <path d="M100 128 l-4 14 h8" stroke="#b07a55" strokeWidth="2" fill="none" />
+                  <path d="M88 154 q12 8 24 0" stroke="#b5485a" strokeWidth="3" fill="none" strokeLinecap="round" />
+                </g>
+              </svg>
+            </div>
+            <div className="gm-stage-status"><span ref={reg("enFlag")} className="gm-flag">Listo</span></div>
+            <div ref={reg("guide")} className="gm-guide">
+              <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <circle className="ring-bg" cx="50" cy="50" r="38" />
+                <circle ref={reg("ring") as any} className="ring-fg" cx="50" cy="50" r="38" strokeDasharray="238.76" strokeDashoffset="238.76" transform="rotate(-90 50 50)" />
+              </svg>
+            </div>
+            <div className="gm-cue">
+              <span ref={reg("cueIcon")} className="icon">📷</span>
+              <div ref={reg("cueTitle")} className="title">Cámara de tu celular</div>
+              <div ref={reg("cueHint")} className="hint">Pulsa Iniciar y permite el acceso</div>
+            </div>
+            <div ref={reg("shutter")} className="gm-shutter" />
+            <div ref={reg("perm")} className="gm-perm" style={{ display: "none" }}>
+              <div className="gm-perm-box">
+                <div className="gm-perm-host">visionyx.duckdns.org</div>
+                <div className="gm-perm-q">quiere usar tu cámara</div>
+                <div className="gm-perm-btns">
+                  <span>No permitir</span>
+                  <span ref={reg("permOk")} className="ok">Permitir</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
         <div ref={reg("ok")} className="gm-scr gm-en" style={{ display: "none" }}>
           <EnrollTop />
           <div className="gm-result">
             <h4>✔ Registro exitoso</h4>
+            <div className="gm-result-photo">
+              <svg viewBox="0 0 200 200">
+                <rect width="200" height="200" fill="#1f2a3d" />
+                <ellipse cx="100" cy="98" rx="62" ry="74" fill={ANA_HAIR} />
+                <ellipse cx="100" cy="108" rx="44" ry="54" fill={ANA_SKIN} />
+                <path d="M56 96 Q100 26 144 96 Q138 54 100 46 Q62 54 56 96Z" fill={ANA_HAIR} />
+                <ellipse cx="83" cy="104" rx="5.5" ry="4.5" fill="#1d1410" />
+                <ellipse cx="117" cy="104" rx="5.5" ry="4.5" fill="#1d1410" />
+                <path d="M88 134 q12 8 24 0" stroke="#b5485a" strokeWidth="3" fill="none" strokeLinecap="round" />
+                <ellipse cx="100" cy="215" rx="90" ry="50" fill="#F472B6" />
+              </svg>
+            </div>
             <div className="detail">La verificación de vida y la captura facial se completaron. Ya puedes entrar al gimnasio con tu rostro.</div>
+            <div className="scores"><div className="s">Liveness pasivo<b>0.96</b></div></div>
+            <p className="next">Prueba ahora cómo se verá en la entrada. No pide usuario ni contraseña. Este acceso es temporal: cuando el link expire, ya no abrirá.</p>
+            <div className="gm-en-btn">Probar en la entrada</div>
           </div>
         </div>
       </div>

@@ -89,7 +89,7 @@ export const DUR2: Record<string, number> = { gate: 2.4, app: 18.2, train: 6.4, 
 /** Parte 4 · Membresía vencida: aviso por WhatsApp, rechazo en la puerta, renovación en caja y reingreso (s). Ver TourPanels4.tsx. */
 export const DUR4: Record<string, number> = { aviso: 8.0, gate_deny: 5.6, accesos: 6.4, login: 9.4, wompi: 16.0, gate: 2.6 };
 /** Parte 5 · Invitados y kiosko: invitación desde la app, rostro del invitado, PIN de respaldo en /ingreso (s). Ver TourPanels5.tsx. */
-export const DUR5: Record<string, number> = { invite: 12.0, guest_enroll: 9.0, gate_g: 2.8, invite2: 10.0, pin: 9.0, ledger: 9.0 };
+export const DUR5: Record<string, number> = { invite: 12.0, guest_enroll: 20.5, gate_g: 2.8, invite2: 10.0, pin: 9.0, ledger: 9.0 };
 /** Invitados de la Parte 5 (nombres y documentos de demostración) */
 export const GUESTS = [
   { nombre: "Ana Torres", doc: "1015332871", first: "Ana" },
