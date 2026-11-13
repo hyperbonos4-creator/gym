@@ -19,8 +19,8 @@ export class WorldCtrl {
   explore = false;
   tour = new Tour();
   constructor(public sim: GemeloSim) {}
-  startTour(compact = false) {
-    this.tour.start(this.sim, { compact });
+  startTour(compact = false, chapter: 1 | 2 = 1) {
+    this.tour.start(this.sim, { compact, chapter });
     this.selected = -1;
     this.follow = -1;
     this.go("tour", 0.9);

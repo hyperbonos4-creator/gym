@@ -18,7 +18,14 @@ export type TourPhase =
   | "to_gate"
   | "gate"
   | "enter"
+  | "app"
+  | "train"
+  | "coach"
+  | "food"
   | "training";
+
+/** Capítulos del recorrido: 1 = Inscripción, 2 = Entrenamiento (rutina en la app, maniquí 3D, Motion Studio, valoración y nutrición). */
+export type TourChapter = 1 | 2;
 
 export const TOUR_PERSON = {
   nombre: "Valentina Ríos Gómez",
@@ -42,6 +49,8 @@ const WALK = 1.45; // m/s, paso natural
  */
 const DUR: Record<string, number> = { form: 12.0, registered: 3.4, plan: 8.4, phone: 37.4, enrolled: 2.6, gate: 2.4 };
 const DUR_FAST: Record<string, number> = DUR;
+/** Parte 2 · Entrenamiento: tiempos del celular y del panel del entrenador (s). Ver TourPanels2.tsx. */
+export const DUR2: Record<string, number> = { gate: 2.4, app: 18.2, train: 6.4, coach: 31.2, food: 8.4 };
 
 function pathLen(p: Pt[]) {
   let d = 0;
@@ -81,10 +90,12 @@ export class Tour {
   private marks: { phase: TourPhase; t0: number; t1: number; path?: Pt[] }[] = [];
   private sim: GemeloSim | null = null;
 
+  chapter: TourChapter = 1;
   private dur = DUR;
-  start(sim: GemeloSim, opts: { compact?: boolean } = {}) {
+  start(sim: GemeloSim, opts: { compact?: boolean; chapter?: TourChapter } = {}) {
     this.stop();
-    this.dur = opts.compact ? DUR_FAST : DUR;
+    this.chapter = opts.chapter === 2 ? 2 : 1;
+    this.dur = this.chapter === 2 ? DUR2 : opts.compact ? DUR_FAST : DUR;
     const D = this.dur;
     this.sim = sim;
     const L = sim.layout;
@@ -138,6 +149,24 @@ export class Tour {
       this.marks.push({ phase, t0: t, t1: t + dur, path });
       t += dur;
     };
+    if (this.chapter === 2) {
+      // Parte 2: ya es socia. Llega por la entrada, pasa con su rostro y va a su zona.
+      const arrive: Pt[] = [{ x: g.x + 0.9 * m, z: g.z + 6.6 }, { x: g.x, z: g.z + 2.2 }, { x: g.x, z: g.z + 1.15 }];
+      this.h = Math.PI;
+      push("to_gate", pathLen(arrive) / WALK, arrive);
+      push("gate", D.gate);
+      push("enter", pathLen(enter) / WALK, enter);
+      push("app", D.app);
+      push("train", D.train);
+      push("coach", D.coach);
+      push("food", D.food);
+      push("training", 1e9);
+      this.active = true;
+      this.t = 0;
+      this.walk = 0;
+      this.update(0);
+      return;
+    }
     push("walk_in", pathLen(walkIn) / WALK, walkIn);
     push("form", D.form);
     push("registered", D.registered);
@@ -198,7 +227,7 @@ export class Tour {
     } else {
       // de frente al mostrador / torniquete / equipo
       let want = Math.PI;
-      if (this.phase === "training") want = this.spot.rot;
+      if (this.phase === "training" || this.phase === "app" || this.phase === "train" || this.phase === "coach" || this.phase === "food") want = this.spot.rot;
       let dh = want - this.h;
       while (dh > Math.PI) dh -= Math.PI * 2;
       while (dh < -Math.PI) dh += Math.PI * 2;
@@ -229,6 +258,7 @@ export class Tour {
 
   /** tiempo "nominal" dentro de la fase (las pantallas usan la escala de la versión normal) */
   get nt() {
+    if (this.chapter === 2) return this.phaseT;
     const nom = DUR[this.phase];
     const cur = this.dur[this.phase];
     return nom && cur ? this.phaseT * (nom / cur) : this.phaseT;

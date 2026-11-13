@@ -19,6 +19,7 @@ import { TOUR_PERSON } from "../../lib/gemelo/tour";
 import { StudioEnv, Turnstiles } from "./Turnstiles";
 import { Human } from "./Human";
 import { ClientesPanel3D, PhoneOverlay, StatusToast } from "./TourPanels";
+import { CoachPanel, PhoneEntreno } from "./TourPanels2";
 
 type Box = { p: [number, number, number]; s: [number, number, number]; r: number; c: string };
 type Cyl = { p: [number, number, number]; rad: number; h: number; axis: "x" | "y" | "z"; r: number; c: string };
@@ -410,7 +411,7 @@ function Members({ sim, ctrl, onPick }: { sim: GemeloSim; ctrl: WorldCtrl; onPic
       const clearSet = ctrl.preset === "tour" && (tp === "to_gate" || tp === "gate") && (m.phase === "fila" || m.phase === "validando" || m.phase === "llegando") && m.z > 7.5 && m.z < 14;
       // en el recorrido, nadie se cruza entre la cámara y la protagonista
       let blocks = false;
-      if (ctrl.preset === "tour" && ctrl.tour.active && tp !== "form" && tp !== "phone") {
+      if (ctrl.preset === "tour" && ctrl.tour.active && tp !== "form" && tp !== "phone" && tp !== "app" && tp !== "food" && tp !== "coach") {
         const cx = state.camera.position.x, cz = state.camera.position.z;
         const vx = ctrl.tour.x - cx, vz = ctrl.tour.z - cz;
         const L2 = vx * vx + vz * vz;
@@ -811,6 +812,26 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     const pos = portrait ? new THREE.Vector3(g.x + 0.9 * m, 1.65, g.z - 3.9) : new THREE.Vector3(g.x + 1.4 * m, 1.7, g.z - 4.4);
     return { pos, tgt, k: pt < 0.1 ? 50 : 3.0 };
   }
+  // Parte 2 · Entrenamiento: celular de la socia, entreno y panel del entrenador con el mundo vivo detrás
+  if (ph === "app" || ph === "food" || ph === "train" || ph === "coach") {
+    const base = Math.atan2(1.6 * m, -3.6);
+    if (ph === "app" || ph === "food") {
+      const a = base + 0.35 * m + pt * 0.012;
+      const r = portrait ? 2.5 : 2.9;
+      const pos = P.clone().add(new THREE.Vector3(Math.sin(a) * r, 2.05, Math.cos(a) * r));
+      return { pos, tgt: P.clone().add(new THREE.Vector3(0, portrait ? 1.75 : 1.35, 0)), k: pt < 0.05 ? 2.2 : 2.4 };
+    }
+    if (ph === "train") {
+      const a = base - 0.25 * m + pt * 0.09 * m;
+      const r = portrait ? 2.7 - pt * 0.04 : 3.1 - pt * 0.05;
+      const pos = P.clone().add(new THREE.Vector3(Math.sin(a) * r, 1.55 + pt * 0.03, Math.cos(a) * r));
+      return { pos, tgt: P.clone().add(new THREE.Vector3(0, portrait ? 1.35 : 1.1, 0)), k: 2.2 };
+    }
+    const a = base + 0.5 * m + pt * 0.035 * m;
+    const r = portrait ? 7.5 : 8.5;
+    const pos = P.clone().add(new THREE.Vector3(Math.sin(a) * r, portrait ? 4.6 : 4.0, Math.cos(a) * r));
+    return { pos, tgt: P.clone().add(new THREE.Vector3(0, portrait ? 2.6 : 1.4, 0)), k: 1.6 };
+  }
   // camino al equipo y entrenamiento
   const tgt = P.clone().add(new THREE.Vector3(0, portrait ? 1.7 : 1.2, 0));
   const pos = P.clone().add(portrait ? new THREE.Vector3(1.6 * m, 2.6, -3.6) : new THREE.Vector3(2.2 * m, 2.3, -3.6));
@@ -1061,6 +1082,8 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <PhoneOverlay tour={ctrl.tour} anchor={phoneRef} />
       <TourCard tour={ctrl.tour} />
       <StatusToast tour={ctrl.tour} />
+      <PhoneEntreno tour={ctrl.tour} />
+      <CoachPanel tour={ctrl.tour} />
       <Members sim={sim} ctrl={ctrl} onPick={onPick} />
       {labels && <ZoneLabels key={`l${version}`} L={L} />}
       <Popups sim={sim} enabled={labels} tour={ctrl.tour} />

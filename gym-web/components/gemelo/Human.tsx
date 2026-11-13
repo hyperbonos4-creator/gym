@@ -114,7 +114,7 @@ export function Human({ tour, phoneRef }: { tour: Tour; phoneRef?: React.Mutable
       shoulderR = -0.02;
     }
     const ph = tour.phase;
-    if (ph === "phone" || ph === "enrolled" || (ph === "plan" && tour.phaseDur - tour.phaseT < 0.6)) {
+    if (ph === "phone" || ph === "enrolled" || ph === "app" || ph === "food" || (ph === "plan" && tour.phaseDur - tour.phaseT < 0.6)) {
       // sostiene el celular frente al rostro
       shoulderR = -0.95;
       elbowR = -1.35;
@@ -122,7 +122,7 @@ export function Human({ tour, phoneRef }: { tour: Tour; phoneRef?: React.Mutable
       headX = 0.28;
       showPhone = true;
     }
-    if (ph === "training") {
+    if (ph === "training" || ph === "train" || ph === "coach") {
       const c = (1 - Math.cos(t * 2.2)) / 2;
       const c2 = (1 - Math.cos(t * 2.2 + Math.PI)) / 2;
       shoulderL = -0.15;
