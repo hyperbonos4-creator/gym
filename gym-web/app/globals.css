@@ -752,3 +752,37 @@ body {
 .gm-wp-btn { margin-top: 14px; padding: 12px; border-radius: 10px; background: #2c2a6e; color: #fff; text-align: center; font-weight: 800; }
 .gm-wp-ok { margin-top: 16px; padding: 14px; border-radius: 12px; background: #dcfce7; color: #166534; font-weight: 800; text-align: center; }
 .gm-wp-ok span { font-weight: 600; font-size: 11px; }
+/* ---- Gemelo · Parte 5 (Invitados: app del socio y /ingreso) ---- */
+.gm-fl-tile { display: flex; flex-direction: column; gap: 1px; padding: 12px 14px; margin-bottom: 10px; border-radius: 18px; border: 1px solid rgba(255,255,255,.12); font-size: 13px; }
+.gm-fl-tile span { color: rgba(255,255,255,.54); font-size: 11.5px; }
+.gm-fl-tile em { font-style: normal; color: #38BDF8; font-size: 12px; margin-top: 4px; }
+.gm-fl-tile em.used { color: #34D399; }
+.gm-fl-obtn { margin-top: 8px; padding: 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,.3); color: #38BDF8; text-align: center; font-weight: 600; font-size: 13.5px; }
+.gm-fl-pinbox { margin-top: 18px; padding: 8px 6px; border-radius: 16px; transition: box-shadow .3s, background .3s; }
+.gm-fl-pinbox.hi { background: rgba(56,189,248,.08); box-shadow: 0 0 0 2px #38BDF8, 0 0 26px rgba(56,189,248,.45); }
+.gm-fl-pinbox .k { letter-spacing: 1.4px; font-size: 11px; color: rgba(255,255,255,.54); font-weight: 700; }
+.gm-fl-pin { display: flex; gap: 8px; margin: 8px 0; }
+.gm-fl-pin span { flex: 1; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 16px; border: 1px solid rgba(255,255,255,.24); font-size: 26px; font-weight: 800; }
+.gm-wa-av { width: 30px; height: 30px; border-radius: 50%; background: #64748b; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; }
+.gm-wa-bubble.out { align-self: flex-end; margin-left: auto; background: #005c4b; }
+.gm-g5-cam { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; background: #0b1220; }
+.gm-g5-cam i { width: 150px; height: 190px; border-radius: 50%; border: 4px solid #38BDF8; box-shadow: 0 0 30px rgba(56,189,248,.5); animation: gmPulse5 1.2s ease-in-out infinite; }
+.gm-g5-cam span { color: #e2e8f0; font-weight: 700; font-size: 15px; }
+@keyframes gmPulse5 { 50% { transform: scale(1.04); border-color: #22e0a1; } }
+.gm-ing { background: #070b14; color: #fff; flex-direction: column; padding: 30px 18px 18px; font-family: Inter, Arial, sans-serif; }
+.gm-ing .k { font-size: 10px; font-weight: 800; letter-spacing: 2.6px; color: #38BDF8; }
+.gm-ing h1 { font-size: 25px; font-weight: 800; margin: 6px 0 0; }
+.gm-ing p { font-size: 12px; line-height: 1.45; color: #aab6c8; margin: 6px 0 0; }
+.gm-ing-pin { display: flex; justify-content: center; gap: 10px; margin-top: 22px; }
+.gm-ing-pin span { width: 46px; height: 56px; display: flex; align-items: center; justify-content: center; border-radius: 16px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); color: transparent; font-size: 22px; font-weight: 900; }
+.gm-ing-pin span.on { border-color: #38BDF8; background: rgba(56,189,248,.15); color: #fff; }
+.gm-ing-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; margin-top: 22px; }
+.gm-ing-keys span { padding: 14px 0; text-align: center; border-radius: 16px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); font-size: 17px; font-weight: 600; }
+.gm-ing-keys span.gm-press { background: rgba(56,189,248,.3); transform: scale(.97); }
+.gm-ing-rec { margin-top: 24px; padding: 18px; border-radius: 24px; border: 1px solid rgba(52,211,153,.3); background: rgba(52,211,153,.1); }
+.gm-ing-rec .k2 { font-size: 10px; font-weight: 800; letter-spacing: 1.8px; color: #6ee7b7; text-transform: uppercase; }
+.gm-ing-rec .n { font-size: 22px; font-weight: 800; margin-top: 6px; }
+.gm-ing-rec .d { font-size: 12.5px; color: #aab6c8; margin-top: 2px; }
+.gm-ing-rec .o { font-size: 13px; margin-top: 12px; }
+.gm-ing-rec p { color: #a7f3d0; font-size: 11.5px; margin-top: 12px; }
+.gm-ing-rec .again { margin-top: 14px; font-size: 11.5px; font-weight: 600; color: #aab6c8; }
