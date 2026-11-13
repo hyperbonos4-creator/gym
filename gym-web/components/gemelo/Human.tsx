@@ -20,7 +20,8 @@ const SHIN = 0.43;
 const UARM = 0.29;
 const FARM = 0.26;
 
-export function Human({ tour, phoneRef, handRef }: { tour: Tour; phoneRef?: React.MutableRefObject<THREE.Object3D | null>; handRef?: React.MutableRefObject<THREE.Object3D | null> }) {
+export type HumanLook = { top: string; hair: string; skin: string; legs: string; bag?: boolean };
+export function Human({ tour, phoneRef, handRef, look }: { tour: Tour; phoneRef?: React.MutableRefObject<THREE.Object3D | null>; handRef?: React.MutableRefObject<THREE.Object3D | null>; look?: HumanLook }) {
   const hand = useRef<THREE.Group>(null!);
   const root = useRef<THREE.Group>(null!);
   const pelvis = useRef<THREE.Group>(null!);
@@ -40,11 +41,11 @@ export function Human({ tour, phoneRef, handRef }: { tour: Tour; phoneRef?: Reac
 
   const mat = useMemo(
     () => ({
-      skin: new THREE.MeshStandardMaterial({ color: "#c98b62", roughness: 0.6 }),
-      hair: new THREE.MeshStandardMaterial({ color: "#2a1a12", roughness: 0.55 }),
-      top: new THREE.MeshStandardMaterial({ color: "#38BDF8", roughness: 0.55 }),
+      skin: new THREE.MeshStandardMaterial({ color: look?.skin || "#c98b62", roughness: 0.6 }),
+      hair: new THREE.MeshStandardMaterial({ color: look?.hair || "#2a1a12", roughness: 0.55 }),
+      top: new THREE.MeshStandardMaterial({ color: look?.top || "#38BDF8", roughness: 0.55 }),
       jacket: new THREE.MeshStandardMaterial({ color: "#1e293b", roughness: 0.6 }),
-      legs: new THREE.MeshStandardMaterial({ color: "#151a2e", roughness: 0.7 }),
+      legs: new THREE.MeshStandardMaterial({ color: look?.legs || "#151a2e", roughness: 0.7 }),
       shoe: new THREE.MeshStandardMaterial({ color: "#f1f5f9", roughness: 0.5 }),
       sole: new THREE.MeshStandardMaterial({ color: "#38BDF8", roughness: 0.5 }),
       phone: new THREE.MeshStandardMaterial({ color: "#0b0f19", roughness: 0.25, metalness: 0.6 }),
@@ -117,7 +118,7 @@ export function Human({ tour, phoneRef, handRef }: { tour: Tour; phoneRef?: Reac
       shoulderR = -0.02;
     }
     const ph = tour.phase;
-    if (ph === "phone" || ph === "enrolled" || ph === "app" || ph === "food" || ph === "aviso" || (ph === "plan" && tour.phaseDur - tour.phaseT < 0.6)) {
+    if (ph === "phone" || ph === "enrolled" || ph === "app" || ph === "food" || ph === "aviso" || ph === "login" || ph === "wompi" || (ph === "plan" && tour.phaseDur - tour.phaseT < 0.6)) {
       // sostiene el celular frente al rostro
       shoulderR = -0.95;
       elbowR = -1.35;
@@ -218,7 +219,7 @@ export function Human({ tour, phoneRef, handRef }: { tour: Tour; phoneRef?: Reac
         {/* torso */}
         <group ref={chest} position={[0, 0.06, 0]}>
           <mesh geometry={geo.torso} material={mat.top} position={[0, 0.27, 0]} scale={[1.18, 1, 0.72]} />
-          <mesh geometry={geo.bag} material={mat.bag} position={[0.2, 0.15, -0.02]} rotation={[0, 0, 0.05]} />
+          <mesh visible={look ? !!look.bag : true} geometry={geo.bag} material={mat.bag} position={[0.2, 0.15, -0.02]} rotation={[0, 0, 0.05]} />
           <mesh geometry={geo.neck} material={mat.skin} position={[0, 0.53, 0]} />
           <group ref={head} position={[0, 0.58, 0]}>
             <mesh geometry={geo.head} material={mat.skin} position={[0, 0.1, 0.005]} scale={[0.92, 1.08, 0.98]} />

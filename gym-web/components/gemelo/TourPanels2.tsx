@@ -149,7 +149,7 @@ export function PhoneEntreno({ tour }: { tour: Tour }) {
         <div className="gm-phone-status"><span>6:58</span><span>●●● 5G ▮</span></div>
         {/* Entreno · Tu entreno (training_screen.dart) */}
         <div ref={reg("list")} className="gm-scr gm-app">
-          <div className="gm-app-bar"><b>VISIONYX</b><span>☰</span></div>
+          <div className="gm-app-bar" style={{ justifyContent: "flex-start" }}><span>⋮</span><b>VISIONYX</b></div>
           <div className="gm-app-body">
             <h2>Tu entreno</h2>
             <div className="gm-app-sub">{ROUTINE.name} · versión {ROUTINE.version}</div>
@@ -192,7 +192,7 @@ export function PhoneEntreno({ tour }: { tour: Tour }) {
         </div>
         {/* Mi alimentación (nutrition_screen.dart) */}
         <div ref={reg("food")} className="gm-scr gm-app">
-          <div className="gm-app-bar"><b>VISIONYX</b><span>☰</span></div>
+          <div className="gm-app-bar" style={{ justifyContent: "flex-start" }}><span>⋮</span><b>VISIONYX</b></div>
           <div className="gm-app-body">
             <h2>Mi alimentación</h2>
             <div className="gm-app-sub" style={{ color: "#94a3b8", fontWeight: 500 }}>Tu guía del día y tus hábitos.</div>

@@ -17,7 +17,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import type { GemeloSim } from "../../lib/gemelo/sim";
 import type { Tour } from "../../lib/gemelo/tour";
-import { TOUR_PERSON } from "../../lib/gemelo/tour";
+import { TOUR_PERSON, GUESTS } from "../../lib/gemelo/tour";
 
 /* ---------- Entorno PBR generado en código ---------- */
 
@@ -184,7 +184,7 @@ function drawFace(g: CanvasRenderingContext2D, cx: number, cy: number, s: number
   g.fill();
 }
 
-type TabletState = "idle" | "scan" | "ok" | "okv" | "deny" | "back";
+type TabletState = "idle" | "scan" | "ok" | "okv" | "okg" | "deny" | "back";
 
 function tabletTexture(kind: TabletState) {
   return canvasTex(300, 520, (g) => {
@@ -219,7 +219,7 @@ function tabletTexture(kind: TabletState) {
     g.fillRect(30, 70, 240, 270);
     if (kind !== "idle") drawFace(g, 150, fy, 92);
     g.restore();
-    const col = kind === "ok" || kind === "okv" ? "#22E0A1" : kind === "deny" ? "#FF4D6D" : "#38BDF8";
+    const col = kind === "ok" || kind === "okv" || kind === "okg" ? "#22E0A1" : kind === "deny" ? "#FF4D6D" : "#38BDF8";
     g.strokeStyle = col;
     g.lineWidth = 5;
     const bx = 82;
@@ -242,7 +242,7 @@ function tabletTexture(kind: TabletState) {
     }
     // franja de estado
     const sy = 360;
-    if (kind === "ok" || kind === "okv") {
+    if (kind === "ok" || kind === "okv" || kind === "okg") {
       g.fillStyle = "rgba(34,224,161,0.16)";
       g.fillRect(0, sy, 300, 160);
       g.fillStyle = "#22E0A1";
@@ -250,7 +250,12 @@ function tabletTexture(kind: TabletState) {
       g.fillText("✔ ACCESO CONCEDIDO", 150, sy + 50);
       g.fillStyle = "#e8eefc";
       g.font = "600 19px Inter, sans-serif";
-      if (kind === "okv") {
+      if (kind === "okg") {
+        // nombre del sujeto del invitado: "{invitado} · invitado de {socio}" (api/mobile/invitaciones)
+        g.font = "600 17px Inter, sans-serif";
+        g.fillText(`Bienvenido, ${GUESTS[0].nombre}`, 150, sy + 84);
+        g.fillText(`· invitado de ${TOUR_PERSON.nombre}`, 150, sy + 108);
+      } else if (kind === "okv") {
         g.fillText("Bienvenido,", 150, sy + 86);
         g.fillText(TOUR_PERSON.nombre, 150, sy + 112);
       } else g.fillText("Identidad verificada", 150, sy + 92);
@@ -388,6 +393,7 @@ export function Turnstiles({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
         ok: tabletTexture("ok"),
         okv: tabletTexture("okv"),
         deny: tabletTexture("deny"),
+        okg: tabletTexture("okg"),
         back: tabletTexture("back"),
       } as Record<TabletState, THREE.Texture>,
     };
@@ -446,7 +452,7 @@ export function Turnstiles({ sim, tour }: { sim: GemeloSim; tour: Tour }) {
       if (t.back) st = "back";
       else {
         const g = L.gates[t.lane];
-        if (tour.active && t.lane === tour.gate && tour.tablet !== "idle") st = tour.tablet === "ok" ? "okv" : tour.tablet === "deny" ? "deny" : "scan";
+        if (tour.active && t.lane === tour.gate && tour.tablet !== "idle") st = tour.tablet === "ok" ? "okv" : tour.tablet === "okg" ? "okg" : tour.tablet === "deny" ? "deny" : "scan";
         else if (g.flash > 0) st = g.flashOk ? "ok" : "deny";
       }
       const tex = mats.tex[st];

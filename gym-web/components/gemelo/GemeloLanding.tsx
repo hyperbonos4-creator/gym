@@ -108,7 +108,8 @@ const TOUR_STEPS4 = [
   { l: "Aviso por WhatsApp", p: ["aviso"] },
   { l: "La puerta la rechaza", p: ["to_gate", "gate_deny"] },
   { l: "Accesos lo registra", p: ["to_recep", "accesos"] },
-  { l: "Renueva en caja", p: ["renew"] },
+  { l: "Entra a la app", p: ["login"] },
+  { l: "Paga con Wompi", p: ["wompi"] },
   { l: "Vuelve a entrar", p: ["back_gate", "gate", "enter", "training"] },
 ];
 

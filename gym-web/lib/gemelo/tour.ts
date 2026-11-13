@@ -25,10 +25,23 @@ export type TourPhase =
   | "to_desk"
   | "to_fridge"
   | "aviso"
+  | "invite"
+  | "guest_enroll"
+  | "ana_gate"
+  | "gate_g"
+  | "ana_in"
+  | "invite2"
+  | "to_pin"
+  | "pin"
+  | "camilo_in"
+  | "ledger"
+  | "g_end"
   | "gate_deny"
   | "to_recep"
   | "accesos"
   | "renew"
+  | "login"
+  | "wompi"
   | "back_gate"
   | "fridge"
   | "to_counter"
@@ -46,7 +59,7 @@ export type TourPhase =
   | "training";
 
 /** Capítulos del recorrido: 1 = Inscripción, 2 = Entrenamiento (rutina en la app, maniquí 3D, Motion Studio, valoración y nutrición). */
-export type TourChapter = 1 | 2 | 3 | 4;
+export type TourChapter = 1 | 2 | 3 | 4 | 5;
 
 export const TOUR_PERSON = {
   nombre: "Valentina Ríos Gómez",
@@ -74,7 +87,20 @@ const DUR_FAST: Record<string, number> = DUR;
 export const DUR2: Record<string, number> = { gate: 2.4, app: 18.2, train: 6.4, coach: 31.2, food: 8.4 };
 /** Parte 3 · Caja y ventas: punto de venta, factura DIAN, inventario, pedido al proveedor y cierre de caja (s). Ver TourPanels3.tsx. */
 /** Parte 4 · Membresía vencida: aviso por WhatsApp, rechazo en la puerta, renovación en caja y reingreso (s). Ver TourPanels4.tsx. */
-export const DUR4: Record<string, number> = { aviso: 8.0, gate_deny: 5.6, accesos: 6.4, renew: 11.0, gate: 2.6 };
+export const DUR4: Record<string, number> = { aviso: 8.0, gate_deny: 5.6, accesos: 6.4, login: 9.4, wompi: 16.0, gate: 2.6 };
+/** Parte 5 · Invitados y kiosko: invitación desde la app, rostro del invitado, PIN de respaldo en /ingreso (s). Ver TourPanels5.tsx. */
+export const DUR5: Record<string, number> = { invite: 10.0, guest_enroll: 9.0, gate_g: 2.8, invite2: 9.0, pin: 9.0, ledger: 8.0 };
+/** Invitados de la Parte 5 (nombres y documentos de demostración) */
+export const GUESTS = [
+  { nombre: "Ana Torres", doc: "1015332871", first: "Ana" },
+  { nombre: "Camilo Pérez", doc: "79865412", first: "Camilo" },
+];
+/** Puesto de ingreso de invitados (tableta con /ingreso) junto a los torniquetes */
+export function pinStand(L: { mirror: number; gates: { x: number; z: number }[] }) {
+  const m = L.mirror;
+  return { x: -2.3 * m, z: L.gates[0].z + 1.0 };
+}
+type Walker = { x: number; z: number; h: number; walk: number; moving: boolean; on: boolean };
 export const DUR3: Record<string, number> = {
   fridge: 5.0, scan: 6.0, pos: 10.6, fact: 7.0, cliente: 9.0, items: 7.4, dian: 7.0, files: 6.4, stock: 8.6, order: 10.0, close: 8.4,
 };
@@ -126,6 +152,14 @@ export class Tour {
   private sim: GemeloSim | null = null;
 
   chapter: TourChapter = 1;
+  /** Parte 5: Ana (0) y Camilo (1) */
+  guests: Walker[] = [
+    { x: 0, z: 0, h: 0, walk: 0, moving: false, on: false },
+    { x: 0, z: 0, h: 0, walk: 0, moving: false, on: false },
+  ];
+  /** torniquete que abre el PIN (el más cercano al puesto de ingreso) */
+  gate2 = 0;
+  private gpaths: Partial<Record<TourPhase, { i: number; p: Pt[] }>> = {};
   /** inicio del ciclo del curl (s del recorrido); se alinea con el maniquí cuando éste carga */
   curl0 = 0;
   /** pausa el recorrido (p. ej. mientras carga el maniquí 3D de la lección) */
@@ -133,8 +167,11 @@ export class Tour {
   private dur = DUR;
   start(sim: GemeloSim, opts: { compact?: boolean; chapter?: TourChapter } = {}) {
     this.stop();
-    this.chapter = opts.chapter === 2 || opts.chapter === 3 || opts.chapter === 4 ? opts.chapter : 1;
-    this.dur = this.chapter === 2 ? DUR2 : this.chapter === 3 ? DUR3 : this.chapter === 4 ? DUR4 : opts.compact ? DUR_FAST : DUR;
+    this.chapter = opts.chapter === 2 || opts.chapter === 3 || opts.chapter === 4 || opts.chapter === 5 ? opts.chapter : 1;
+    this.dur = this.chapter === 2 ? DUR2 : this.chapter === 3 ? DUR3 : this.chapter === 4 ? DUR4 : this.chapter === 5 ? DUR5 : opts.compact ? DUR_FAST : DUR;
+    this.guests.forEach((w) => (w.on = false));
+    (this as any)._paid = false;
+    this.gpaths = {};
     const D = this.dur;
     this.sim = sim;
     const L = sim.layout;
@@ -216,12 +253,56 @@ export class Tour {
       this.update(0);
       return;
     }
+    if (this.chapter === 5) {
+      // Parte 5: Valentina invita a Ana (entra por rostro) y a Camilo, sin celular (entra con el PIN de respaldo en /ingreso).
+      const S = pinStand(L);
+      let pg = 0;
+      L.gates.forEach((gg, i) => {
+        if (Math.abs(gg.x - S.x) < Math.abs(L.gates[pg].x - S.x)) pg = i;
+      });
+      this.gate2 = pg;
+      const g2 = L.gates[pg];
+      const V0 = { x: g.x + 0.9 * m, z: g.z + 5.0 };
+      const A0 = { x: g.x + 1.7 * m, z: g.z + 5.5 };
+      const C0 = { x: g.x + 0.1 * m, z: g.z + 5.7 };
+      this.x = V0.x;
+      this.z = V0.z;
+      this.h = Math.PI;
+      const [ana, cam] = this.guests;
+      Object.assign(ana, { x: A0.x, z: A0.z, h: Math.PI + 0.3 * m, walk: 0, moving: false, on: true });
+      Object.assign(cam, { x: C0.x, z: C0.z, h: Math.PI - 0.3 * m, walk: 0, moving: false, on: true });
+      const anaGate: Pt[] = [A0, { x: g.x, z: g.z + 2.2 }, { x: g.x, z: g.z + 1.15 }];
+      const anaIn: Pt[] = [{ x: g.x, z: g.z + 1.15 }, { x: g.x, z: g.z - 1.3 }, { x: g.x + 0.7 * m, z: g.z - 3.2 }];
+      const toPin: Pt[] = [C0, { x: S.x + 0.5 * m, z: S.z + 1.6 }, { x: S.x, z: S.z + 0.75 }];
+      const camIn: Pt[] = [{ x: S.x, z: S.z + 0.75 }, { x: g2.x, z: g2.z + 1.2 }, { x: g2.x, z: g2.z - 1.3 }, { x: g2.x - 0.6 * m, z: g2.z - 3.4 }];
+      push("invite", D.invite);
+      push("guest_enroll", D.guest_enroll);
+      this.gpaths.ana_gate = { i: 0, p: anaGate };
+      push("ana_gate", pathLen(anaGate) / WALK);
+      push("gate_g", D.gate_g);
+      this.gpaths.ana_in = { i: 0, p: anaIn };
+      push("ana_in", pathLen(anaIn) / WALK + 1.2);
+      push("invite2", D.invite2);
+      this.gpaths.to_pin = { i: 1, p: toPin };
+      push("to_pin", pathLen(toPin) / WALK);
+      push("pin", D.pin);
+      this.gpaths.camilo_in = { i: 1, p: camIn };
+      push("camilo_in", pathLen(camIn) / WALK + 0.8);
+      push("ledger", D.ledger);
+      push("g_end", 1e9);
+      this.active = true;
+      this.t = 0;
+      this.walk = 0;
+      this.update(0);
+      return;
+    }
     if (this.chapter === 4) {
-      // Parte 4: le llega el aviso de vencimiento, días después la puerta la rechaza, renueva en caja y vuelve a entrar.
+      // Parte 4: le llega el aviso por WhatsApp, días después la puerta la rechaza, entra a la app
+      // (documento + WhatsApp + código), paga el plan con Wompi (simulado) y vuelve a entrar.
       const start: Pt = { x: g.x + 0.9 * m, z: g.z + 6.6 };
       const arrive: Pt[] = [start, { x: g.x, z: g.z + 2.2 }, { x: g.x, z: g.z + 1.15 }];
-      const c4: Pt = { x: rx + 1.0 * m, z: rz + 1.45 };
-      const toRecep: Pt[] = [{ x: g.x, z: g.z + 1.15 }, { x: g.x + 0.4 * m, z: g.z + 2.4 }, { x: rx + 1.8 * m, z: rz + 2.0 }, c4];
+      const c4: Pt = { x: g.x + 0.9 * m, z: g.z + 2.9 };
+      const toRecep: Pt[] = [{ x: g.x, z: g.z + 1.15 }, { x: g.x + 0.3 * m, z: g.z + 2.2 }, c4];
       const back: Pt[] = [c4, { x: g.x, z: g.z + 2.2 }, { x: g.x, z: g.z + 1.15 }];
       this.x = start.x;
       this.z = start.z;
@@ -231,7 +312,8 @@ export class Tour {
       push("gate_deny", D.gate_deny);
       push("to_recep", pathLen(toRecep) / WALK, toRecep);
       push("accesos", D.accesos);
-      push("renew", D.renew);
+      push("login", D.login);
+      push("wompi", D.wompi);
       push("back_gate", pathLen(back) / WALK, back);
       push("gate", D.gate);
       push("enter", pathLen(enter) / WALK, enter);
@@ -287,6 +369,7 @@ export class Tour {
     }
     this.active = false;
     this.hold = false;
+    this.guests.forEach((w) => (w.on = false));
     this.phase = "off";
     this.marks = [];
     this.station = -1;
@@ -308,6 +391,28 @@ export class Tour {
     this.phase = mk.phase;
     this.phaseT = this.t - mk.t0;
     this.phaseDur = mk.t1 - mk.t0;
+    // invitados de la Parte 5: caminan por su propia ruta en ciertas fases
+    for (const w of this.guests) w.moving = false;
+    const gp = this.gpaths[mk.phase];
+    if (gp) {
+      const w = this.guests[gp.i];
+      const len = pathLen(gp.p);
+      const d = Math.min(len, this.phaseT * WALK);
+      const p = along(gp.p, d);
+      w.x = p.x;
+      w.z = p.z;
+      let dh = p.h - w.h;
+      while (dh > Math.PI) dh -= Math.PI * 2;
+      while (dh < -Math.PI) dh += Math.PI * 2;
+      w.h += dh * Math.min(1, dt * 7 + (dt === 0 ? 1 : 0));
+      w.moving = d < len - 0.02;
+      if (w.moving) w.walk += dt * (WALK / 1.32) * Math.PI * 2;
+    }
+    for (const w of this.guests) {
+      if (w.moving) continue;
+      const r = w.walk % Math.PI;
+      if (r > 0.05) w.walk += Math.min(Math.PI - r, dt * 6);
+    }
     const sim = this.sim!;
     const L = sim.layout;
     const g = L.gates[this.gate];
@@ -358,8 +463,48 @@ export class Tour {
         sim.emit({ kind: "deny", name: TOUR_PERSON.first + " R.", detail: "Membresía vencida o sin plan", x: g.x, z: g.z, member: -3 });
       }
       if (this.phaseT >= 1.2 && this.phaseT < 4.6) g.flash = Math.max(g.flash, 0.5);
+    } else if (this.phase === "gate_g") {
+      g.busy = true;
+      if (this.nt >= 0.95) {
+        if (!(g as any)._g) {
+          (g as any)._g = 1;
+          g.flash = 1.1;
+          g.flashOk = true;
+          sim.stats.accesosOk++;
+          sim.emit({ kind: "ok", name: GUESTS[0].first + " T.", detail: `Invitada de ${TOUR_PERSON.first} R. · acceso facial`, x: g.x, z: g.z, member: -3 });
+        }
+        g.open = 1.6;
+      }
+    } else if (this.phase === "ana_in") {
+      if (this.phaseT < 1.7) g.open = Math.max(g.open, 0.6);
+      else g.busy = false;
+      delete (g as any)._g;
+    } else if (this.phase === "pin" || this.phase === "camilo_in") {
+      const g2 = L.gates[this.gate2];
+      if (this.phase === "pin" && this.phaseT >= 3.2) {
+        g2.busy = true;
+        if (!(g2 as any)._pin) {
+          (g2 as any)._pin = 1;
+          g2.flash = 1.1;
+          g2.flashOk = true;
+          sim.emit({ kind: "ok", name: GUESTS[1].first + " P.", detail: `Invitado de ${TOUR_PERSON.first} R. · PIN de respaldo`, x: g2.x, z: g2.z, member: -3 });
+        }
+        g2.open = 1.6;
+      }
+      if (this.phase === "camilo_in") {
+        if (this.phaseT < 2.6) g2.open = Math.max(g2.open, 0.6);
+        else {
+          g2.busy = false;
+          delete (g2 as any)._pin;
+        }
+      }
     } else if (this.phase === "to_recep") {
       g.busy = false;
+    } else if (this.phase === "wompi" && this.chapter === 4) {
+      if (this.phaseT >= 7.0 && !(this as any)._paid) {
+        (this as any)._paid = true;
+        sim.emit({ kind: "renew", name: TOUR_PERSON.first + " R.", detail: "Pago Wompi desde la app · Mensual", amount: 120000, x: this.x, z: this.z, member: -3 });
+      }
     } else if (this.phase === "enter") {
       if (this.phaseT < 1.7) g.open = Math.max(g.open, 0.6);
       else g.busy = false;
@@ -382,9 +527,22 @@ export class Tour {
   }
 
   /** Estado de la tablet del torniquete del recorrido */
-  get tablet(): "idle" | "scan" | "ok" | "deny" {
+  /** a quién sigue la cámara en la Parte 5 */
+  get focus(): { x: number; z: number } {
+    if (this.chapter === 5) {
+      const ph = this.phase;
+      if (ph === "guest_enroll" || ph === "ana_gate" || ph === "gate_g" || ph === "ana_in") return this.guests[0];
+      if (ph === "to_pin" || ph === "pin" || ph === "camilo_in") return this.guests[1];
+    }
+    return this;
+  }
+
+  get tablet(): "idle" | "scan" | "ok" | "deny" | "okg" {
     if (!this.active) return "idle";
     if (this.phase === "gate_deny") return this.phaseT < 1.2 ? "scan" : "deny";
+    if (this.phase === "gate_g") return this.nt < 0.95 ? "scan" : "okg";
+    if (this.phase === "ana_in" && this.phaseT < 1.6) return "okg";
+    if (this.phase === "ana_gate" && this.phaseDur - this.phaseT < 0.9) return "scan";
     if (this.phase === "back_gate" && this.phaseDur - this.phaseT < 0.9) return "scan";
     if (this.phase === "gate") return this.nt < 0.95 ? "scan" : "ok";
     if (this.phase === "enter" && this.phaseT < 1.6) return "ok";

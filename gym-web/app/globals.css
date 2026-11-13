@@ -695,3 +695,60 @@ body {
 .gm-m4-plans em { font-style: normal; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; }
 .gm-m4-plans b { color: #fff; font-size: 14px; }
 .gm-m4-plans span { color: #94a3b8; font-size: 11px; }
+/* ---- Gemelo · app VISIONYX (Flutter gym-mobile: tema oscuro #0A0F1C, primario #38BDF8, Material 3) ---- */
+.gm-fl { background: #0A0F1C; color: #fff; font-family: Roboto, Inter, Arial, sans-serif; }
+.gm-fl-bar { display: flex; align-items: center; gap: 14px; padding: 10px 14px; font-size: 18px; }
+.gm-fl-bar span { color: #cbd5e1; font-size: 18px; }
+.gm-fl-pad { padding: 10px 18px; }
+.gm-fl-kick { letter-spacing: 3px; font-size: 11px; font-weight: 800; color: #38BDF8; }
+.gm-fl-kick2 { letter-spacing: 1.6px; font-size: 10px; font-weight: 700; color: #8BA0B8; }
+.gm-fl-h1 { font-size: 30px; font-weight: 800; margin-top: 8px; line-height: 1.05; }
+.gm-fl-h2 { font-size: 22px; font-weight: 800; margin-bottom: 10px; }
+.gm-fl-desc { color: rgba(255,255,255,.7); font-size: 12.5px; line-height: 1.4; margin: 8px 0 14px; }
+.gm-fl-field { position: relative; border: 1px solid rgba(255,255,255,.4); border-radius: 4px; padding: 14px 12px 8px; margin-bottom: 10px; min-height: 22px; font-size: 15px; }
+.gm-fl-field label { position: absolute; top: -8px; left: 8px; padding: 0 4px; background: #0A0F1C; font-size: 11px; color: rgba(255,255,255,.7); }
+.gm-fl-field.on { border: 2px solid #38BDF8; }
+.gm-fl-field.on label { color: #38BDF8; }
+.gm-fl-field.dis { opacity: .45; }
+.gm-fl-btn { margin-top: 10px; padding: 12px; border-radius: 999px; background: #38BDF8; color: #04121f; text-align: center; font-weight: 700; font-size: 14px; }
+.gm-fl-btn.dis { background: rgba(255,255,255,.12); color: rgba(255,255,255,.38); }
+.gm-fl-btn.gm-press, .gm-fl-paybtn.gm-press, .gm-wp-btn.gm-press { filter: brightness(1.25); transform: scale(.97); box-shadow: 0 0 22px rgba(56,189,248,.7); }
+.gm-fl-text { margin-top: 8px; text-align: center; color: #38BDF8; font-size: 13px; font-weight: 600; }
+.gm-fl-card { border: 1px solid rgba(255,255,255,.12); border-radius: 20px; padding: 14px 16px; margin-bottom: 10px; font-size: 13px; }
+.gm-fl-card.fill { background: rgba(255,255,255,.04); }
+.gm-fl-acc { color: #38BDF8; font-weight: 700; margin-bottom: 6px; }
+.gm-fl-mut { color: rgba(255,255,255,.6); font-size: 12px; }
+.gm-fl-mut2 { color: rgba(255,255,255,.7); font-size: 12px; }
+.gm-fl-big { font-size: 34px; font-weight: 800; line-height: 1; margin-top: 4px; }
+.gm-fl-nav { margin-top: auto; display: flex; justify-content: space-around; padding: 8px 4px 12px; background: #141a28; font-size: 10.5px; color: #cbd5e1; }
+.gm-fl-nav span { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.gm-fl-nav i { font-style: normal; font-size: 15px; padding: 2px 14px; border-radius: 999px; }
+.gm-fl-nav span.on i { background: rgba(56,189,248,.28); }
+.gm-fl-nav span.on { color: #fff; font-weight: 700; }
+.gm-fl-notice { margin: 4px 0 8px; padding: 10px 12px; border-radius: 12px; background: #2A2112; border: 1px solid rgba(251,191,36,.4); color: #FBBF24; font-size: 12px; line-height: 1.35; }
+.gm-fl-plan { margin: 10px 0; padding: 12px 14px; border-radius: 18px; background: #101826; border: 1px solid rgba(56,189,248,.35); border-left: 4px solid #38BDF8; }
+.gm-fl-plan .row { display: flex; justify-content: space-between; align-items: center; }
+.gm-fl-plan .chip { padding: 3px 8px; border-radius: 999px; background: rgba(56,189,248,.14); color: #38BDF8; font-size: 9px; font-weight: 800; letter-spacing: .8px; }
+.gm-fl-plan .kind { color: #6E8196; font-size: 9px; font-weight: 700; letter-spacing: 1.2px; }
+.gm-fl-plan .n { font-size: 19px; font-weight: 800; margin-top: 10px; }
+.gm-fl-plan .p { font-size: 28px; font-weight: 800; color: #38BDF8; margin-top: 4px; letter-spacing: -.5px; }
+.gm-fl-plan .sp { color: #9AABBE; font-size: 12px; margin-top: 4px; }
+.gm-fl-paybtn { margin-top: 10px; padding: 10px; border-radius: 12px; background: #38BDF8; color: #071018; text-align: center; font-weight: 800; font-size: 13px; }
+.gm-fl-paybtn.busy { background: rgba(56,189,248,.35); }
+.gm-fl-pay { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; padding: 10px 12px; border-radius: 14px; background: #101826; border: 1px solid rgba(255,255,255,.1); font-size: 13px; }
+.gm-fl-pay em { display: block; font-style: normal; color: #34D399; font-size: 11px; font-weight: 700; margin-top: 2px; }
+.gm-fl-pull { justify-content: center; padding: 6px 0; }
+.gm-fl-pull i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #38BDF8; border-right-color: transparent; animation: gmSpin .8s linear infinite; }
+@keyframes gmSpin { to { transform: rotate(360deg); } }
+.gm-wp { background: #f4f6fb; color: #1f2937; font-family: Inter, Arial, sans-serif; }
+.gm-wp-url { margin: 6px 10px; padding: 6px 10px; border-radius: 999px; background: #e5e7eb; font-size: 11px; color: #374151; }
+.gm-wp-body { padding: 12px 18px; }
+.gm-wp-brand { font-size: 22px; font-weight: 900; color: #2c2a6e; }
+.gm-wp-demo { margin: 4px 0 12px; font-size: 10.5px; color: #b45309; font-weight: 700; }
+.gm-wp-k { font-size: 11px; color: #6b7280; }
+.gm-wp-v { font-size: 14px; font-weight: 700; }
+.gm-wp-amt { font-size: 28px; font-weight: 900; margin-top: 4px; }
+.gm-wp-opt { margin-top: 4px; padding: 10px; border-radius: 10px; border: 1px solid #d1d5db; font-size: 12px; background: #fff; }
+.gm-wp-btn { margin-top: 14px; padding: 12px; border-radius: 10px; background: #2c2a6e; color: #fff; text-align: center; font-weight: 800; }
+.gm-wp-ok { margin-top: 16px; padding: 14px; border-radius: 12px; background: #dcfce7; color: #166534; font-weight: 800; text-align: center; }
+.gm-wp-ok span { font-weight: 600; font-size: 11px; }

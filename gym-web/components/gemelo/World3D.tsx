@@ -821,7 +821,7 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     }
     return { pos, tgt, k: 2.6 };
   }
-  if (ph === "phone" || ph === "enrolled" || ph === "aviso") {
+  if (ph === "phone" || ph === "enrolled" || ph === "aviso" || ph === "login" || ph === "wompi") {
     const tgt = P.clone().add(new THREE.Vector3(0.05 * m, 1.32, -0.25));
     const pos = P.clone().add(portrait ? new THREE.Vector3(0.95 * m, 1.95, 1.7) : new THREE.Vector3(1.25 * m, 1.95, 2.1));
     if (ph === "enrolled" && pt > tour.phaseDur - 0.6) pos.add(new THREE.Vector3(0.6 * m, 0.4, 1.0));
@@ -1036,9 +1036,9 @@ function TourCard({ tour }: { tour: Tour }) {
     setCardFlag("gm-card-tour-on", on);
     if (on && sub.current && days.current && visits.current) {
       const ch4 = tour.chapter === 4;
-      sub.current.textContent = ch4 ? "Membresía renovada · de vuelta a entrenar" : "Socia nueva · primer entrenamiento";
+      sub.current.textContent = ch4 ? "Renovó en la app con Wompi · de vuelta a entrenar" : "Socia nueva · primer entrenamiento";
       days.current.textContent = ch4 ? "29" : "30";
-      visits.current.textContent = ch4 ? "Hoy, tras renovar" : "1 este mes";
+      visits.current.textContent = ch4 ? "Hoy, tras pagar en la app" : "1 este mes";
     }
   });
   return (
