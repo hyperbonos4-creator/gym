@@ -91,9 +91,14 @@ const TOUR_STEPS2 = [
 ];
 
 const TOUR_STEPS3 = [
-  { l: "Llega a caja", p: ["to_desk"] },
-  { l: "Punto de venta", p: ["pos"] },
-  { l: "Factura DIAN", p: ["dian"] },
+  { l: "Saca la bebida de la nevera", p: ["to_fridge", "fridge"] },
+  { l: "La cajera la escanea", p: ["to_counter", "scan"] },
+  { l: "Venta cobrada", p: ["pos"] },
+  { l: "¿Desea factura?", p: ["fact"] },
+  { l: "Datos del cliente", p: ["cliente"] },
+  { l: "Ítems e IVA", p: ["items"] },
+  { l: "Envío a la DIAN", p: ["dian"] },
+  { l: "XML y PDF", p: ["files"] },
   { l: "Inventario", p: ["stock"] },
   { l: "Pedido al proveedor", p: ["order"] },
   { l: "Cierre de caja", p: ["close", "desk_end"] },
@@ -409,7 +414,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
     ctrl.zoom = 1;
     ctrl.startTour(compact === true, chapter);
     if (compact === true) ctrl.go("tour", 0.0001);
-    setTourPhase(chapter === 2 ? "to_gate" : chapter === 3 ? "to_desk" : "walk_in");
+    setTourPhase(chapter === 2 ? "to_gate" : chapter === 3 ? "to_fridge" : "walk_in");
     setSelected(-1);
     setPreset("tour");
   }, [ctrl, sim, webgl]);
@@ -725,7 +730,7 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
           {selected < 0 && !capture && tourPhase === "off" && <div className="gm-hint">Arrastra para girar · rueda o pellizco para zoom · toca un socio</div>}
           {tourPhase !== "off" && !ad && (
             <div className="gm-tourbar">
-              <div className="gm-tourbar-steps">
+              <div className={`gm-tourbar-steps${ctrl.tour.chapter === 3 ? " many" : ""}`}>
                 {(ctrl.tour.chapter === 3 ? TOUR_STEPS3 : ctrl.tour.chapter === 2 ? TOUR_STEPS2 : TOUR_STEPS).map((st, i, arr) => (
                   <span key={st.l} className={st.p.includes(tourPhase) ? "on" : arr.findIndex((x) => x.p.includes(tourPhase)) > i ? "done" : ""}>
                     <b>{i + 1}</b>{st.l}

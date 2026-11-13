@@ -12,6 +12,7 @@ import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import type { Tour } from "../../lib/gemelo/tour";
+import { FR, SC, ss } from "../../lib/gemelo/sale";
 
 const HIP_Y = 0.93;
 const THIGH = 0.44;
@@ -19,7 +20,8 @@ const SHIN = 0.43;
 const UARM = 0.29;
 const FARM = 0.26;
 
-export function Human({ tour, phoneRef }: { tour: Tour; phoneRef?: React.MutableRefObject<THREE.Object3D | null> }) {
+export function Human({ tour, phoneRef, handRef }: { tour: Tour; phoneRef?: React.MutableRefObject<THREE.Object3D | null>; handRef?: React.MutableRefObject<THREE.Object3D | null> }) {
+  const hand = useRef<THREE.Group>(null!);
   const root = useRef<THREE.Group>(null!);
   const pelvis = useRef<THREE.Group>(null!);
   const chest = useRef<THREE.Group>(null!);
@@ -139,6 +141,41 @@ export function Human({ tour, phoneRef }: { tour: Tour; phoneRef?: React.Mutable
       pelvisY = HIP_Y - 0.03;
       showDb = true;
     }
+    if (tour.chapter === 3) {
+      // Parte 3: abre la nevera, toma la bebida, la cierra, la lleva en la mano y la deja en el mostrador
+      const pt = tour.phaseT;
+      const L = (a: number, b: number, k: number) => a + (b - a) * k;
+      const carry = (k: number) => {
+        shoulderR = L(shoulderR, -0.32, k);
+        elbowR = L(elbowR, -1.25, k);
+        armOutR = L(armOutR, 0.1, k);
+      };
+      if (ph === "fridge") {
+        const reach = ss(pt, FR.open0 - 0.4, FR.open0) * (1 - ss(pt, FR.open1, FR.open1 + 0.3));
+        const inside = ss(pt, FR.open1, FR.open1 + 0.6) * (1 - ss(pt, FR.grab, FR.grab + 0.7));
+        shoulderR = L(shoulderR, -1.0, reach);
+        armOutR = L(armOutR, -0.25, reach);
+        elbowR = L(elbowR, -0.5, reach);
+        shoulderR = L(shoulderR, -1.38, inside);
+        elbowR = L(elbowR, -0.12, inside);
+        armOutR = L(armOutR, 0.02, inside);
+        if (pt > FR.grab) carry(ss(pt, FR.grab, FR.grab + 0.7));
+        const push = ss(pt, FR.close0 - 0.3, FR.close0 + 0.2) * (1 - ss(pt, FR.close1, FR.close1 + 0.5));
+        shoulderL = L(shoulderL, -1.05, push);
+        elbowL = L(elbowL, -0.35, push);
+        armOutL = L(armOutL, 0.15, push);
+        headX = 0.12 * inside;
+      } else if (ph === "to_counter") {
+        carry(1);
+      } else if (ph === "scan") {
+        const put = ss(pt, 0, SC.put) * (1 - ss(pt, SC.put + 0.1, SC.put + 0.8));
+        carry(1 - ss(pt, SC.put, SC.put + 0.8));
+        shoulderR = L(shoulderR, -0.95, put);
+        elbowR = L(elbowR, -0.45, put);
+        armOutR = L(armOutR, 0.05, put);
+        chestX += 0.1 * put;
+      }
+    }
     pelvis.current.position.y = pelvisY;
     pelvis.current.rotation.y = -chestY * 0.6;
     chest.current.rotation.set(chestX, chestY, 0);
@@ -155,6 +192,7 @@ export function Human({ tour, phoneRef }: { tour: Tour; phoneRef?: React.Mutable
     dbL.current.visible = showDb;
     dbR.current.visible = showDb;
     if (phoneRef) phoneRef.current = phone.current;
+    if (handRef) handRef.current = hand.current;
   });
 
   return (
@@ -198,6 +236,7 @@ export function Human({ tour, phoneRef }: { tour: Tour; phoneRef?: React.Mutable
                 <mesh geometry={geo.hand} material={mat.skin} position={[0, -FARM - 0.02, 0]} />
                 {right ? (
                   <>
+                    <group ref={hand} position={[0, -FARM - 0.03, 0.035]} />
                     <group ref={phone} position={[0, -FARM - 0.04, 0.03]} rotation={[-0.25, 0, 0]}>
                       <mesh geometry={geo.phone} material={mat.phone} />
                     </group>

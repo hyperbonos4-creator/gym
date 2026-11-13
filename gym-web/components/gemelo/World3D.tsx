@@ -15,11 +15,12 @@ import * as THREE from "three";
 import { MAX_MEMBERS, formatCOP, phaseLabel, type GemeloSim, type Layout, type StationKind } from "../../lib/gemelo/sim";
 import type { WorldCtrl, CamPreset } from "../../lib/gemelo/ctrl";
 import type { Tour } from "../../lib/gemelo/tour";
-import { TOUR_PERSON } from "../../lib/gemelo/tour";
+import { TOUR_PERSON, fridgeSpot } from "../../lib/gemelo/tour";
 import { StudioEnv, Turnstiles } from "./Turnstiles";
 import { Human } from "./Human";
 import { ClientesPanel3D, PhoneOverlay, StatusToast } from "./TourPanels";
 import { CoachPanel, PhoneEntreno } from "./TourPanels2";
+import { Fridge, Cashier, SaleBottle } from "./Caja3D";
 import { CajaPanel } from "./TourPanels3";
 
 type Box = { p: [number, number, number]; s: [number, number, number]; r: number; c: string };
@@ -779,7 +780,28 @@ function tourShot(tour: Tour, L: Layout, aspect: number): { pos: THREE.Vector3; 
     const off = portrait ? new THREE.Vector3(-2.3 * m, 1.55 + crane, 4.6 + crane * 0.6) : new THREE.Vector3(-2.7 * m, 1.45 + crane, 3.9 + crane * 0.6);
     return { pos: P.clone().add(off), tgt, k: pt < 0.05 ? 50 : 3.2 };
   }
-  if (ph === "pos" || ph === "dian" || ph === "stock" || ph === "order" || ph === "close" || ph === "desk_end") {
+  if (ph === "to_fridge" || ph === "to_counter") {
+    // Parte 3: sigue a Valentina hacia la nevera y de vuelta a la caja
+    const tgt = P.clone().add(new THREE.Vector3(0, 1.15, -0.3));
+    const off = portrait ? new THREE.Vector3(1.2 * m, 2.5, 4.4) : new THREE.Vector3(1.4 * m, 2.35, 3.9);
+    if (ph === "to_counter") off.set((portrait ? 1.6 : 2.0) * m, 2.9, portrait ? 3.8 : 3.2);
+    if (ph === "to_fridge") off.add(new THREE.Vector3(0, Math.max(0, 2.4 - pt) * 1.4, Math.max(0, 2.4 - pt) * 0.8));
+    return { pos: P.clone().add(off), tgt, k: ph === "to_fridge" && pt < 0.05 ? 50 : 3.0 };
+  }
+  if (ph === "fridge") {
+    const fr = fridgeSpot(L);
+    // de lado (lado opuesto a la bisagra) para ver la puerta abrirse y la mano tomar la botella
+    const tgt = new THREE.Vector3(fr.x + 0.3 * m, 1.25, fr.front + 0.2);
+    const pos = portrait ? new THREE.Vector3(fr.x - 1.0 * m, 1.8, fr.front + 3.6) : new THREE.Vector3(fr.x - 1.5 * m, 1.75, fr.front + 3.1);
+    return { pos, tgt, k: 2.2 };
+  }
+  if (ph === "scan") {
+    const cx = L.reception.x + 1.0 * m;
+    const tgt = new THREE.Vector3(cx - 0.15 * m, 1.3, L.reception.z + 0.2);
+    const pos = portrait ? new THREE.Vector3(cx + 1.5 * m, 2.0, L.reception.z + 3.1) : new THREE.Vector3(cx + 1.9 * m, 1.85, L.reception.z + 2.5);
+    return { pos, tgt, k: 2.4 };
+  }
+  if (ph === "pos" || ph === "fact" || ph === "cliente" || ph === "items" || ph === "files" || ph === "dian" || ph === "stock" || ph === "order" || ph === "close" || ph === "desk_end") {
     // Parte 3: plano de recepción con deriva lenta; el panel de caja va en pantalla
     const tt = tour.t;
     const pos = panel.clone().addScaledVector(panelN, portrait ? 7.4 : 9.4).add(new THREE.Vector3(Math.sin(tt * 0.05) * 1.4 * m, portrait ? 1.6 : 1.1, 0));
@@ -1074,6 +1096,9 @@ function SimDriver({ sim, ctrl }: { sim: GemeloSim; ctrl: WorldCtrl }) {
 function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: WorldCtrl; version: number; onPick: (id: number) => void; labels: boolean }) {
   const L = sim.layout;
   const phoneRef = useRef<THREE.Object3D | null>(null);
+  const valeHand = useRef<THREE.Object3D | null>(null);
+  const cashHand = useRef<THREE.Object3D | null>(null);
+  const scanTip = useRef<THREE.Object3D | null>(null);
   return (
     <>
       <color attach="background" args={["#060a15"]} />
@@ -1085,7 +1110,10 @@ function Scene({ sim, ctrl, version, onPick, labels }: { sim: GemeloSim; ctrl: W
       <StudioEnv />
       <StaticWorld key={`s${version}`} L={L} />
       <Turnstiles key={`g${version}`} sim={sim} tour={ctrl.tour} />
-      <Human tour={ctrl.tour} phoneRef={phoneRef} />
+      <Human tour={ctrl.tour} phoneRef={phoneRef} handRef={valeHand} />
+      <Fridge key={`f${version}`} L={L} tour={ctrl.tour} />
+      <Cashier key={`c${version}`} L={L} tour={ctrl.tour} handRef={cashHand} tipRef={scanTip} />
+      <SaleBottle key={`b${version}`} L={L} tour={ctrl.tour} valeHand={valeHand} cashHand={cashHand} tip={scanTip} />
       <ClientesPanel3D sim={sim} tour={ctrl.tour} />
       <PhoneOverlay tour={ctrl.tour} anchor={phoneRef} />
       <TourCard tour={ctrl.tour} />

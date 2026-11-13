@@ -23,6 +23,14 @@ export type TourPhase =
   | "coach"
   | "food"
   | "to_desk"
+  | "to_fridge"
+  | "fridge"
+  | "to_counter"
+  | "scan"
+  | "fact"
+  | "cliente"
+  | "items"
+  | "files"
   | "pos"
   | "dian"
   | "stock"
@@ -59,7 +67,9 @@ const DUR_FAST: Record<string, number> = DUR;
 /** Parte 2 · Entrenamiento: tiempos del celular y del panel del entrenador (s). Ver TourPanels2.tsx. */
 export const DUR2: Record<string, number> = { gate: 2.4, app: 18.2, train: 6.4, coach: 31.2, food: 8.4 };
 /** Parte 3 · Caja y ventas: punto de venta, factura DIAN, inventario, pedido al proveedor y cierre de caja (s). Ver TourPanels3.tsx. */
-export const DUR3: Record<string, number> = { pos: 17.0, dian: 9.6, stock: 8.6, order: 10.0, close: 8.4 };
+export const DUR3: Record<string, number> = {
+  fridge: 5.0, scan: 6.0, pos: 10.6, fact: 7.0, cliente: 9.0, items: 7.4, dian: 7.0, files: 6.4, stock: 8.6, order: 10.0, close: 8.4,
+};
 
 function pathLen(p: Pt[]) {
   let d = 0;
@@ -79,6 +89,14 @@ function along(p: Pt[], dist: number): { x: number; z: number; h: number } {
     dist -= L;
   }
   return { x: p[0].x, z: p[0].z, h: 0 };
+}
+
+/** Nevera de bebidas junto a recepción (Parte 3): centro, frente (+z) y dónde se para Valentina. */
+export function fridgeSpot(L: { mirror: number; reception: { x: number; z: number } }) {
+  const m = L.mirror;
+  const x = L.reception.x - 3.6 * m;
+  const z = L.reception.z;
+  return { x, z, front: z + 0.375, standX: x + 0.3 * m, standZ: z + 1.0 };
 }
 
 export class Tour {
@@ -163,14 +181,27 @@ export class Tour {
       t += dur;
     };
     if (this.chapter === 3) {
-      // Parte 3: llega a recepción a comprar; la caja cobra, factura, cuadra inventario y pide al proveedor.
-      push("to_desk", pathLen(walkIn) / WALK, walkIn);
-      push("pos", D.pos);
-      push("dian", D.dian);
-      push("stock", D.stock);
-      push("order", D.order);
-      push("close", D.close);
+      // Parte 3: saca una bebida de la nevera, la cajera la escanea con la pistola, cobra, factura paso a paso,
+      // cuadra inventario, pide al proveedor y cierra caja.
+      const fr = fridgeSpot(L);
+      const toFridge: Pt[] = [
+        { x: 0.6 * m, z: 14.2 },
+        { x: rx + 1.6 * m, z: rz + 2.2 },
+        { x: rx - 1.5 * m, z: rz + 2.1 },
+        { x: fr.standX, z: fr.standZ },
+      ];
+      const c3: Pt = { x: rx + 1.0 * m, z: rz + 1.0 };
+      const toCounter: Pt[] = [{ x: fr.standX, z: fr.standZ }, { x: rx - 1.5 * m, z: rz + 1.9 }, { x: c3.x - 0.5 * m, z: rz + 1.5 }, c3];
+      this.h = -Math.PI / 2 * m;
+      push("to_fridge", pathLen(toFridge) / WALK, toFridge);
+      push("fridge", D.fridge);
+      push("to_counter", pathLen(toCounter) / WALK, toCounter);
+      push("scan", D.scan);
+      for (const p of ["pos", "fact", "cliente", "items", "dian", "files", "stock", "order", "close"] as TourPhase[]) push(p, D[p]);
       push("desk_end", 1e9);
+      // la recepcionista de la simulación cede su puesto a la cajera del recorrido
+      const staff = sim.members.find((mm) => mm.phase === "staff");
+      if (staff) staff.x = 900;
       this.active = true;
       this.t = 0;
       this.walk = 0;
@@ -216,6 +247,8 @@ export class Tour {
   stop() {
     if (this.sim) {
       this.sim.reserveGate(-1);
+      const staff = this.sim.members.find((mm) => mm.phase === "staff");
+      if (staff) staff.x = this.sim.layout.reception.x;
     }
     this.active = false;
     this.hold = false;

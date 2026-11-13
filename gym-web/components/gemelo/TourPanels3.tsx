@@ -5,8 +5,13 @@
  *  - Punto de venta (app/caja/page.tsx): buscador "Nombre, código o pistola…", carrito, Cobrar, forma de pago
  *    (efectivo · transferencia · tarjeta · mixto), A cobrar / Exacto, "Venta cobrada", "Cambio a devolver",
  *    "¿El cliente desea factura?".
- *  - Facturación DIAN (app/facturacion/page.tsx, bloque 07 Factura electrónica): ticket de hoy, datos del cliente,
- *    "Enviar factura a la DIAN", "Factura {consecutivo} aceptada." + CUFE (ambiente de habilitación en el demo).
+ *  - Venta: la bebida que Valentina sacó de la nevera entra por la pistola (lib/gemelo/sale.ts, mismo nombre, precio
+ *    y código del catálogo). Tras cobrar, "¿El cliente desea factura?" → "Sí, imprimir" imprime el ticket (formato
+ *    80 mm de imprimir(): VENTA n.º, renglones, "Total a pagar", pagos y cambio).
+ *  - Facturación DIAN (app/facturacion/page.tsx): 07 Factura electrónica → ticket de hoy, Tipo de documento, Número,
+ *    Nombre o razón social, Correo del cliente, Tipo de persona, Forma/Medio de pago; ítems del ticket con IVA
+ *    (0 %, 5 % o 19 %); "Enviar factura a la DIAN" → "Factura {consecutivo} aceptada." + CUFE, que se anota en la
+ *    venta (/api/facturacion/venta); 08 Archivos del motor: XML firmado y PDF. Ambiente de habilitación (demo).
  *  - Inventario (app/inventario) y Catálogo (app/productos: "Bajar todo" de bodega al gimnasio).
  *  - Pedidos (app/pedidos): compra al proveedor, "Crear pedido", "Recibir en bodega", "Entrada a bodega registrada.".
  *  - Cierre de caja (app/caja: Antes de cerrar, Se espera en la caja, Efectivo contado, Diferencia, Cerrar caja).
@@ -17,6 +22,7 @@ import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import { TOUR_PERSON, type Tour } from "../../lib/gemelo/tour";
+import { SALE_ITEM, cop } from "../../lib/gemelo/sale";
 
 const P = TOUR_PERSON;
 const show = (el: HTMLElement | null | undefined, v: boolean, disp = "") => {
@@ -28,10 +34,18 @@ function typed(s: string, t: number, t0: number, t1: number) {
   return s.slice(0, Math.floor(((t - t0) / (t1 - t0)) * s.length + 0.0001));
 }
 const fixedPos = (() => [0, 0]) as any;
-const PH: Record<string, string> = { pos: "Punto de venta", dian: "Facturación DIAN", stock: "Inventario", order: "Pedidos", close: "Punto de venta" };
+const PH: Record<string, string> = {
+  pos: "Punto de venta", fact: "Punto de venta", cliente: "Facturación DIAN", items: "Facturación DIAN", dian: "Facturación DIAN", files: "Facturación DIAN",
+  stock: "Inventario", order: "Pedidos", close: "Punto de venta",
+};
+const INV = ["fact", "cliente", "items", "dian", "files"];
 const CHIP: Record<string, string> = {
-  pos: "Caja: pistola, carrito y cobro",
-  dian: "Factura electrónica a la DIAN",
+  pos: "La pistola agrega la bebida y se cobra",
+  fact: "Factura 1/5 · ¿El cliente desea factura?",
+  cliente: "Factura 2/5 · Datos del cliente",
+  items: "Factura 3/5 · Ítems del ticket e IVA",
+  dian: "Factura 4/5 · Envío a la DIAN y CUFE",
+  files: "Factura 5/5 · XML firmado y PDF",
   stock: "Inventario de gimnasio y bodega",
   order: "Pedido al proveedor y entrada a bodega",
   close: "Cierre de caja: el conteo debe cuadrar",
@@ -74,49 +88,97 @@ export function CajaPanel({ tour }: { tour: Tour }) {
     el.style.transform = `translate(${tx}px,${ty + (1 - ie) * 120}px) translate(-50%,-50%) scale(${s * (0.92 + 0.08 * ie) * (0.985 + 0.015 * sw)})`;
     el.style.opacity = String(Math.min(1, ie * 1.3));
     const F = f.current;
-    for (const k of ["pos", "dian", "stock", "order", "close"]) show(F[k], k === ph, "block");
+    for (const k of ["pos", "stock", "order", "close"]) show(F[k], k === ph || (k === "pos" && ph === "fact"), "block");
+    show(F.inv, ph === "cliente" || ph === "items" || ph === "dian" || ph === "files", "block");
+    show(F.isteps, INV.includes(ph), "flex");
+    const ii = INV.indexOf(ph);
+    for (let i = 0; i < 5; i++) F[`is${i}`]!.className = i < ii ? "done" : i === ii ? "on" : "";
     F.mod!.textContent = PH[ph];
     if (F.chip) {
       show(F.chip, !ad, "block");
       F.chip.textContent = CHIP[ph];
     }
     if (ph === "pos") {
-      // 0-1.4 pistola · 1.6 añade · 2.6 toca tarjeta · 4.2 Cobrar · 5 cobro · 6.2 efectivo · 8.2 recibido · 10 Cobrar · 10.6 Venta cobrada · 13.2 factura
-      const scan = typed("7701001000081", t, 0.5, 1.3);
+      // la pistola ya leyó la bebida en el mostrador: el código entra al buscador y el renglón aparece en la cuenta
+      const scan = typed(SALE_ITEM.barcode, t, 0.2, 0.9);
       F.q!.textContent = scan || "Nombre, código o pistola…";
       F.q!.classList.toggle("gm-ph-holder", !scan);
-      F.q!.parentElement!.classList.toggle("gm-focus", t > 0.3 && t < 1.6);
-      show(F.l0, t > 1.5, "grid");
-      show(F.l1, t > 2.9, "grid");
-      F.card1!.classList.toggle("gm-tap2", t > 2.5 && t < 2.9);
-      show(F.empty, t <= 1.5, "block");
-      F.tot!.textContent = t > 2.9 ? "$14.400" : t > 1.5 ? "$5.500" : "$0";
-      F.cobrar!.textContent = t > 2.9 ? "Cobrar $14.400" : t > 1.5 ? "Cobrar $5.500" : "Cobrar";
-      F.cobrar!.classList.toggle("gm-press", t > 4.0 && t < 4.4);
-      const cobro = t > 4.6 && t < 10.6;
-      show(F.cart, t <= 4.6, "block");
-      show(F.cobro, cobro, "block");
-      show(F.done, t >= 10.6, "block");
-      F.mEf!.classList.toggle("on", t > 6.0);
-      show(F.ef, t > 6.0, "block");
-      const rec = typed("20000", t, 7.2, 8.0);
+      F.q!.parentElement!.classList.toggle("gm-focus", t < 1.1);
+      show(F.l0, t > 1.0, "grid");
+      show(F.empty, t <= 1.0, "block");
+      F.card0!.classList.toggle("gm-tap2", t > 0.9 && t < 1.4);
+      F.tot!.textContent = t > 1.0 ? cop(SALE_ITEM.price) : "$0";
+      F.cobrar!.textContent = t > 1.0 ? `Cobrar ${cop(SALE_ITEM.price)}` : "Cobrar";
+      F.cobrar!.classList.toggle("gm-press", t > 2.2 && t < 2.6);
+      show(F.cart, t <= 2.8, "block");
+      show(F.cobro, t > 2.8 && t < 7.2, "block");
+      show(F.done, t >= 7.2, "block");
+      F.mEf!.classList.toggle("on", t > 3.6);
+      show(F.ef, t > 3.6, "block");
+      const rec = typed("10000", t, 4.4, 5.2);
       F.rec!.textContent = rec ? `$${Number(rec).toLocaleString("es-CO")}` : " ";
-      F.recLine!.textContent = rec.length === 5 ? "A cobrar $14.400 · recibido $20.000 · cambio $5.600" : "A cobrar $14.400";
-      F.pay!.classList.toggle("gm-press", t > 9.9 && t < 10.3);
-      F.si!.classList.toggle("gm-press", t > 13.8 && t < 14.2);
-      show(F.preg, t < 14.2, "block");
-      show(F.printed, t >= 14.2, "block");
+      F.recLine!.textContent = rec.length === 5 ? `A cobrar ${cop(SALE_ITEM.price)} · recibido $10.000 · cambio ${cop(10000 - SALE_ITEM.price)}` : `A cobrar ${cop(SALE_ITEM.price)}`;
+      F.pay!.classList.toggle("gm-press", t > 6.6 && t < 7.0);
+      show(F.preg, false);
+      show(F.printed, false);
+      show(F.receipt, false);
+    }
+    if (ph === "fact") {
+      show(F.cart, false);
+      show(F.cobro, false);
+      show(F.done, true, "block");
+      F.si!.classList.toggle("gm-press", t > 2.0 && t < 2.4);
+      show(F.preg, t < 2.4, "block");
+      show(F.printed, t >= 2.4, "block");
+      show(F.receipt, t >= 2.4, "block");
+      if (F.receipt) F.receipt.style.opacity = String(Math.min(1, Math.max(0, (t - 2.4) / 0.5)));
+    }
+    if (ph === "cliente") {
+      show(F.vCli, true, "block");
+      show(F.vItems, false);
+      show(F.vSend, false);
+      show(F.vFiles, false);
+      F.tk!.classList.toggle("on", t > 0.8);
+      F.dTipo!.textContent = t > 1.2 ? "Cédula de ciudadanía" : " ";
+      F.dDoc!.textContent = typed(P.doc, t, 1.6, 2.4) || " ";
+      F.dNom!.textContent = typed(P.nombre, t, 2.6, 3.6) || " ";
+      F.dMail!.textContent = typed(P.email, t, 3.8, 4.8) || " ";
+      F.dPer!.textContent = t > 5.2 ? "Natural" : " ";
+      F.dForma!.textContent = t > 6.0 ? "Contado" : " ";
+      F.dMedio!.textContent = t > 6.4 ? "Efectivo" : " ";
+      const foc = t < 2.5 ? "dDoc" : t < 3.7 ? "dNom" : t < 4.9 ? "dMail" : t < 5.5 ? "dPer" : "dMedio";
+      for (const k of ["dDoc", "dNom", "dMail", "dPer", "dMedio"]) F[k]!.parentElement!.classList.toggle("gm-focus", k === foc && t > 1.4 && t < 6.9);
+    }
+    if (ph === "items") {
+      show(F.vCli, false);
+      show(F.vItems, true, "block");
+      show(F.vSend, false);
+      show(F.vFiles, false);
+      F.it0!.style.opacity = String(Math.min(1, Math.max(0, (t - 0.4) / 0.4)));
+      F.iva!.parentElement!.classList.toggle("gm-focus", t > 1.4 && t < 2.6);
+      F.iva!.classList.toggle("gm-tap2", t > 1.8 && t < 2.2);
+      show(F.sum, t > 2.6, "block");
     }
     if (ph === "dian") {
-      F.tk!.classList.toggle("on", t > 0.9);
-      F.dDoc!.textContent = typed(P.doc, t, 1.4, 2.2) || " ";
-      F.dNom!.textContent = typed(P.nombre, t, 2.3, 3.3) || " ";
-      F.dMail!.textContent = typed(P.email, t, 3.4, 4.4) || " ";
-      F.send!.classList.toggle("gm-press", t > 5.0 && t < 5.35);
-      F.send!.textContent = t > 5.35 && t < 6.4 ? "Enviando…" : "Enviar factura a la DIAN";
-      show(F.dOk, t >= 6.4, "block");
-      F.tkState!.textContent = t >= 6.4 ? "SETP990000142" : "Sin CUFE";
-      F.tkState!.classList.toggle("ok", t >= 6.4);
+      show(F.vCli, false);
+      show(F.vItems, false);
+      show(F.vSend, true, "block");
+      show(F.vFiles, false);
+      F.send!.classList.toggle("gm-press", t > 1.0 && t < 1.35);
+      F.send!.textContent = t > 1.35 && t < 3.0 ? "Enviando…" : "Enviar factura a la DIAN";
+      show(F.dOk, t >= 3.0, "block");
+      show(F.dCufe, t >= 4.2, "block");
+      F.tkState!.textContent = t >= 4.2 ? "SETP990000142" : "Sin CUFE";
+      F.tkState!.classList.toggle("ok", t >= 4.2);
+    }
+    if (ph === "files") {
+      show(F.vCli, false);
+      show(F.vItems, false);
+      show(F.vSend, false);
+      show(F.vFiles, true, "block");
+      F.xml!.classList.toggle("gm-press", t > 0.8 && t < 1.1);
+      F.pdf!.classList.toggle("gm-press", t > 1.5 && t < 1.8);
+      show(F.pdfDoc, t >= 1.8, "block");
     }
     if (ph === "stock") {
       for (let i = 0; i < 4; i++) {
@@ -171,62 +233,106 @@ export function CajaPanel({ tour }: { tour: Tour }) {
           <div ref={reg("cart")}>
             <div className="gm-co-field"><label>Buscar</label><div ref={reg("q")}>Nombre, código o pistola…</div></div>
             <div className="gm-cj-cards">
-              {[["Bebida isotónica 600 ml", "$5.500", "24"], ["Barra de proteína", "$8.900", "24"], ["Agua 600 ml", "$3.000", "18"], ["Whey protein 2 lb", "$189.000", "2"]].map(([n, p, q], i) => (
-                <div key={n} ref={i === 1 ? reg("card1") : undefined} className="gm-cj-card"><b>{n}</b><span>{p}</span><em>Gimnasio {q}</em></div>
+              {[["Bebida isotónica 600 ml", "$5.500", "24"], ["Barra de proteína", "$8.900", "24"], ["Agua 600 ml", "$3.000", "30"], ["Bebida energética", "$7.000", "12"]].map(([n, p, q], i) => (
+                <div key={n} ref={i === 0 ? reg("card0") : undefined} className="gm-cj-card"><b>{n}</b><span>{p}</span><em>Gimnasio {q}</em></div>
               ))}
             </div>
             <div className="gm-co-sec" style={{ marginTop: 10 }}>Cuenta</div>
             <div ref={reg("empty")} className="gm-co-tip" style={{ marginTop: 0 }}>Toque una tarjeta o pase la pistola.</div>
-            <div ref={reg("l0")} className="gm-cj-line" style={{ display: "none" }}><span>Bebida isotónica 600 ml</span><em>1 × $5.500</em><b>$5.500</b></div>
-            <div ref={reg("l1")} className="gm-cj-line" style={{ display: "none" }}><span>Barra de proteína</span><em>1 × $8.900</em><b>$8.900</b></div>
+            <div ref={reg("l0")} className="gm-cj-line" style={{ display: "none" }}><span>{SALE_ITEM.name}<br /><small style={{ opacity: 0.7 }}>{SALE_ITEM.barcode}</small></span><em>1 × {cop(SALE_ITEM.price)}</em><b>{cop(SALE_ITEM.price)}</b></div>
             <div className="gm-cj-total"><span>Total</span><b ref={reg("tot")}>$0</b></div>
             <div className="gm-co-row" style={{ justifyContent: "space-between" }}><span className="gm-co-btn">Dejar en espera (F8)</span><span ref={reg("cobrar")} className="gm-co-btn pri">Cobrar</span></div>
           </div>
           <div ref={reg("cobro")} style={{ display: "none" }}>
-            <div className="gm-cj-line"><span>Bebida isotónica 600 ml</span><em>1 × $5.500</em><b>$5.500</b></div>
-            <div className="gm-cj-line"><span>Barra de proteína</span><em>1 × $8.900</em><b>$8.900</b></div>
-            <div className="gm-cj-total"><span>Total</span><b>$14.400</b></div>
+            <div className="gm-cj-line"><span>{SALE_ITEM.name}</span><em>1 × {cop(SALE_ITEM.price)}</em><b>{cop(SALE_ITEM.price)}</b></div>
+            <div className="gm-cj-total"><span>Total</span><b>{cop(SALE_ITEM.price)}</b></div>
             <div className="gm-cj-modes"><span ref={reg("mEf")}>Efectivo</span><span>Transferencia</span><span>Tarjeta</span><span>Mixto</span></div>
             <div ref={reg("ef")} style={{ display: "none" }}>
               <div className="gm-co-field" style={{ marginTop: 10 }}><label>Recibido</label><div ref={reg("rec")}> </div></div>
-              <div ref={reg("recLine")} className="gm-co-tip">A cobrar $14.400</div>
-              <div className="gm-co-row"><span className="gm-co-btn">Exacto</span><span className="gm-co-btn">Borrar</span><span ref={reg("pay")} className="gm-co-btn pri" style={{ marginLeft: "auto" }}>Cobrar $14.400</span></div>
+              <div ref={reg("recLine")} className="gm-co-tip">A cobrar {cop(SALE_ITEM.price)}</div>
+              <div className="gm-co-row"><span className="gm-co-btn">Exacto</span><span className="gm-co-btn">Borrar</span><span ref={reg("pay")} className="gm-co-btn pri" style={{ marginLeft: "auto" }}>Cobrar {cop(SALE_ITEM.price)}</span></div>
             </div>
           </div>
           <div ref={reg("done")} style={{ display: "none" }}>
-            <div className="gm-co-msg ok"><b>Venta cobrada</b> · Ticket 142 · Efectivo $14.400</div>
-            <div className="gm-cj-change"><span>Cambio a devolver</span><b>$5.600</b></div>
-            <div ref={reg("preg")}>
+            <div className="gm-co-msg ok"><b>Venta cobrada</b> · Ticket 142 · Efectivo {cop(SALE_ITEM.price)}</div>
+            <div className="gm-cj-change"><span>Cambio a devolver</span><b>{cop(10000 - SALE_ITEM.price)}</b></div>
+            <div ref={reg("preg")} style={{ display: "none" }}>
               <p className="gm-cj-q">¿El cliente desea factura?</p>
               <div ref={reg("si")} className="gm-co-btn pri" style={{ textAlign: "center", padding: 12 }}>Sí, imprimir</div>
               <div className="gm-co-btn" style={{ textAlign: "center", marginTop: 8 }}>No, sin factura</div>
             </div>
-            <div ref={reg("printed")} className="gm-co-btn" style={{ display: "none", textAlign: "center", marginTop: 8 }}>Imprimir factura</div>
-            <div className="gm-co-btn pri" style={{ textAlign: "center", marginTop: 12, padding: 12 }}>Nueva venta</div>
+            <div ref={reg("receipt")} className="gm-cj-receipt" style={{ display: "none" }}>
+              <h4>VISIONYX</h4>
+              <div className="c">Norte</div>
+              <div className="m">VENTA 142</div>
+              <div className="c">12/11/2026, 6:05 p. m.</div>
+              <div style={{ borderTop: "1px solid #ddd", marginTop: 4, paddingTop: 4 }}><b>{SALE_ITEM.name}</b><div className="r"><span>1 × {cop(SALE_ITEM.price)}</span><span>{cop(SALE_ITEM.price)}</span></div></div>
+              <div className="t"><span>Total a pagar</span><b>{cop(SALE_ITEM.price)}</b></div>
+              <div className="r" style={{ marginTop: 4 }}><span>efectivo</span><span>$10.000</span></div>
+              <div style={{ fontWeight: 700, marginTop: 2 }}>Cambio {cop(10000 - SALE_ITEM.price)}</div>
+            </div>
+            <div ref={reg("printed")} className="gm-co-tip" style={{ display: "none" }}>Ticket impreso. La factura electrónica de esta venta se emite en Facturación DIAN · 07.</div>
           </div>
         </div>
-        {/* Facturación DIAN · 07 Factura electrónica */}
-        <div ref={reg("dian")} className="gm-co">
+        {/* Facturación DIAN · 07 Factura electrónica y 08 Archivos del motor */}
+        <div ref={reg("isteps")} className="gm-cj-steps" style={{ display: "none" }}>
+          {[0, 1, 2, 3, 4].map((i) => <i key={i} ref={reg(`is${i}`)} />)}
+        </div>
+        <div ref={reg("inv")} className="gm-co" style={{ display: "none" }}>
           <div className="gm-co-row" style={{ marginTop: 0, justifyContent: "space-between" }}>
             <div><div className="gm-co-sec" style={{ margin: 0 }}>07 · Factura electrónica</div><b className="text-white">VISIONYX Norte</b></div>
             <span className="gm-co-state">Ambiente: Habilitación</span>
           </div>
-          <div className="gm-co-tip">Elige un ticket de hoy o escribe el concepto. La venta queda en caja aunque la DIAN la rechace. El CUFE se anota solo si la acepta.</div>
-          <div ref={reg("tk")} className="gm-co-li" style={{ marginTop: 8 }}><b>Ticket 142 · $14.400 · Efectivo</b><span ref={reg("tkState")}>Sin CUFE</span></div>
-          <div className="gm-co-li"><b>Ticket 141 · $3.000 · Transferencia</b><span>Sin CUFE</span></div>
-          <div className="gm-co-mgrid" style={{ gridTemplateColumns: "1fr 1fr", marginTop: 8 }}>
-            <div className="gm-co-field"><label>Cédula</label><div ref={reg("dDoc")}> </div></div>
-            <div className="gm-co-field"><label>Nombre o razón social</label><div ref={reg("dNom")}> </div></div>
-            <div className="gm-co-field" style={{ gridColumn: "1 / -1" }}><label>Correo del cliente</label><div ref={reg("dMail")}> </div></div>
+          <div ref={reg("tk")} className="gm-co-li" style={{ marginTop: 8 }}><b>Ticket 142 · {cop(SALE_ITEM.price)} · Efectivo</b><span ref={reg("tkState")}>Sin CUFE</span></div>
+          <div ref={reg("vCli")}>
+            <div className="gm-co-mgrid gm-cj-cli" style={{ gridTemplateColumns: "1fr 1fr 1fr", marginTop: 8 }}>
+              <div className="gm-co-field"><label>Tipo de documento</label><div ref={reg("dTipo")}> </div></div>
+              <div className="gm-co-field" style={{ gridColumn: "span 2" }}><label>Número de documento</label><div ref={reg("dDoc")}> </div></div>
+              <div className="gm-co-field" style={{ gridColumn: "1 / -1" }}><label>Nombre o razón social</label><div ref={reg("dNom")}> </div></div>
+              <div className="gm-co-field" style={{ gridColumn: "1 / -1" }}><label>Correo del cliente</label><div ref={reg("dMail")}> </div></div>
+              <div className="gm-co-field"><label>Tipo de persona</label><div ref={reg("dPer")}> </div></div>
+              <div className="gm-co-field"><label>Forma de pago</label><div ref={reg("dForma")}> </div></div>
+              <div className="gm-co-field"><label>Medio de pago</label><div ref={reg("dMedio")}> </div></div>
+            </div>
           </div>
-          <div className="gm-co-row" style={{ justifyContent: "flex-end" }}><span ref={reg("send")} className="gm-co-btn pri">Enviar factura a la DIAN</span></div>
-          <div ref={reg("dOk")} className="gm-co-msg ok" style={{ display: "none" }}>Factura SETP990000142 aceptada.<br /><span style={{ fontSize: 11, opacity: 0.85 }}>CUFE {CUFE}</span></div>
+          <div ref={reg("vItems")} style={{ display: "none" }}>
+            <div className="gm-co-tip" style={{ marginBottom: 4 }}>Elige un ticket de hoy o escribe el concepto. La venta queda en caja aunque la DIAN la rechace. El CUFE se anota solo si la acepta.</div>
+            <div className="gm-co-tip">Los ítems salen del ticket de caja. El IVA se elige en la factura.</div>
+            <div className="gm-cj-th" style={{ gridTemplateColumns: "1fr 44px 84px 60px" }}><span>Descripción</span><span>Cant.</span><span>Precio unitario</span><span>IVA</span></div>
+            <div ref={reg("it0")} className="gm-cj-tr" style={{ gridTemplateColumns: "1fr 44px 84px 60px" }}><span>{SALE_ITEM.name}</span><b>1</b><b>{cop(SALE_ITEM.price)}</b><b>0 %</b></div>
+            <div className="gm-co-field" style={{ marginTop: 8 }}><label>IVA</label><div className="gm-cj-sel"><span ref={reg("iva")} className="on">0 %</span><span>5 %</span><span>19 %</span></div></div>
+            <div ref={reg("sum")} style={{ display: "none", marginTop: 6 }}>
+              {[["Subtotal", cop(SALE_ITEM.price)], ["IVA 0 %", "$0"], ["Total", cop(SALE_ITEM.price)]].map(([a, b]) => (
+                <div key={a} className="gm-cj-kv"><span>{a}</span><b>{b}</b></div>
+              ))}
+            </div>
+          </div>
+          <div ref={reg("vSend")} style={{ display: "none" }}>
+            <div className="gm-co-tip">{P.nombre} · CC {P.doc} · {P.email}<br />{SALE_ITEM.name} · 1 × {cop(SALE_ITEM.price)} · IVA 0 % · Total {cop(SALE_ITEM.price)} · Contado, efectivo</div>
+            <div className="gm-co-row" style={{ justifyContent: "flex-end" }}><span ref={reg("send")} className="gm-co-btn pri">Enviar factura a la DIAN</span></div>
+            <div ref={reg("dOk")} className="gm-co-msg ok" style={{ display: "none" }}>Factura SETP990000142 aceptada.<br /><span style={{ fontSize: 11, opacity: 0.85 }}>CUFE {CUFE}</span></div>
+            <div ref={reg("dCufe")} className="gm-co-tip" style={{ display: "none" }}>El CUFE quedó anotado en el ticket 142 de la caja.</div>
+          </div>
+          <div ref={reg("vFiles")} style={{ display: "none" }}>
+            <div className="gm-co-sec">08 · Archivos del motor</div>
+            <div className="gm-co-tip" style={{ marginTop: 0 }}>XML firmado y PDF del documento que el motor guardó para este NIT.</div>
+            <div className="gm-co-row"><span ref={reg("xml")} className="gm-co-btn">Descargar XML</span><span ref={reg("pdf")} className="gm-co-btn">Descargar PDF</span></div>
+            <div ref={reg("pdfDoc")} className="gm-cj-pdf" style={{ display: "none" }}>
+              <b>Factura electrónica de venta SETP990000142</b><br />
+              VISIONYX Norte · ambiente de habilitación (demo)<br />
+              Cliente: {P.nombre} · CC {P.doc}<br />
+              Correo: {P.email}<br />
+              {SALE_ITEM.name} · 1 × {cop(SALE_ITEM.price)} · IVA 0 %<br />
+              <b>Total {cop(SALE_ITEM.price)}</b> · Contado · Efectivo<br />
+              <span style={{ fontSize: 10, color: "#555" }}>CUFE {CUFE}</span>
+            </div>
+          </div>
         </div>
         {/* Inventario + Catálogo (bajar de bodega) */}
         <div ref={reg("stock")} className="gm-co">
           <div className="gm-co-tip" style={{ marginTop: 0 }}>Conteo de lo que está en el gimnasio y en bodega. Guardar un renglón reemplaza esas cantidades.</div>
           <div className="gm-cj-th"><span>Producto</span><span>Gimnasio</span><span>Bodega</span><span>Mínimo</span></div>
-          {[["Bebida isotónica 600 ml", "23", "24", "12"], ["Barra de proteína", "23", "16", "10"], ["Agua 600 ml", "g2", "b2", "20"], ["Whey protein 2 lb", "g3", "b3", "3"]].map(([n, g, b, m], i) => (
+          {[["Bebida isotónica 600 ml", "23", "24", "12"], ["Barra de proteína", "24", "16", "10"], ["Agua 600 ml", "g2", "b2", "20"], ["Whey protein 2 lb", "g3", "b3", "3"]].map(([n, g, b, m], i) => (
             <div key={n} ref={reg(`s${i}`)} className="gm-cj-tr">
               <span>{n}</span>
               {g.startsWith("g") ? <b ref={reg(g)}>{g}</b> : <b>{g}</b>}

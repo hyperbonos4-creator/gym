@@ -643,3 +643,27 @@ body {
 .gm-cj-kv b { color: #fff; }
 .gm-cj-kv.ok b { color: #22e0a1; font-size: 18px; }
 .gm-coach-p .gm-cj-th, .gm-coach-p .gm-cj-tr { grid-template-columns: 1fr 56px 52px 50px; }
+/* Parte 3 · muchos pasos: los que no están activos se ven como número */
+.gm-tourbar-steps.many { gap: 6px; }
+.gm-tourbar-steps.many span:not(.on) { font-size: 0; gap: 0; }
+/* Parte 3 · bip de la pistola lectora */
+.gm-cj-beep { padding: 6px 10px; border-radius: 10px; background: rgba(6, 20, 14, 0.9); border: 1px solid #22c55e; color: #bbf7d0; font: 600 12px/1.35 ui-monospace, monospace; white-space: nowrap; box-shadow: 0 0 18px rgba(34, 197, 94, 0.45); }
+.gm-cj-beep b { color: #4ade80; margin-right: 4px; }
+.gm-cj-beep span { display: block; font-family: Inter, Arial, sans-serif; color: #fff; font-size: 12px; }
+.gm-cj-steps { display: flex; gap: 4px; margin: 0 0 8px; }
+.gm-cj-steps i { flex: 1; height: 4px; border-radius: 4px; background: #23304d; }
+.gm-cj-steps i.on { background: #38bdf8; }
+.gm-cj-steps i.done { background: #22e0a1; }
+.gm-cj-receipt { margin: 8px auto 0; width: 230px; background: #fff; color: #111; border-radius: 4px; padding: 10px 12px; font: 12px/1.35 Arial, sans-serif; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+.gm-cj-receipt h4 { margin: 0; text-align: center; font-size: 15px; }
+.gm-cj-receipt .c { text-align: center; font-size: 10px; color: #444; }
+.gm-cj-receipt .m { text-align: center; font-family: ui-monospace, monospace; letter-spacing: .12em; }
+.gm-cj-receipt .r { display: flex; justify-content: space-between; }
+.gm-cj-receipt .t { display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #111; margin-top: 6px; padding-top: 6px; }
+.gm-cj-receipt .t b { font-size: 18px; }
+.gm-cj-pdf { margin-top: 8px; background: #fff; color: #111; border-radius: 6px; padding: 10px 12px; font: 11px/1.4 Arial, sans-serif; }
+.gm-cj-pdf b { font-size: 12px; }
+.gm-cj-sel { display: flex; gap: 6px; flex-wrap: wrap; }
+.gm-cj-sel span { padding: 3px 9px; border-radius: 8px; border: 1px solid #334155; color: #94a3b8; font-size: 11px; }
+.gm-cj-sel span.on { border-color: #38bdf8; color: #fff; background: rgba(56,189,248,.18); }
+.gm-coach-p .gm-cj-cli { grid-template-columns: 1fr 1fr !important; }
