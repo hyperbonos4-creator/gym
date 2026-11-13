@@ -620,6 +620,9 @@ export default function GemeloLanding({ contactUrl }: { contactUrl: string }) {
             <button onClick={() => startTour(false, 4)} className="gm-btn-ghost gm-btn-tour" disabled={!webgl}>
               ▶ Ver membresía vencida
             </button>
+            <button onClick={() => startTour(false, 5)} className="gm-btn-ghost gm-btn-tour" disabled={!webgl}>
+              ▶ Ver invitados
+            </button>
             <a href={contact} className="gm-btn-ghost">{contactLabel}</a>
           </div>
           <div className="gm-widgets">
