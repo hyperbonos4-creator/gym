@@ -12,8 +12,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Person, { type Look } from "./Person";
 import { P, cameraAt, carlosPose, dianaPose, mariaPose } from "../../lib/urban/tour";
+import { T_GRANT, cameraAt2, carlosPose2, kioskScreenPhase, mariaPose2, relayAt, turnstileAt } from "../../lib/urban/tour2";
 
-export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour" };
+export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour"; ch?: 1 | 2 };
+const isCh2 = (c: UrbanClock) => c.mode === "tour" && c.ch === 2;
 
 /* ---------- Geometría estática ---------- */
 type Box = { p: [number, number, number]; s: [number, number, number]; c: string; r?: number };
@@ -489,52 +491,140 @@ function Signs() {
   );
 }
 
-/** Pantalla del kiosko: textos de web/src/app/kiosk/page.tsx (fase SCANNING). */
-function KioskScreen() {
-  const tex = useMemo(
-    () =>
-      canvasTex(640, 460, (g) => {
-        g.fillStyle = "#05080f";
-        g.fillRect(0, 0, 640, 460);
-        g.fillStyle = "#0b1220";
-        g.fillRect(0, 0, 640, 76);
-        g.fillStyle = "#f8fafc";
-        g.font = "900 30px Inter, system-ui, sans-serif";
-        g.fillText("URBAN", 24, 40);
-        g.fillStyle = "rgba(255,255,255,0.4)";
-        g.font = "600 30px Inter, system-ui, sans-serif";
-        g.fillText("· Control de Acceso", 136, 40);
-        g.font = "500 18px Inter, system-ui, sans-serif";
-        g.fillStyle = "rgba(255,255,255,0.45)";
-        g.fillText("Peatonal principal · ", 24, 64);
-        g.fillStyle = "#34d399";
-        g.fillText("● SISTEMA EN VIVO", 196, 64);
-        // óvalo de cámara
-        g.strokeStyle = "#38bdf8";
-        g.lineWidth = 5;
-        g.beginPath();
-        g.ellipse(320, 210, 92, 112, 0, 0, Math.PI * 2);
-        g.stroke();
-        g.fillStyle = "#f8fafc";
-        g.textAlign = "center";
-        g.font = "800 34px Inter, system-ui, sans-serif";
-        g.fillText("Acérquese a la cámara", 320, 384);
-        g.fillStyle = "#94a3b8";
-        g.font = "500 22px Inter, system-ui, sans-serif";
-        g.fillText("Mire al frente. Buscando un rostro…", 320, 420);
-      }),
-    [],
-  );
+/** Pantalla del kiosko: textos de web/src/app/kiosk/page.tsx (SCANNING; en el capítulo 2 también GRANTED). */
+function kioskTex(phase: "SCANNING" | "GRANTED") {
+  return canvasTex(640, 460, (g) => {
+    const ok = phase === "GRANTED";
+    g.fillStyle = "#05080f";
+    g.fillRect(0, 0, 640, 460);
+    g.fillStyle = "#0b1220";
+    g.fillRect(0, 0, 640, 76);
+    g.fillStyle = "#f8fafc";
+    g.font = "900 30px Inter, system-ui, sans-serif";
+    g.fillText("URBAN", 24, 40);
+    g.fillStyle = "rgba(255,255,255,0.4)";
+    g.font = "600 30px Inter, system-ui, sans-serif";
+    g.fillText("· Control de Acceso", 136, 40);
+    g.font = "500 18px Inter, system-ui, sans-serif";
+    g.fillStyle = "rgba(255,255,255,0.45)";
+    g.fillText("Peatonal principal · ", 24, 64);
+    g.fillStyle = "#34d399";
+    g.fillText("● SISTEMA EN VIVO", 196, 64);
+    if (ok) {
+      g.fillStyle = "rgba(34,197,94,0.16)";
+      g.fillRect(0, 76, 640, 384);
+    }
+    g.strokeStyle = ok ? "#22c55e" : "#38bdf8";
+    g.lineWidth = 5;
+    g.beginPath();
+    g.ellipse(320, 210, 92, 112, 0, 0, Math.PI * 2);
+    g.stroke();
+    g.textAlign = "center";
+    if (ok) {
+      g.strokeStyle = "#4ade80";
+      g.lineWidth = 12;
+      g.lineCap = "round";
+      g.beginPath();
+      g.moveTo(272, 212);
+      g.lineTo(306, 246);
+      g.lineTo(372, 176);
+      g.stroke();
+      g.fillStyle = "#4ade80";
+      g.font = "900 34px Inter, system-ui, sans-serif";
+      g.fillText("Bienvenido, María Restrepo", 320, 378);
+      g.fillStyle = "#f8fafc";
+      g.font = "900 28px Inter, system-ui, sans-serif";
+      g.fillText("ACCESO CONCEDIDO", 320, 422);
+    } else {
+      g.fillStyle = "#f8fafc";
+      g.font = "800 34px Inter, system-ui, sans-serif";
+      g.fillText("Acérquese a la cámara", 320, 384);
+      g.fillStyle = "#94a3b8";
+      g.font = "500 22px Inter, system-ui, sans-serif";
+      g.fillText("Mire al frente. Buscando un rostro…", 320, 420);
+    }
+  });
+}
+function KioskScreen({ clock }: { clock: UrbanClock }) {
+  const scan = useMemo(() => kioskTex("SCANNING"), []);
+  const ok = useMemo(() => kioskTex("GRANTED"), []);
+  const mat = useRef<THREE.MeshBasicMaterial>(null!);
+  useFrame(() => {
+    const want = isCh2(clock) && kioskScreenPhase(clock.t) === "GRANTED" ? ok : scan;
+    if (mat.current && mat.current.map !== want) {
+      mat.current.map = want;
+      mat.current.needsUpdate = true;
+    }
+  });
   const [kx, kz] = P.kiosk;
   return (
     <mesh position={[kx - 0.95, 1.38, kz + 0.055]}>
       <planeGeometry args={[0.42, 0.3]} />
-      <meshBasicMaterial map={tex} toneMapped={false} />
+      <meshBasicMaterial ref={mat} map={scan} toneMapped={false} />
     </mesh>
   );
 }
 
 /** Monitores de la caseta (muro de cámaras, sin texto) y monitor de la oficina. */
+/** Monitor de la caseta con /guardstation/face-access (FaceAccessFeed) tras el evento del cap. 2. */
+function feedTex() {
+  return canvasTex(512, 300, (g) => {
+    g.fillStyle = "#0F172A";
+    g.fillRect(0, 0, 512, 300);
+    g.fillStyle = "#1E293B";
+    g.fillRect(0, 0, 96, 300);
+    for (let i = 0; i < 11; i++) {
+      g.fillStyle = i === 6 ? "rgba(59,130,246,0.45)" : "rgba(148,163,184,0.18)";
+      g.fillRect(10, 34 + i * 23, 76, 12);
+    }
+    g.fillStyle = "#1E293B";
+    g.fillRect(96, 0, 416, 34);
+    g.fillStyle = "#F1F5F9";
+    g.font = "700 22px Inter, system-ui, sans-serif";
+    g.fillText("Acceso facial", 116, 72);
+    g.fillStyle = "#22C55E";
+    g.font = "600 13px Inter, system-ui, sans-serif";
+    g.fillText("● En vivo", 116, 98);
+    g.fillStyle = "#1E293B";
+    g.fillRect(112, 114, 384, 64);
+    g.strokeStyle = "#22C55E";
+    g.lineWidth = 2;
+    g.strokeRect(112, 114, 384, 64);
+    g.fillStyle = "#0F172A";
+    g.fillRect(122, 126, 40, 40);
+    g.strokeStyle = "#22C55E";
+    g.lineWidth = 3;
+    g.beginPath();
+    g.moveTo(132, 146);
+    g.lineTo(140, 154);
+    g.lineTo(153, 138);
+    g.stroke();
+    g.fillStyle = "#F1F5F9";
+    g.font = "600 17px Inter, system-ui, sans-serif";
+    g.fillText("María Restrepo", 174, 141);
+    g.fillStyle = "#94A3B8";
+    g.font = "500 12px Inter, system-ui, sans-serif";
+    g.fillText("Identidad verificada · puerta abierta", 174, 162);
+    g.fillStyle = "#22C55E";
+    g.font = "700 13px Inter, system-ui, sans-serif";
+    g.fillText("CONCEDIDO", 404, 151);
+  });
+}
+function FeedMonitor({ clock }: { clock: UrbanClock }) {
+  const feed = useMemo(() => feedTex(), []);
+  const ref = useRef<THREE.Mesh>(null!);
+  useFrame(() => {
+    if (ref.current) ref.current.visible = isCh2(clock) && clock.t >= T_GRANT;
+  });
+  const [bx, bz] = P.booth;
+  return (
+    <mesh ref={ref} visible={false} position={[bx - 0.75, 1.36, bz + 1.345]} rotation={[0, Math.PI, 0]}>
+      <planeGeometry args={[1.17, 0.66]} />
+      <meshBasicMaterial map={feed} toneMapped={false} />
+    </mesh>
+  );
+}
+
 function Monitors() {
   const cams = useMemo(
     () =>
@@ -616,22 +706,117 @@ function Glass() {
   );
 }
 
-/** Brazos del torniquete (en el capítulo 1 queda en reposo; gira en el capítulo 2 con el relé). */
-function TurnstileArms() {
+/** Torniquete trípode: eje inclinado 45°, tres brazos a 120°. En reposo un brazo cierra el paso.
+ *  En el capítulo 2 el relé lo libera para un paso y gira 120° cuando María lo empuja. */
+const ARM_DIR = new THREE.Euler(0, 0, -Math.PI * 0.75);
+function TurnstileArms({ clock }: { clock: UrbanClock }) {
   const [tx, tz] = P.turnstile;
+  const spin = useRef<THREE.Group>(null!);
+  const led = useRef<THREE.MeshBasicMaterial>(null!);
+  const red = useMemo(() => new THREE.Color("#ef4444"), []);
+  const green = useMemo(() => new THREE.Color("#22C55E"), []);
+  useFrame(() => {
+    if (isCh2(clock)) {
+      const s = turnstileAt(clock.t);
+      spin.current.rotation.y = s.spin;
+      led.current.color.copy(s.unlocked ? green : red);
+    } else {
+      spin.current.rotation.y = 0;
+      led.current.color.copy(green);
+    }
+  });
   return (
-    <group position={[tx - 0.6, 0.95, tz]} rotation={[0, 0, 0]}>
-      {[0, 1, 2].map((i) => (
-        <group key={i} rotation={[(i * Math.PI * 2) / 3, 0, 0]}>
-          <mesh position={[0.32, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-            <cylinderGeometry args={[0.022, 0.022, 0.62, 10]} />
-            <meshStandardMaterial color="#e2e8f0" roughness={0.25} metalness={0.85} />
-          </mesh>
+    <group position={[tx - 0.62, 1.0, tz]}>
+      <mesh position={[0, 0.06, 0]}>
+        <boxGeometry args={[0.05, 0.05, 0.3]} />
+        <meshBasicMaterial ref={led} color="#22C55E" toneMapped={false} />
+      </mesh>
+      <group rotation={[0, 0, Math.PI / 4]}>
+        <mesh position={[0, 0.03, 0]}>
+          <cylinderGeometry args={[0.07, 0.08, 0.12, 16]} />
+          <meshStandardMaterial color="#cbd5e1" roughness={0.3} metalness={0.8} />
+        </mesh>
+        <group ref={spin} position={[0, 0.06, 0]}>
+          {[0, 1, 2].map((i) => (
+            <group key={i} rotation={[0, (i * Math.PI * 2) / 3, 0]}>
+              <group rotation={ARM_DIR}>
+                <mesh position={[0, 0.34, 0]}>
+                  <cylinderGeometry args={[0.022, 0.022, 0.62, 10]} />
+                  <meshStandardMaterial color="#e2e8f0" roughness={0.25} metalness={0.85} />
+                </mesh>
+              </group>
+            </group>
+          ))}
         </group>
-      ))}
-      <mesh position={[0, 0.12, 0]}>
-        <boxGeometry args={[0.04, 0.06, 0.3]} />
-        <meshBasicMaterial color="#22C55E" toneMapped={false} />
+      </group>
+    </group>
+  );
+}
+
+/** Relé del punto (capítulo 2): LED de salida, «clic» y pulso por el cable hacia el torniquete. */
+const CABLE: [number, number, number][] = [[-1.6, 1.3, 11.72], [-1.6, 0.2, 11.72], [-1.6, 0.04, 11.72], [-2.2, 0.04, 11.72], [-2.2, 0.5, 11.72]];
+function RelayFX({ clock }: { clock: UrbanClock }) {
+  const out = useRef<THREE.MeshBasicMaterial>(null!);
+  const halo = useRef<THREE.Mesh>(null!);
+  const ring = useRef<THREE.Mesh>(null!);
+  const dot = useRef<THREE.Mesh>(null!);
+  const lever = useRef<THREE.Mesh>(null!);
+  const off = useMemo(() => new THREE.Color("#3b2a14"), []);
+  const on = useMemo(() => new THREE.Color("#fbbf24"), []);
+  const segs = useMemo(() => {
+    const L: number[] = [0];
+    for (let i = 1; i < CABLE.length; i++) L.push(L[i - 1] + Math.hypot(CABLE[i][0] - CABLE[i - 1][0], CABLE[i][1] - CABLE[i - 1][1], CABLE[i][2] - CABLE[i - 1][2]));
+    return L;
+  }, []);
+  useFrame(() => {
+    const ch2 = isCh2(clock);
+    const r = ch2 ? relayAt(clock.t) : { on: 0, click: -1, signal: -1 };
+    out.current.color.copy(r.on ? on : off);
+    halo.current.visible = !!r.on;
+    lever.current.rotation.z = r.on ? -0.5 : 0.25;
+    ring.current.visible = r.click >= 0;
+    if (r.click >= 0) {
+      const k = r.click;
+      ring.current.scale.setScalar(0.4 + k * 2.4);
+      (ring.current.material as THREE.MeshBasicMaterial).opacity = 0.85 * (1 - k);
+    }
+    dot.current.visible = r.signal >= 0;
+    if (r.signal >= 0) {
+      const d = r.signal * segs[segs.length - 1];
+      let i = 1;
+      while (i < segs.length - 1 && d > segs[i]) i++;
+      const k = (d - segs[i - 1]) / (segs[i] - segs[i - 1]);
+      const A = CABLE[i - 1];
+      const B = CABLE[i];
+      dot.current.position.set(A[0] + (B[0] - A[0]) * k, A[1] + (B[1] - A[1]) * k, A[2] + (B[2] - A[2]) * k + 0.03);
+    }
+  });
+  return (
+    <group>
+      {/* ventana del relé con su contacto (palanca) */}
+      <mesh position={[-1.6, 1.33, 11.792]}>
+        <planeGeometry args={[0.15, 0.07]} />
+        <meshBasicMaterial color="#111827" toneMapped={false} />
+      </mesh>
+      <mesh ref={lever} position={[-1.6, 1.33, 11.796]}>
+        <planeGeometry args={[0.07, 0.012]} />
+        <meshBasicMaterial color="#e5e7eb" toneMapped={false} />
+      </mesh>
+      <mesh position={[-1.545, 1.55, 11.8]}>
+        <sphereGeometry args={[0.016, 8, 6]} />
+        <meshBasicMaterial ref={out} color="#3b2a14" toneMapped={false} />
+      </mesh>
+      <mesh ref={halo} position={[-1.545, 1.55, 11.81]} visible={false}>
+        <circleGeometry args={[0.05, 20]} />
+        <meshBasicMaterial color="#fbbf24" transparent opacity={0.35} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh ref={ring} position={[-1.6, 1.45, 11.81]} visible={false}>
+        <ringGeometry args={[0.06, 0.075, 32]} />
+        <meshBasicMaterial color="#fbbf24" transparent opacity={0.8} depthWrite={false} toneMapped={false} />
+      </mesh>
+      <mesh ref={dot} visible={false}>
+        <sphereGeometry args={[0.03, 10, 8]} />
+        <meshBasicMaterial color="#fde68a" toneMapped={false} />
       </mesh>
     </group>
   );
@@ -673,7 +858,7 @@ function CameraRig({ clock }: { clock: UrbanClock }) {
   useFrame((state, dt) => {
     const cam = camera as THREE.PerspectiveCamera;
     if (clock.mode === "tour") {
-      const s = cameraAt(clock.t, clock.mobile);
+      const s = clock.ch === 2 ? cameraAt2(clock.t, clock.mobile) : cameraAt(clock.t, clock.mobile);
       cam.position.set(s.p[0], s.p[1], s.p[2]);
       tgt.set(s.q[0], s.q[1], s.q[2]);
       cam.lookAt(tgt);
@@ -723,7 +908,8 @@ const LOOKS: Record<string, Look> = {
 
 function Scene({ clock, explore }: { clock: UrbanClock; explore: boolean }) {
   const S = useMemo(() => buildStatic(), []);
-  const maria = useMemo(() => (t: number) => mariaPose(t, clock.touring), [clock]);
+  const maria = useMemo(() => (t: number) => (isCh2(clock) ? mariaPose2(t) : mariaPose(t, clock.touring)), [clock]);
+  const carlos = useMemo(() => (t: number) => (isCh2(clock) ? carlosPose2(t) : carlosPose(t)), [clock]);
   const [lx, lz] = P.lobbyA;
   return (
     <>
@@ -746,12 +932,14 @@ function Scene({ clock, explore }: { clock: UrbanClock; explore: boolean }) {
       <Trees trees={S.trees} />
       <Domes blobs={S.blobs} />
       <Signs />
-      <KioskScreen />
+      <KioskScreen clock={clock} />
       <Monitors />
-      <TurnstileArms />
+      <FeedMonitor clock={clock} />
+      <TurnstileArms clock={clock} />
+      <RelayFX clock={clock} />
       <Glass />
       <Person look={LOOKS.maria} pose={maria} />
-      <Person look={LOOKS.carlos} pose={carlosPose} />
+      <Person look={LOOKS.carlos} pose={carlos} />
       <Person look={LOOKS.diana} pose={dianaPose} />
       <CameraRig clock={clock} />
       {explore && (
