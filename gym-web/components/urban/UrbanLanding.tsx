@@ -11,13 +11,16 @@ import { BEATS3, STEPS3, TOUR_END3, beatAt3, guardAt3, kioskAt3, type GuardView3
 import { GuardPanel3, KioskUI3 } from "./Screens3";
 import { BEATS4, STEPS4, TOUR_END4, beatAt4, guardAt4, phoneAt4, type GuardView4, type PhoneView4 } from "../../lib/urban/tour4";
 import { GuardPanel4, PhoneScreen4 } from "./Screens4";
+import { BEATS5, STEPS5, TOUR_END5, beatAt5, guardAt5, phoneAt5, type GuardView5, type PhoneView5 } from "../../lib/urban/tour5";
+import { GuardPanel5, PhoneScreen5 } from "./Screens5";
 
-type Ch = 1 | 2 | 3 | 4;
+type Ch = 1 | 2 | 3 | 4 | 5;
 const TOURS = {
   1: { BEATS, STEPS, END: TOUR_END, beatAt, title: "Verificación de identidad" },
   2: { BEATS: BEATS2, STEPS: STEPS2, END: TOUR_END2, beatAt: beatAt2, title: "Entra con su rostro" },
   3: { BEATS: BEATS3, STEPS: STEPS3, END: TOUR_END3, beatAt: beatAt3, title: "Cuando la puerta no abre" },
   4: { BEATS: BEATS4, STEPS: STEPS4, END: TOUR_END4, beatAt: beatAt4, title: "Invitados, sin códigos" },
+  5: { BEATS: BEATS5, STEPS: STEPS5, END: TOUR_END5, beatAt: beatAt5, title: "Un paquete en portería" },
 } as const;
 
 const UrbanWorld3D = dynamic(() => import("./UrbanWorld3D"), {
@@ -34,8 +37,8 @@ const CHAPTERS = [
   { n: 1, t: "Verificación de identidad", d: "María entra a la app con su correo, autoriza el tratamiento de sus datos (Ley 1581), fotografía su documento, supera la prueba de vida en vivo y la administración aprueba.", on: true },
   { n: 2, t: "Entra con su rostro", d: "El kiosko de la portería la reconoce, muestra ACCESO CONCEDIDO y el relé acciona el torniquete.", on: true },
   { n: 3, t: "Cuando la puerta no abre", d: "Una foto en un celular o un rostro desconocido: ACCESO DENEGADO y el torniquete sigue bloqueado. El celador verifica en persona, abre con el relé y queda registrado.", on: true },
-  { n: 4, t: "Invitados, sin códigos", d: "El residente invita desde la app, el celador autoriza el ingreso y el residente recibe una notificación cuando su invitado entra y sale.", on: true },
-  { n: 5, t: "Un paquete en portería", d: "El celador registra el paquete, al residente le llega «Tienes un paquete» y lo retira mostrando su documento." },
+  { n: 4, t: "Invitados, sin códigos", d: "El residente invita desde la app, el celador autoriza el ingreso, el relé abre la puerta y el residente recibe una notificación cuando su invitado entra y sale.", on: true },
+  { n: 5, t: "Un paquete en portería", d: "El celador registra el paquete, al residente le llega «Tienes un paquete» y lo retira mostrando su documento.", on: true },
   { n: 6, t: "La caseta en vivo", d: "Muro de cámaras, el televisor de la portería y la llamada de voz entre el celador y el residente." },
   { n: 7, t: "Administración", d: "Torres y apartamentos, padrón facial, aprobaciones, puntos de acceso y auditoría, desde el panel web." },
 ];
@@ -106,6 +109,7 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
     if (q.get("ch") === "2") setCh(2);
     if (q.get("ch") === "3") setCh(3);
     if (q.get("ch") === "4") setCh(4);
+    if (q.get("ch") === "5") setCh(5);
     if (q.get("tour") === "1") {
       const t = Number(q.get("t") || 0);
       tRef.current = Number.isFinite(t) ? t : 0;
@@ -208,6 +212,8 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
   const guard3: GuardView3 | null = mode === "tour" && ch === 3 ? guardAt3(t) : null;
   const phone4: PhoneView4 | null = mode === "tour" && ch === 4 ? phoneAt4(t) : null;
   const guard4: GuardView4 | null = mode === "tour" && ch === 4 ? guardAt4(t) : null;
+  const phone5: PhoneView5 | null = mode === "tour" && ch === 5 ? phoneAt5(t) : null;
+  const guard5: GuardView5 | null = mode === "tour" && ch === 5 ? guardAt5(t) : null;
   void tick;
 
   const full = mode !== "hero";
@@ -275,12 +281,13 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
             {mode === "explore" && <button className="ur-btn ur-btn-sm" onClick={() => startTour(2)}>▶ Capítulo 2</button>}
             {mode === "explore" && <button className="ur-btn ur-btn-sm" onClick={() => startTour(3)}>▶ Capítulo 3</button>}
             {mode === "explore" && <button className="ur-btn ur-btn-sm" onClick={() => startTour(4)}>▶ Capítulo 4</button>}
+            {mode === "explore" && <button className="ur-btn ur-btn-sm" onClick={() => startTour(5)}>▶ Capítulo 5</button>}
             <button className="ur-x" onClick={exit} aria-label="Salir">×</button>
           </div>
 
           {mode === "tour" && !ended && (
             <>
-              <div className={`ur-caption ${admin || guard || guard3 || guard4 ? "is-admin" : ""}`} key={`${ch}-${beat.id}`}>
+              <div className={`ur-caption ${admin || guard || guard3 || guard4 || guard5 ? "is-admin" : ""}`} key={`${ch}-${beat.id}`}>
                 <div className="ur-caption-k">Paso {beat.step + 1} de {TT.STEPS.length} · {TT.STEPS[beat.step]}</div>
                 <div className="ur-caption-t">{beat.title}</div>
                 <div className="ur-caption-d">{beat.text}</div>
@@ -323,6 +330,16 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
               {guard4 && (
                 <div className={`ur-admin-wrap ur-guard-wrap ${mobile ? "is-m" : ""}`} key={`g4-${guard4.page}`} style={{ ["--as" as any]: guardScale }}>
                   <GuardPanel4 v={guard4} compact={mobile} />
+                </div>
+              )}
+              {phone5 && (
+                <div className="ur-phone-wrap" key="ph5" style={{ ["--ps" as any]: phoneScale }}>
+                  <PhoneScreen5 v={phone5} />
+                </div>
+              )}
+              {guard5 && (
+                <div className={`ur-admin-wrap ur-guard-wrap ${mobile ? "is-m" : ""}`} key={`g5-${guard5.page}`} style={{ ["--as" as any]: guardScale }}>
+                  <GuardPanel5 v={guard5} compact={mobile} />
                 </div>
               )}
             </>
@@ -372,11 +389,24 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
               <img src="/brand/vx-icon-color.svg" alt="" />
               <div className="ur-end-k">Capítulo 4 completo</div>
               <h2>Sin códigos que compartir.</h2>
-              <p>María invita desde la app, Carlos verifica en persona y autoriza, y ella recibe un aviso cuando su invitado entra y cuando sale.</p>
+              <p>María invita desde la app, Carlos verifica en persona y autoriza, el relé abre la puerta solo si confirma, y ella recibe un aviso cuando su invitado entra y cuando sale.</p>
               <div className="ur-cta-row ur-center">
                 <a className="ur-btn" href={contact} target="_blank" rel="noopener noreferrer">Agendar demo de URBAN</a>
                 <button className="ur-btn-ghost" onClick={() => startTour(4)}>↺ Repetir</button>
-                <button className="ur-btn-ghost" disabled>Capítulo 5 · Próximamente</button>
+                <button className="ur-btn-ghost" onClick={() => startTour(5)}>Capítulo 5 · Un paquete en portería →</button>
+              </div>
+            </div>
+          )}
+          {mode === "tour" && ended && ch === 5 && (
+            <div className="ur-end">
+              <img src="/brand/vx-icon-color.svg" alt="" />
+              <div className="ur-end-k">Capítulo 5 completo</div>
+              <h2>Cada paquete, con dueño y con hora.</h2>
+              <p>Carlos lo registra en el Centro de Control, María recibe «Tienes un paquete» en la app y lo retira con su documento. La entrega queda registrada con la hora y a quién se entregó.</p>
+              <div className="ur-cta-row ur-center">
+                <a className="ur-btn" href={contact} target="_blank" rel="noopener noreferrer">Agendar demo de URBAN</a>
+                <button className="ur-btn-ghost" onClick={() => startTour(5)}>↺ Repetir</button>
+                <button className="ur-btn-ghost" disabled>Capítulo 6 · Próximamente</button>
               </div>
             </div>
           )}

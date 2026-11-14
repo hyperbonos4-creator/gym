@@ -12,14 +12,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Person, { type Look } from "./Person";
 import { P, cameraAt, carlosPose, dianaPose, mariaPose, type Pose } from "../../lib/urban/tour";
-import { andresPose4, cameraAt4, carlosPose4, mariaPose4, turnstileAt4 } from "../../lib/urban/tour4";
+import { andresPose4, cameraAt4, carlosPose4, mariaPose4, relayAt4, turnstileAt4 } from "../../lib/urban/tour4";
+import { boxAt5, cameraAt5, carlosPose5, courierPose5, idCardAt5, mariaPose5 } from "../../lib/urban/tour5";
 import { T_MANUAL, T_SPOOF, andresPose, cameraAt3, carlosPose3, kioskScreen3, relayAt3, spooferPose, turnstileAt3 } from "../../lib/urban/tour3";
 import { T_GRANT, cameraAt2, carlosPose2, kioskScreenPhase, mariaPose2, relayAt, turnstileAt } from "../../lib/urban/tour2";
 
-export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour"; ch?: 1 | 2 | 3 | 4 };
+export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour"; ch?: 1 | 2 | 3 | 4 | 5 };
 const isCh2 = (c: UrbanClock) => c.mode === "tour" && c.ch === 2;
 const isCh3 = (c: UrbanClock) => c.mode === "tour" && c.ch === 3;
 const isCh4 = (c: UrbanClock) => c.mode === "tour" && c.ch === 4;
+const isCh5 = (c: UrbanClock) => c.mode === "tour" && c.ch === 5;
 const FAR_POSE = (): Pose => ({ x: -1000, z: -1000, yaw: 0, walk: 0, phase: 0, phone: 0, selfie: 0, headYaw: 0, headPitch: 0, blink: 0, sit: 0, type: 0, wave: 0 });
 
 /* ---------- Geometría estática ---------- */
@@ -832,6 +834,9 @@ function TurnstileArms({ clock }: { clock: UrbanClock }) {
       const s = isCh4(clock) ? turnstileAt4(clock.t) : isCh3(clock) ? turnstileAt3(clock.t) : turnstileAt(clock.t);
       spin.current.rotation.y = s.spin;
       led.current.color.copy(s.unlocked ? green : red);
+    } else if (isCh5(clock)) {
+      spin.current.rotation.y = 0;
+      led.current.color.copy(red);
     } else {
       spin.current.rotation.y = 0;
       led.current.color.copy(green);
@@ -882,7 +887,7 @@ function RelayFX({ clock }: { clock: UrbanClock }) {
   }, []);
   useFrame(() => {
     const ch2 = isCh2(clock);
-    const r = ch2 ? relayAt(clock.t) : isCh3(clock) ? relayAt3(clock.t) : { on: 0, click: -1, signal: -1 };
+    const r = ch2 ? relayAt(clock.t) : isCh3(clock) ? relayAt3(clock.t) : isCh4(clock) ? relayAt4(clock.t) : { on: 0, click: -1, signal: -1 };
     out.current.color.copy(r.on ? on : off);
     halo.current.visible = !!r.on;
     lever.current.rotation.z = r.on ? -0.5 : 0.25;
@@ -970,7 +975,7 @@ function CameraRig({ clock }: { clock: UrbanClock }) {
   useFrame((state, dt) => {
     const cam = camera as THREE.PerspectiveCamera;
     if (clock.mode === "tour") {
-      const s = clock.ch === 4 ? cameraAt4(clock.t, clock.mobile) : clock.ch === 3 ? cameraAt3(clock.t, clock.mobile) : clock.ch === 2 ? cameraAt2(clock.t, clock.mobile) : cameraAt(clock.t, clock.mobile);
+      const s = clock.ch === 5 ? cameraAt5(clock.t, clock.mobile) : clock.ch === 4 ? cameraAt4(clock.t, clock.mobile) : clock.ch === 3 ? cameraAt3(clock.t, clock.mobile) : clock.ch === 2 ? cameraAt2(clock.t, clock.mobile) : cameraAt(clock.t, clock.mobile);
       cam.position.set(s.p[0], s.p[1], s.p[2]);
       tgt.set(s.q[0], s.q[1], s.q[2]);
       cam.lookAt(tgt);
@@ -1012,19 +1017,81 @@ function ClockDriver({ clock }: { clock: UrbanClock }) {
   return null;
 }
 
+
+/** Capítulo 5: la caja de Servientrega y la cédula que María muestra en la caseta. */
+function idTex() {
+  return canvasTex(256, 160, (g) => {
+    g.fillStyle = "#e8eef6";
+    g.fillRect(0, 0, 256, 160);
+    g.fillStyle = "#c8a24a";
+    g.fillRect(0, 0, 256, 26);
+    g.fillStyle = "#1e3a8a";
+    g.fillRect(0, 26, 256, 6);
+    g.fillStyle = "#c99572";
+    g.fillRect(16, 44, 70, 92);
+    g.fillStyle = "#2b1a12";
+    g.fillRect(16, 44, 70, 30);
+    g.fillStyle = "#94a3b8";
+    for (let i = 0; i < 5; i++) g.fillRect(100, 50 + i * 18, 130 - i * 14, 8);
+  });
+}
+function Props5({ clock }: { clock: UrbanClock }) {
+  const box = useRef<THREE.Group>(null!);
+  const card = useRef<THREE.Mesh>(null!);
+  const tex = useMemo(() => idTex(), []);
+  useFrame(() => {
+    const b = isCh5(clock) ? boxAt5(clock.t) : null;
+    box.current.visible = !!b;
+    if (b) {
+      box.current.position.set(b.x, b.y, b.z);
+      box.current.rotation.y = b.yaw;
+    }
+    const c = isCh5(clock) ? idCardAt5(clock.t) : null;
+    card.current.visible = !!c;
+    if (c) {
+      card.current.position.set(c.x, c.y, c.z);
+      card.current.rotation.set(0, c.yaw, 0);
+    }
+  });
+  return (
+    <group>
+      <group ref={box} visible={false}>
+        <mesh>
+          <boxGeometry args={[0.44, 0.3, 0.34]} />
+          <meshStandardMaterial color="#b08552" roughness={0.85} />
+        </mesh>
+        <mesh position={[0, 0.151, 0]}>
+          <boxGeometry args={[0.07, 0.004, 0.345]} />
+          <meshStandardMaterial color="#d8c39a" roughness={0.7} />
+        </mesh>
+        <mesh position={[0.1, 0.02, 0.171]}>
+          <planeGeometry args={[0.16, 0.1]} />
+          <meshStandardMaterial color="#f8fafc" roughness={0.6} />
+        </mesh>
+      </group>
+      <mesh ref={card} visible={false}>
+        <boxGeometry args={[0.15, 0.095, 0.004]} />
+        <meshBasicMaterial map={tex} toneMapped={false} />
+      </mesh>
+    </group>
+  );
+}
+
 const LOOKS: Record<string, Look> = {
   maria: { female: true, skin: "#c99572", hair: "#2b1a12", top: "#e2725b", legs: "#2f3d5c", shoes: "#f1f5f9", hairStyle: "pony" },
   carlos: { female: false, skin: "#9a6b4f", hair: "#1a1410", top: "#1e3a5f", legs: "#111827", shoes: "#111827", hairStyle: "cap", build: 0.55, badge: "#f59e0b" },
   andres: { female: false, skin: "#b98663", hair: "#1f1712", top: "#2f6f4e", legs: "#8b7a5e", shoes: "#3f3f46", hairStyle: "short", build: 0.4 },
   spoofer: { female: false, skin: "#8a6a55", hair: "#1c1c1c", top: "#374151", sleeves: "#374151", legs: "#1f2937", shoes: "#111827", hairStyle: "cap", build: 0.45 },
+  courier: { female: false, skin: "#a8775a", hair: "#1a1410", top: "#15803d", sleeves: "#15803d", legs: "#1f2937", shoes: "#111827", hairStyle: "cap", build: 0.5 },
   diana: { female: true, skin: "#e0b18f", hair: "#5a3a22", top: "#334155", sleeves: "#334155", legs: "#4b5563", shoes: "#1f2937", hairStyle: "bun" },
 };
 
 function Scene({ clock, explore }: { clock: UrbanClock; explore: boolean }) {
   const S = useMemo(() => buildStatic(), []);
-  const maria = useMemo(() => (t: number) => (isCh4(clock) ? mariaPose4(t) : isCh3(clock) ? FAR_POSE() : isCh2(clock) ? mariaPose2(t) : mariaPose(t, clock.touring)), [clock]);
-  const carlos = useMemo(() => (t: number) => (isCh4(clock) ? carlosPose4(t) : isCh3(clock) ? carlosPose3(t) : isCh2(clock) ? carlosPose2(t) : carlosPose(t)), [clock]);
+  const maria = useMemo(() => (t: number) => (isCh5(clock) ? mariaPose5(t) : isCh4(clock) ? mariaPose4(t) : isCh3(clock) ? FAR_POSE() : isCh2(clock) ? mariaPose2(t) : mariaPose(t, clock.touring)), [clock]);
+  const carlos = useMemo(() => (t: number) => (isCh5(clock) ? carlosPose5(t) : isCh4(clock) ? carlosPose4(t) : isCh3(clock) ? carlosPose3(t) : isCh2(clock) ? carlosPose2(t) : carlosPose(t)), [clock]);
   const andres = useMemo(() => (t: number) => (isCh4(clock) ? andresPose4(t) : isCh3(clock) ? andresPose(t) : FAR_POSE()), [clock]);
+  const courier = useMemo(() => (t: number) => (isCh5(clock) ? courierPose5(t) : FAR_POSE()), [clock]);
   const spooferLook = useMemo(() => ({ ...LOOKS.spoofer, photo: mariaPhotoTex() }), []);
   const spoofer = useMemo(() => (t: number) => (isCh3(clock) ? spooferPose(t) : FAR_POSE()), [clock]);
   const [lx, lz] = P.lobbyA;
@@ -1060,6 +1127,8 @@ function Scene({ clock, explore }: { clock: UrbanClock; explore: boolean }) {
       <Person look={LOOKS.diana} pose={dianaPose} />
       <Person look={LOOKS.andres} pose={andres} />
       <Person look={spooferLook} pose={spoofer} />
+      <Person look={LOOKS.courier} pose={courier} />
+      <Props5 clock={clock} />
       <CameraRig clock={clock} />
       {explore && (
         <OrbitControls

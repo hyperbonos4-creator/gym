@@ -10,9 +10,12 @@
  *    components/guard/PendingInvitationsList.tsx, InvitationDetailView.tsx, AuthorizeEntryButton.tsx
  *    («Permitir ingreso» → «¿Permitir ingreso?» → POST /visitors/invitations/:id/manual-verification;
  *    «Permitir salida» → POST /register-exit).
- *  - backend/src/modules/visitors/visitors.service.ts `authorizeManualVerification` (entryMethod
- *    INVITATION, status USED con maxUses 1, emite `door:opened` por websocket; NO llama al
- *    DoorController/relé) y services/visitors-notifier.service.ts (push FCM «Tu invitado ingresó» /
+ *  - backend/src/modules/visitors/visitors.service.ts `authorizeManualVerification` / `registerExit`
+ *    (entryMethod INVITATION, status USED con maxUses 1). Desde el fix `fix/visitor-relay-encoding`
+ *    ambos accionan el relé del Access_Point (VisitorDoorService → DoorControllerPort, el mismo del
+ *    acceso facial / «Abrir» manual) ANTES de registrar: si el relé no confirma → 503
+ *    «No se pudo abrir la puerta…» y no se registra; `door:opened` solo si abrió) y
+ *    services/visitors-notifier.service.ts (push FCM «Tu invitado ingresó» /
  *    «Tu invitado salió», hora HH:mm h23 en la zona del conjunto).
  */
 
@@ -28,10 +31,10 @@ export const BEATS4: Beat[] = [
   { id: "sent", t0: 16, t1: 23.5, step: 1, title: "Enviada a los celadores en turno", text: "Queda activa 30 minutos y aparece en «Ingresos». María sigue el estado en vivo, sin ningún código." },
   { id: "arrive", t0: 23.5, t1: 30, step: 2, title: "Andrés llega a portería", text: "No muestra nada en el celular: dice su nombre y a quién visita. Carlos lo encuentra en «Ingresos»." },
   { id: "detail", t0: 30, t1: 37.4, step: 2, title: "Carlos coteja los datos", text: "Nombre, documento, quién lo invitó y la ventana horaria. Si algo no coincide, puede «Denegar entrada» con un motivo." },
-  { id: "allow", t0: 37.4, t1: 42.4, step: 2, title: "«Permitir ingreso»", text: "Confirma, y la entrada queda en bitácora «Por invitación», a nombre de Carlos." },
-  { id: "pass", t0: 42.4, t1: 47.5, step: 2, title: "Carlos le da paso", text: "Ojo: este flujo registra el ingreso, pero en el código actual no acciona el relé. El torniquete lo libera el celador desde la caseta." },
+  { id: "allow", t0: 37.4, t1: 40.6, step: 2, title: "«Permitir ingreso»", text: "«Vas a abrir la puerta y registrar la entrada del visitante». Carlos confirma." },
+  { id: "pass", t0: 40.6, t1: 47.5, step: 2, title: "El relé abre el torniquete", text: "El backend acciona el relé del punto y solo si confirma registra la entrada «Por invitación», a nombre de Carlos. Si no abre, no se registra." },
   { id: "pushIn", t0: 47.5, t1: 53.5, step: 3, title: "«Tu invitado ingresó»", text: "Push al celular de María (FCM, no WhatsApp). En su app: «Visitante adentro · Autorizó Carlos Mendoza»." },
-  { id: "exit", t0: 53.5, t1: 60, step: 4, title: "Más tarde: «Permitir salida»", text: "Andrés se va. Carlos lo busca en «Salidas» y cierra su acceso; la invitación pasa al historial." },
+  { id: "exit", t0: 53.5, t1: 60, step: 4, title: "Más tarde: «Permitir salida»", text: "Andrés se va. Carlos lo busca en «Salidas» y confirma: el relé abre la salida y la invitación pasa al historial." },
   { id: "pushOut", t0: 60, t1: 66, step: 4, title: "«Tu invitado salió»", text: "Otro push con la hora y quién registró la salida. Todo queda en el historial de María y en la bitácora." },
 ];
 export const TOUR_END4 = 66;
@@ -41,7 +44,7 @@ export function beatAt4(t: number): number {
   return 0;
 }
 
-const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+export const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
 
 /* ---------- Tiempos ---------- */
 export const T_GEN = 15.6; // POST /visitors/invitations (16:52)
@@ -54,6 +57,18 @@ export const T_EXIT_ROW = 55.0;
 export const T_EXIT_BTN = 56.0;
 export const T_EXIT_CONFIRM = 57.5;
 export const T_EXIT = 58.0; // salida registrada · 19:24
+export const T_RELAY_IN = 40.9; // VisitorDoorService → door.open (ingreso)
+export const T_RELAY_OUT = 57.85; // VisitorDoorService → door.open (salida)
+
+/* ---------- Relé del punto (mismo efecto que el capítulo 2) ---------- */
+export function relayAt4(t: number) {
+  for (const T of [T_RELAY_IN, T_RELAY_OUT]) {
+    if (t >= T && t < T + 3.4) {
+      return { on: 1, click: t < T + 0.7 ? (t - T) / 0.7 : -1, signal: t < T + 1.6 ? (t - T) / 1.6 : -1 };
+    }
+  }
+  return { on: 0, click: -1, signal: -1 };
+}
 export const T_PUSH_OUT = 60.6;
 
 export const DATE4 = "2026-11-21";
@@ -122,7 +137,7 @@ export type GuardView4 =
   | { page: "access"; sel: boolean; press: number; dialog: boolean; confirm: boolean; busy: boolean; done: boolean; t: number }
   | { page: "exits"; sel: boolean; press: number; dialog: boolean; confirm: boolean; busy: boolean; done: boolean; t: number };
 export function guardAt4(t: number): GuardView4 | null {
-  if (t >= 27 && t < 42.4)
+  if (t >= 27 && t < 40.65)
     return {
       page: "access",
       sel: t >= T_ROW && t < T_ENTRY,
@@ -133,7 +148,7 @@ export function guardAt4(t: number): GuardView4 | null {
       done: t >= T_ENTRY,
       t,
     };
-  if (t >= 53.8 && t < 59.2)
+  if (t >= 53.8 && t < 57.75)
     return {
       page: "exits",
       sel: t >= T_EXIT_ROW && t < T_EXIT,
@@ -148,8 +163,8 @@ export function guardAt4(t: number): GuardView4 | null {
 }
 
 /* ---------- Caminos ---------- */
-type WP = { x: number; z: number; t: number };
-function along(path: WP[], t: number) {
+export type WP = { x: number; z: number; t: number };
+export function along(path: WP[], t: number) {
   if (t <= path[0].t) return { x: path[0].x, z: path[0].z, moving: false, yaw: Math.atan2(path[1].x - path[0].x, path[1].z - path[0].z), d: 0 };
   let d = 0;
   for (let i = 0; i < path.length - 1; i++) {
@@ -165,16 +180,16 @@ function along(path: WP[], t: number) {
   const E = path[path.length - 1];
   return { x: E.x, z: E.z, moving: false, yaw: NaN, d };
 }
-function angLerp(a: number, b: number, k: number) {
+export function angLerp(a: number, b: number, k: number) {
   let d = b - a;
   while (d > Math.PI) d -= Math.PI * 2;
   while (d < -Math.PI) d += Math.PI * 2;
   return a + d * k;
 }
-const base = (x: number, z: number, yaw: number): Pose => ({ x, z, yaw, walk: 0, phase: 0, phone: 0, selfie: 0, headYaw: 0, headPitch: 0, blink: 0, sit: 0, type: 0, wave: 0 });
-const FAR: Pose = base(-1000, -1000, 0);
-const blinkAt = (t: number, s: number) => ((t + s) % 3.9 < 0.12 ? 1 : 0);
-function walker(path: WP[], t: number, stillYaw: (t: number) => number) {
+export const base = (x: number, z: number, yaw: number): Pose => ({ x, z, yaw, walk: 0, phase: 0, phone: 0, selfie: 0, headYaw: 0, headPitch: 0, blink: 0, sit: 0, type: 0, wave: 0 });
+export const FAR: Pose = base(-1000, -1000, 0);
+export const blinkAt = (t: number, s: number) => ((t + s) % 3.9 < 0.12 ? 1 : 0);
+export function walker(path: WP[], t: number, stillYaw: (t: number) => number) {
   const s = 0.35;
   const yawS = (tt: number) => {
     const a = along(path, tt);
@@ -230,11 +245,11 @@ export function turnstileAt4(t: number) {
   if (t < 53.5) {
     const z = along(IN_PATH, t).z;
     const spin = t > 43 ? ss(11.95, 11.05, z) * ((Math.PI * 2) / 3) : 0;
-    return { spin, unlocked: t >= 42.6 && t < 46.4 };
+    return { spin, unlocked: t >= T_RELAY_IN + 0.25 && t < 46.4 };
   }
   const z = along(OUT_PATH, t).z;
   const spin = -ss(11.05, 11.95, z) * ((Math.PI * 2) / 3);
-  return { spin, unlocked: t >= T_EXIT + 0.1 && t < 60.4 };
+  return { spin, unlocked: t >= T_RELAY_OUT + 0.25 && t < 60.4 };
 }
 export function mariaPose4(t: number): Pose {
   const [mx, mz] = P.maria;
@@ -293,7 +308,7 @@ export function cameraAt4(t: number, mobile: boolean): Shot {
   if (t < 7) return mid(toMaria, medium, ss(5, 7, t));
   if (t < 23.5) return mid(medium, medium2, ss(7, 23.5, t));
   if (t < 27) return street;
-  if (t < 42.6) return mid(booth, { ...booth, p: [3.3, 2.0, 9.5] }, ss(27, 42.6, t));
+  if (t < 40.65) return mid(booth, { ...booth, p: [3.3, 2.0, 9.5] }, ss(27, 40.65, t));
   if (t < 46.6) return gateOpen;
   if (t < 47.5) return follow;
   if (t < 53.5) return meet;

@@ -21,7 +21,7 @@ const sv = (s: number, c: string, children: ReactNode) => (
     {children}
   </svg>
 );
-const I4 = {
+export const I4 = {
   plus: ({ s = 20, c = "currentColor" }: IP) => sv(s, c, <path d="M12 5v14M5 12h14" />),
   chev: ({ s = 20, c = "currentColor" }: IP) => sv(s, c, <path d="m9 6 6 6-6 6" />),
   person: ({ s = 18, c = "currentColor" }: IP) => sv(s, c, <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>),
@@ -46,27 +46,27 @@ const I4 = {
 };
 
 /* ======================= App del residente ======================= */
-function Avatar({ t, size = 44 }: { t: string; size?: number }) {
+export function Avatar({ t, size = 44 }: { t: string; size?: number }) {
   return (
     <span className="u4-av" style={{ width: size, height: size, fontSize: size * 0.36 }}>
       {t}
     </span>
   );
 }
-function Badge({ l, c }: { l: string; c: string }) {
+export function Badge({ l, c }: { l: string; c: string }) {
   return (
     <span className="u4-badge" style={{ color: c, background: `${c}26`, borderColor: `${c}55` }}>
       {l}
     </span>
   );
 }
-const BLUE = "#3B82F6";
-const INFO = "#38BDF8";
-const OK = "#22C55E";
-const WARN = "#F59E0B";
-const MUTED = "#64748B";
+export const BLUE = "#3B82F6";
+export const INFO = "#38BDF8";
+export const OK = "#22C55E";
+export const WARN = "#F59E0B";
+export const MUTED = "#64748B";
 
-function Notif({ k, title, body }: { k: number; title: string; body: string }) {
+export function Notif({ k, title, body }: { k: number; title: string; body: string }) {
   if (k <= 0) return null;
   return (
     <div className="ua-notif u4-notif" style={{ transform: `translateY(${(1 - k) * -180}px)`, opacity: Math.min(1, k * 1.6) }}>
@@ -79,17 +79,18 @@ function Notif({ k, title, body }: { k: number; title: string; body: string }) {
   );
 }
 
-function ShellNav() {
+export function ShellNav({ on = 1 }: { on?: number } = {}) {
+  const c = (i: number) => (i === on ? "#F1F5F9" : "#94A3B8");
   return (
     <div className="ua-nav">
       {[
-        ["Inicio", <I.home key="h" c="#94A3B8" />],
-        ["Invitaciones", <I.qr key="q" s={22} c="#F1F5F9" />],
-        ["Portería", <I.forum key="f" c="#94A3B8" />],
-        ["Paquetes", <I.box key="b" s={22} c="#94A3B8" />],
-        ["Perfil", <I.person key="p" c="#94A3B8" />],
+        ["Inicio", <I.home key="h" c={c(0)} />],
+        ["Invitaciones", <I.qr key="q" s={22} c={c(1)} />],
+        ["Portería", <I.forum key="f" c={c(2)} />],
+        ["Paquetes", <I.box key="b" s={22} c={c(3)} />],
+        ["Perfil", <I.person key="p" c={c(4)} />],
       ].map(([l, ic], i) => (
-        <div key={String(l)} className={`ua-nav-i ${i === 1 ? "on" : ""}`}>
+        <div key={String(l)} className={`ua-nav-i ${i === on ? "on" : ""}`}>
           <span className="ua-nav-pill">{ic}</span>
           <span>{l}</span>
         </div>
@@ -301,7 +302,7 @@ export function PhoneScreen4({ v }: { v: PhoneView4 }) {
 }
 
 /* ======================= Centro de control ======================= */
-function GBadge({ l, c, ic }: { l: string; c: string; ic?: ReactNode }) {
+export function GBadge({ l, c, ic }: { l: string; c: string; ic?: ReactNode }) {
   return (
     <span className="u4-gb" style={{ color: c, background: `${c}26` }}>
       {ic}
@@ -309,7 +310,7 @@ function GBadge({ l, c, ic }: { l: string; c: string; ic?: ReactNode }) {
     </span>
   );
 }
-function GField({ ic, l, v }: { ic?: ReactNode; l: string; v: string }) {
+export function GField({ ic, l, v }: { ic?: ReactNode; l: string; v: string }) {
   return (
     <div className="u4-gf">
       <p className="u4-gf-l">{ic}{l}</p>
