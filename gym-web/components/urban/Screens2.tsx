@@ -21,7 +21,7 @@ const sv = (s: number, c: string, children: ReactNode, sw = 2) => (
   </svg>
 );
 type IP = { s?: number; c?: string };
-const L = {
+export const L = {
   scanFace: ({ s = 24, c = "currentColor" }: IP) => sv(s, c, <><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2" /><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01" /></>),
   shieldCheck: ({ s = 24, c = "currentColor" }: IP) => sv(s, c, <><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /><path d="m9 12 2 2 4-4" /></>),
   check2: ({ s = 18, c = "currentColor" }: IP) => sv(s, c, <><circle cx="12" cy="12" r="10" /><path d="m9 12 2 2 4-4" /></>),
@@ -193,7 +193,7 @@ export function KioskUI({ v, t, compact }: { v: KioskView; t: number; compact: b
 }
 
 /* =================== Centro de control · Acceso facial =================== */
-const GNAV: [string, (p: IP) => JSX.Element, string?][] = [
+export const GNAV: [string, (p: IP) => JSX.Element, string?][] = [
   ["Dashboard", L.grid],
   ["Registrar visitante", L.userPlus, "ok"],
   ["Comunicados", L.megaphone],

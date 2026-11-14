@@ -7,11 +7,14 @@ import type { UrbanClock } from "./UrbanWorld3D";
 import { AdminPanel, PhoneScreen } from "./Screens";
 import { BEATS2, STEPS2, TOUR_END2, beatAt2, guardAt, kioskAt, type GuardView, type KioskView } from "../../lib/urban/tour2";
 import { GuardPanel, KioskUI } from "./Screens2";
+import { BEATS3, STEPS3, TOUR_END3, beatAt3, guardAt3, kioskAt3, type GuardView3, type KioskView3 } from "../../lib/urban/tour3";
+import { GuardPanel3, KioskUI3 } from "./Screens3";
 
-type Ch = 1 | 2;
+type Ch = 1 | 2 | 3;
 const TOURS = {
   1: { BEATS, STEPS, END: TOUR_END, beatAt, title: "Verificación de identidad" },
   2: { BEATS: BEATS2, STEPS: STEPS2, END: TOUR_END2, beatAt: beatAt2, title: "Entra con su rostro" },
+  3: { BEATS: BEATS3, STEPS: STEPS3, END: TOUR_END3, beatAt: beatAt3, title: "Cuando la puerta no abre" },
 } as const;
 
 const UrbanWorld3D = dynamic(() => import("./UrbanWorld3D"), {
@@ -27,7 +30,7 @@ const UrbanWorld3D = dynamic(() => import("./UrbanWorld3D"), {
 const CHAPTERS = [
   { n: 1, t: "Verificación de identidad", d: "María entra a la app con su correo, autoriza el tratamiento de sus datos (Ley 1581), fotografía su documento, supera la prueba de vida en vivo y la administración aprueba.", on: true },
   { n: 2, t: "Entra con su rostro", d: "El kiosko de la portería la reconoce, muestra ACCESO CONCEDIDO y el relé acciona el torniquete.", on: true },
-  { n: 3, t: "Cuando la puerta no abre", d: "Persona desconocida, posible suplantación o sin autorización: ACCESO DENEGADO. El celador puede abrir a mano y queda registrado." },
+  { n: 3, t: "Cuando la puerta no abre", d: "Persona desconocida, posible suplantación o sin autorización: ACCESO DENEGADO. El celador puede abrir a mano y queda registrado.", on: true },
   { n: 4, t: "Invitados", d: "El residente invita desde la app, el celador autoriza el ingreso y el residente recibe una notificación cuando su invitado entra y sale." },
   { n: 5, t: "Un paquete en portería", d: "El celador registra el paquete, al residente le llega «Tienes un paquete» y lo retira mostrando su documento." },
   { n: 6, t: "La caseta en vivo", d: "Muro de cámaras, el televisor de la portería y la llamada de voz entre el celador y el residente." },
@@ -98,6 +101,7 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
     const q = new URLSearchParams(window.location.search);
     if (q.get("capture") === "1") setCapture(true);
     if (q.get("ch") === "2") setCh(2);
+    if (q.get("ch") === "3") setCh(3);
     if (q.get("tour") === "1") {
       const t = Number(q.get("t") || 0);
       tRef.current = Number.isFinite(t) ? t : 0;
@@ -135,13 +139,13 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
       prev = now;
       if (playing && !ended) {
         tRef.current += dt;
-        if (tRef.current >= TOURS[clock.ch === 2 ? 2 : 1].END) {
-          tRef.current = TOURS[clock.ch === 2 ? 2 : 1].END;
+        if (tRef.current >= TOURS[(clock.ch ?? 1) as Ch].END) {
+          tRef.current = TOURS[(clock.ch ?? 1) as Ch].END;
           setEnded(true);
         }
       }
       clock.t = tRef.current;
-      if (progRef.current) progRef.current.style.width = `${(tRef.current / TOURS[clock.ch === 2 ? 2 : 1].END) * 100}%`;
+      if (progRef.current) progRef.current.style.width = `${(tRef.current / TOURS[(clock.ch ?? 1) as Ch].END) * 100}%`;
       const key = (tRef.current * 20) | 0;
       if (String(key) !== lastKey.current) {
         lastKey.current = String(key);
@@ -164,7 +168,7 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
   }, [clock]);
   const seek = useCallback(
     (t: number) => {
-      tRef.current = Math.max(0, Math.min(TOURS[clock.ch === 2 ? 2 : 1].END - 0.01, t));
+      tRef.current = Math.max(0, Math.min(TOURS[(clock.ch ?? 1) as Ch].END - 0.01, t));
       clock.t = tRef.current;
       setEnded(false);
       setTick((x) => x + 1);
@@ -196,6 +200,8 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
   const admin: AdminView | null = mode === "tour" && ch === 1 ? adminAt(t) : null;
   const kiosk: KioskView | null = mode === "tour" && ch === 2 ? kioskAt(t) : null;
   const guard: GuardView | null = mode === "tour" && ch === 2 ? guardAt(t) : null;
+  const kiosk3: KioskView3 | null = mode === "tour" && ch === 3 ? kioskAt3(t) : null;
+  const guard3: GuardView3 | null = mode === "tour" && ch === 3 ? guardAt3(t) : null;
   void tick;
 
   const full = mode !== "hero";
@@ -261,12 +267,13 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
             <span style={{ flex: 1 }} />
             {mode === "explore" && <button className="ur-btn ur-btn-sm" onClick={() => startTour(1)}>▶ Capítulo 1</button>}
             {mode === "explore" && <button className="ur-btn ur-btn-sm" onClick={() => startTour(2)}>▶ Capítulo 2</button>}
+            {mode === "explore" && <button className="ur-btn ur-btn-sm" onClick={() => startTour(3)}>▶ Capítulo 3</button>}
             <button className="ur-x" onClick={exit} aria-label="Salir">×</button>
           </div>
 
           {mode === "tour" && !ended && (
             <>
-              <div className={`ur-caption ${admin || guard ? "is-admin" : ""}`} key={`${ch}-${beat.id}`}>
+              <div className={`ur-caption ${admin || guard || guard3 ? "is-admin" : ""}`} key={`${ch}-${beat.id}`}>
                 <div className="ur-caption-k">Paso {beat.step + 1} de {TT.STEPS.length} · {TT.STEPS[beat.step]}</div>
                 <div className="ur-caption-t">{beat.title}</div>
                 <div className="ur-caption-d">{beat.text}</div>
@@ -289,6 +296,16 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
               {guard && (
                 <div className={`ur-admin-wrap ur-guard-wrap ${mobile ? "is-m" : ""}`} style={{ ["--as" as any]: guardScale }}>
                   <GuardPanel v={guard} t={t} compact={mobile} />
+                </div>
+              )}
+              {kiosk3 && (
+                <div className="ur-kiosk-wrap" style={{ ["--ks" as any]: kioskScale }}>
+                  <KioskUI3 v={kiosk3} t={t} compact={mobile} />
+                </div>
+              )}
+              {guard3 && (
+                <div className={`ur-admin-wrap ur-guard-wrap ${mobile ? "is-m" : ""}`} style={{ ["--as" as any]: guardScale }}>
+                  <GuardPanel3 v={guard3} t={t} compact={mobile} />
                 </div>
               )}
             </>
@@ -316,7 +333,20 @@ export default function UrbanLanding({ contactUrl }: { contactUrl: string }) {
               <div className="ur-cta-row ur-center">
                 <a className="ur-btn" href={contact} target="_blank" rel="noopener noreferrer">Agendar demo de URBAN</a>
                 <button className="ur-btn-ghost" onClick={() => startTour(2)}>↺ Repetir</button>
-                <button className="ur-btn-ghost" disabled>Capítulo 3 · Próximamente</button>
+                <button className="ur-btn-ghost" onClick={() => startTour(3)}>Capítulo 3 · Cuando la puerta no abre →</button>
+              </div>
+            </div>
+          )}
+          {mode === "tour" && ended && ch === 3 && (
+            <div className="ur-end">
+              <img src="/brand/vx-icon-color.svg" alt="" />
+              <div className="ur-end-k">Capítulo 3 completo</div>
+              <h2>Si algo no cuadra, no abre.</h2>
+              <p>Una foto no pasa, un rostro desconocido tampoco. El celador decide con su autorización y cada apertura queda registrada con su motivo.</p>
+              <div className="ur-cta-row ur-center">
+                <a className="ur-btn" href={contact} target="_blank" rel="noopener noreferrer">Agendar demo de URBAN</a>
+                <button className="ur-btn-ghost" onClick={() => startTour(3)}>↺ Repetir</button>
+                <button className="ur-btn-ghost" disabled>Capítulo 4 · Próximamente</button>
               </div>
             </div>
           )}

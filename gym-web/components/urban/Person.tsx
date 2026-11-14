@@ -28,6 +28,8 @@ export type Look = {
   build?: number;
   sleeves?: string;
   badge?: string;
+  /** Foto mostrada hacia afuera en el reverso del celular (capítulo 3: suplantación). */
+  photo?: THREE.Texture;
 };
 
 let GEO: Record<string, THREE.BufferGeometry> | null = null;
@@ -225,6 +227,12 @@ export default function Person({ look, pose }: { look: Look; pose: (t: number) =
                     <group ref={R.phone} position={[0, -FARM - 0.05, 0.02]}>
                       <mesh geometry={G.phone} material={M.phone} />
                       <mesh geometry={G.screen} material={M.screen} position={[0, 0.0055, 0]} />
+                      {look.photo && (
+                        <mesh position={[0, -0.0056, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                          <planeGeometry args={[0.068, 0.142]} />
+                          <meshBasicMaterial map={look.photo} toneMapped={false} />
+                        </mesh>
+                      )}
                     </group>
                   )}
                 </group>

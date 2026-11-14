@@ -11,11 +11,14 @@ import { OrbitControls, PerformanceMonitor } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Person, { type Look } from "./Person";
-import { P, cameraAt, carlosPose, dianaPose, mariaPose } from "../../lib/urban/tour";
+import { P, cameraAt, carlosPose, dianaPose, mariaPose, type Pose } from "../../lib/urban/tour";
+import { T_MANUAL, T_SPOOF, andresPose, cameraAt3, carlosPose3, kioskScreen3, relayAt3, spooferPose, turnstileAt3 } from "../../lib/urban/tour3";
 import { T_GRANT, cameraAt2, carlosPose2, kioskScreenPhase, mariaPose2, relayAt, turnstileAt } from "../../lib/urban/tour2";
 
-export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour"; ch?: 1 | 2 };
+export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour"; ch?: 1 | 2 | 3 };
 const isCh2 = (c: UrbanClock) => c.mode === "tour" && c.ch === 2;
+const isCh3 = (c: UrbanClock) => c.mode === "tour" && c.ch === 3;
+const FAR_POSE = (): Pose => ({ x: -1000, z: -1000, yaw: 0, walk: 0, phase: 0, phone: 0, selfie: 0, headYaw: 0, headPitch: 0, blink: 0, sit: 0, type: 0, wave: 0 });
 
 /* ---------- Geometría estática ---------- */
 type Box = { p: [number, number, number]; s: [number, number, number]; c: string; r?: number };
@@ -492,9 +495,10 @@ function Signs() {
 }
 
 /** Pantalla del kiosko: textos de web/src/app/kiosk/page.tsx (SCANNING; en el capítulo 2 también GRANTED). */
-function kioskTex(phase: "SCANNING" | "GRANTED") {
+function kioskTex(phase: "SCANNING" | "GRANTED" | "DENIED", reason = "") {
   return canvasTex(640, 460, (g) => {
     const ok = phase === "GRANTED";
+    const no = phase === "DENIED";
     g.fillStyle = "#05080f";
     g.fillRect(0, 0, 640, 460);
     g.fillStyle = "#0b1220";
@@ -510,11 +514,11 @@ function kioskTex(phase: "SCANNING" | "GRANTED") {
     g.fillText("Peatonal principal · ", 24, 64);
     g.fillStyle = "#34d399";
     g.fillText("● SISTEMA EN VIVO", 196, 64);
-    if (ok) {
-      g.fillStyle = "rgba(34,197,94,0.16)";
+    if (ok || no) {
+      g.fillStyle = ok ? "rgba(34,197,94,0.16)" : "rgba(239,68,68,0.16)";
       g.fillRect(0, 76, 640, 384);
     }
-    g.strokeStyle = ok ? "#22c55e" : "#38bdf8";
+    g.strokeStyle = ok ? "#22c55e" : no ? "#ef4444" : "#38bdf8";
     g.lineWidth = 5;
     g.beginPath();
     g.ellipse(320, 210, 92, 112, 0, 0, Math.PI * 2);
@@ -535,6 +539,22 @@ function kioskTex(phase: "SCANNING" | "GRANTED") {
       g.fillStyle = "#f8fafc";
       g.font = "900 28px Inter, system-ui, sans-serif";
       g.fillText("ACCESO CONCEDIDO", 320, 422);
+    } else if (no) {
+      g.strokeStyle = "#f87171";
+      g.lineWidth = 12;
+      g.lineCap = "round";
+      g.beginPath();
+      g.moveTo(286, 176);
+      g.lineTo(354, 244);
+      g.moveTo(354, 176);
+      g.lineTo(286, 244);
+      g.stroke();
+      g.fillStyle = "#f87171";
+      g.font = "900 34px Inter, system-ui, sans-serif";
+      g.fillText("Acceso denegado", 320, 378);
+      g.fillStyle = "#f8fafc";
+      g.font = "600 24px Inter, system-ui, sans-serif";
+      g.fillText(reason, 320, 420);
     } else {
       g.fillStyle = "#f8fafc";
       g.font = "800 34px Inter, system-ui, sans-serif";
@@ -548,9 +568,12 @@ function kioskTex(phase: "SCANNING" | "GRANTED") {
 function KioskScreen({ clock }: { clock: UrbanClock }) {
   const scan = useMemo(() => kioskTex("SCANNING"), []);
   const ok = useMemo(() => kioskTex("GRANTED"), []);
+  const spoof = useMemo(() => kioskTex("DENIED", "Posible suplantación (liveness)"), []);
+  const unk = useMemo(() => kioskTex("DENIED", "Persona desconocida"), []);
   const mat = useRef<THREE.MeshBasicMaterial>(null!);
   useFrame(() => {
-    const want = isCh2(clock) && kioskScreenPhase(clock.t) === "GRANTED" ? ok : scan;
+    const k3 = isCh3(clock) ? kioskScreen3(clock.t) : "SCANNING";
+    const want = isCh2(clock) && kioskScreenPhase(clock.t) === "GRANTED" ? ok : k3 === "SPOOF" ? spoof : k3 === "UNKNOWN" ? unk : scan;
     if (mat.current && mat.current.map !== want) {
       mat.current.map = want;
       mat.current.needsUpdate = true;
@@ -610,19 +633,106 @@ function feedTex() {
     g.fillText("CONCEDIDO", 404, 151);
   });
 }
-function FeedMonitor({ clock }: { clock: UrbanClock }) {
-  const feed = useMemo(() => feedTex(), []);
-  const ref = useRef<THREE.Mesh>(null!);
-  useFrame(() => {
-    if (ref.current) ref.current.visible = isCh2(clock) && clock.t >= T_GRANT;
+/** Feed del celador en el capítulo 3: filas reales (sin nombre para el rol GUARD → «Residente»). */
+function feedTex3(manual: boolean) {
+  return canvasTex(512, 300, (g) => {
+    g.fillStyle = "#0F172A";
+    g.fillRect(0, 0, 512, 300);
+    g.fillStyle = "#1E293B";
+    g.fillRect(0, 0, 96, 300);
+    for (let i = 0; i < 11; i++) {
+      g.fillStyle = i === 6 ? "rgba(59,130,246,0.45)" : "rgba(148,163,184,0.18)";
+      g.fillRect(10, 34 + i * 23, 76, 12);
+    }
+    g.fillStyle = "#1E293B";
+    g.fillRect(96, 0, 416, 34);
+    g.fillStyle = "#F1F5F9";
+    g.font = "700 22px Inter, system-ui, sans-serif";
+    g.fillText("Acceso facial", 116, 66);
+    const rows: [string, string, boolean][] = [
+      ...(manual ? [["Persona desconocida", "Apertura manual del celador · puerta abierta", true] as [string, string, boolean]] : []),
+      ["Persona desconocida", "Persona desconocida", false],
+      ["Residente", "Posible suplantación (liveness)", false],
+    ];
+    rows.forEach(([n, d, ok], i) => {
+      const y = 84 + i * 66;
+      g.fillStyle = "#1E293B";
+      g.fillRect(112, y, 384, 56);
+      g.strokeStyle = ok ? "#22C55E" : "rgba(239,68,68,0.7)";
+      g.lineWidth = 2;
+      g.strokeRect(112, y, 384, 56);
+      g.fillStyle = ok ? "#22C55E" : "#EF4444";
+      g.fillRect(122, y + 12, 32, 32);
+      g.fillStyle = "#F1F5F9";
+      g.font = "600 15px Inter, system-ui, sans-serif";
+      g.fillText(n, 164, y + 24);
+      g.fillStyle = "#94A3B8";
+      g.font = "500 11px Inter, system-ui, sans-serif";
+      g.fillText(d, 164, y + 42);
+      g.fillStyle = ok ? "#22C55E" : "#EF4444";
+      g.font = "700 12px Inter, system-ui, sans-serif";
+      g.fillText(ok ? "CONCEDIDO" : "DENEGADO", ok ? 412 : 360, y + 33);
+      if (!ok) {
+        g.fillStyle = "#3B82F6";
+        g.fillRect(438, y + 16, 48, 24);
+        g.fillStyle = "#fff";
+        g.font = "600 11px Inter, system-ui, sans-serif";
+        g.fillText("Abrir", 448, y + 32);
+      }
+    });
   });
+}
+function FeedMonitor({ clock }: { clock: UrbanClock }) {
+  const feed2 = useMemo(() => feedTex(), []);
+  const f3a = useMemo(() => feedTex3(false), []);
+  const f3b = useMemo(() => feedTex3(true), []);
+  const ref = useRef<THREE.Mesh>(null!);
+  const mat = useRef<THREE.MeshBasicMaterial>(null!);
+  useFrame(() => {
+    if (!ref.current) return;
+    const c2 = isCh2(clock) && clock.t >= T_GRANT;
+    const c3 = isCh3(clock) && clock.t >= T_SPOOF;
+    ref.current.visible = c2 || c3;
+    const want = c3 ? (clock.t >= T_MANUAL ? f3b : f3a) : feed2;
+    if (mat.current && mat.current.map !== want) {
+      mat.current.map = want;
+      mat.current.needsUpdate = true;
+    }
+  });
+  const feed = feed2;
   const [bx, bz] = P.booth;
   return (
     <mesh ref={ref} visible={false} position={[bx - 0.75, 1.36, bz + 1.345]} rotation={[0, Math.PI, 0]}>
       <planeGeometry args={[1.17, 0.66]} />
-      <meshBasicMaterial map={feed} toneMapped={false} />
+      <meshBasicMaterial ref={mat} map={feed} toneMapped={false} />
     </mesh>
   );
+}
+
+/** Foto de María en el celular que el impostor acerca al kiosko (capítulo 3). */
+function mariaPhotoTex() {
+  return canvasTex(128, 240, (g) => {
+    const gr = g.createLinearGradient(0, 0, 0, 240);
+    gr.addColorStop(0, "#56658a");
+    gr.addColorStop(1, "#2c3546");
+    g.fillStyle = gr;
+    g.fillRect(0, 0, 128, 240);
+    g.fillStyle = "#e2725b";
+    g.beginPath();
+    g.ellipse(64, 240, 56, 48, 0, Math.PI, 0);
+    g.fill();
+    g.fillStyle = "#c99572";
+    g.beginPath();
+    g.ellipse(64, 120, 34, 44, 0, 0, Math.PI * 2);
+    g.fill();
+    g.fillStyle = "#2b1a12";
+    g.beginPath();
+    g.ellipse(64, 92, 38, 24, 0, Math.PI, 0);
+    g.fill();
+    g.fillStyle = "#1a1410";
+    g.fillRect(48, 116, 8, 6);
+    g.fillRect(72, 116, 8, 6);
+  });
 }
 
 function Monitors() {
@@ -716,8 +826,8 @@ function TurnstileArms({ clock }: { clock: UrbanClock }) {
   const red = useMemo(() => new THREE.Color("#ef4444"), []);
   const green = useMemo(() => new THREE.Color("#22C55E"), []);
   useFrame(() => {
-    if (isCh2(clock)) {
-      const s = turnstileAt(clock.t);
+    if (isCh2(clock) || isCh3(clock)) {
+      const s = isCh3(clock) ? turnstileAt3(clock.t) : turnstileAt(clock.t);
       spin.current.rotation.y = s.spin;
       led.current.color.copy(s.unlocked ? green : red);
     } else {
@@ -770,7 +880,7 @@ function RelayFX({ clock }: { clock: UrbanClock }) {
   }, []);
   useFrame(() => {
     const ch2 = isCh2(clock);
-    const r = ch2 ? relayAt(clock.t) : { on: 0, click: -1, signal: -1 };
+    const r = ch2 ? relayAt(clock.t) : isCh3(clock) ? relayAt3(clock.t) : { on: 0, click: -1, signal: -1 };
     out.current.color.copy(r.on ? on : off);
     halo.current.visible = !!r.on;
     lever.current.rotation.z = r.on ? -0.5 : 0.25;
@@ -858,7 +968,7 @@ function CameraRig({ clock }: { clock: UrbanClock }) {
   useFrame((state, dt) => {
     const cam = camera as THREE.PerspectiveCamera;
     if (clock.mode === "tour") {
-      const s = clock.ch === 2 ? cameraAt2(clock.t, clock.mobile) : cameraAt(clock.t, clock.mobile);
+      const s = clock.ch === 3 ? cameraAt3(clock.t, clock.mobile) : clock.ch === 2 ? cameraAt2(clock.t, clock.mobile) : cameraAt(clock.t, clock.mobile);
       cam.position.set(s.p[0], s.p[1], s.p[2]);
       tgt.set(s.q[0], s.q[1], s.q[2]);
       cam.lookAt(tgt);
@@ -903,13 +1013,18 @@ function ClockDriver({ clock }: { clock: UrbanClock }) {
 const LOOKS: Record<string, Look> = {
   maria: { female: true, skin: "#c99572", hair: "#2b1a12", top: "#e2725b", legs: "#2f3d5c", shoes: "#f1f5f9", hairStyle: "pony" },
   carlos: { female: false, skin: "#9a6b4f", hair: "#1a1410", top: "#1e3a5f", legs: "#111827", shoes: "#111827", hairStyle: "cap", build: 0.55, badge: "#f59e0b" },
+  andres: { female: false, skin: "#b98663", hair: "#1f1712", top: "#2f6f4e", legs: "#8b7a5e", shoes: "#3f3f46", hairStyle: "short", build: 0.4 },
+  spoofer: { female: false, skin: "#8a6a55", hair: "#1c1c1c", top: "#374151", sleeves: "#374151", legs: "#1f2937", shoes: "#111827", hairStyle: "cap", build: 0.45 },
   diana: { female: true, skin: "#e0b18f", hair: "#5a3a22", top: "#334155", sleeves: "#334155", legs: "#4b5563", shoes: "#1f2937", hairStyle: "bun" },
 };
 
 function Scene({ clock, explore }: { clock: UrbanClock; explore: boolean }) {
   const S = useMemo(() => buildStatic(), []);
-  const maria = useMemo(() => (t: number) => (isCh2(clock) ? mariaPose2(t) : mariaPose(t, clock.touring)), [clock]);
-  const carlos = useMemo(() => (t: number) => (isCh2(clock) ? carlosPose2(t) : carlosPose(t)), [clock]);
+  const maria = useMemo(() => (t: number) => (isCh3(clock) ? FAR_POSE() : isCh2(clock) ? mariaPose2(t) : mariaPose(t, clock.touring)), [clock]);
+  const carlos = useMemo(() => (t: number) => (isCh3(clock) ? carlosPose3(t) : isCh2(clock) ? carlosPose2(t) : carlosPose(t)), [clock]);
+  const andres = useMemo(() => (t: number) => (isCh3(clock) ? andresPose(t) : FAR_POSE()), [clock]);
+  const spooferLook = useMemo(() => ({ ...LOOKS.spoofer, photo: mariaPhotoTex() }), []);
+  const spoofer = useMemo(() => (t: number) => (isCh3(clock) ? spooferPose(t) : FAR_POSE()), [clock]);
   const [lx, lz] = P.lobbyA;
   return (
     <>
@@ -941,6 +1056,8 @@ function Scene({ clock, explore }: { clock: UrbanClock; explore: boolean }) {
       <Person look={LOOKS.maria} pose={maria} />
       <Person look={LOOKS.carlos} pose={carlos} />
       <Person look={LOOKS.diana} pose={dianaPose} />
+      <Person look={LOOKS.andres} pose={andres} />
+      <Person look={spooferLook} pose={spoofer} />
       <CameraRig clock={clock} />
       {explore && (
         <OrbitControls
