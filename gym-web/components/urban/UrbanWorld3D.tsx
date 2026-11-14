@@ -12,12 +12,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import Person, { type Look } from "./Person";
 import { P, cameraAt, carlosPose, dianaPose, mariaPose, type Pose } from "../../lib/urban/tour";
+import { andresPose4, cameraAt4, carlosPose4, mariaPose4, turnstileAt4 } from "../../lib/urban/tour4";
 import { T_MANUAL, T_SPOOF, andresPose, cameraAt3, carlosPose3, kioskScreen3, relayAt3, spooferPose, turnstileAt3 } from "../../lib/urban/tour3";
 import { T_GRANT, cameraAt2, carlosPose2, kioskScreenPhase, mariaPose2, relayAt, turnstileAt } from "../../lib/urban/tour2";
 
-export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour"; ch?: 1 | 2 | 3 };
+export type UrbanClock = { t: number; touring: boolean; mobile: boolean; mode: "hero" | "explore" | "tour"; ch?: 1 | 2 | 3 | 4 };
 const isCh2 = (c: UrbanClock) => c.mode === "tour" && c.ch === 2;
 const isCh3 = (c: UrbanClock) => c.mode === "tour" && c.ch === 3;
+const isCh4 = (c: UrbanClock) => c.mode === "tour" && c.ch === 4;
 const FAR_POSE = (): Pose => ({ x: -1000, z: -1000, yaw: 0, walk: 0, phase: 0, phone: 0, selfie: 0, headYaw: 0, headPitch: 0, blink: 0, sit: 0, type: 0, wave: 0 });
 
 /* ---------- Geometría estática ---------- */
@@ -624,7 +626,7 @@ function feedTex() {
     g.stroke();
     g.fillStyle = "#F1F5F9";
     g.font = "600 17px Inter, system-ui, sans-serif";
-    g.fillText("María Restrepo", 174, 141);
+    g.fillText("Residente", 174, 141);
     g.fillStyle = "#94A3B8";
     g.font = "500 12px Inter, system-ui, sans-serif";
     g.fillText("Identidad verificada · puerta abierta", 174, 162);
@@ -826,8 +828,8 @@ function TurnstileArms({ clock }: { clock: UrbanClock }) {
   const red = useMemo(() => new THREE.Color("#ef4444"), []);
   const green = useMemo(() => new THREE.Color("#22C55E"), []);
   useFrame(() => {
-    if (isCh2(clock) || isCh3(clock)) {
-      const s = isCh3(clock) ? turnstileAt3(clock.t) : turnstileAt(clock.t);
+    if (isCh2(clock) || isCh3(clock) || isCh4(clock)) {
+      const s = isCh4(clock) ? turnstileAt4(clock.t) : isCh3(clock) ? turnstileAt3(clock.t) : turnstileAt(clock.t);
       spin.current.rotation.y = s.spin;
       led.current.color.copy(s.unlocked ? green : red);
     } else {
@@ -968,7 +970,7 @@ function CameraRig({ clock }: { clock: UrbanClock }) {
   useFrame((state, dt) => {
     const cam = camera as THREE.PerspectiveCamera;
     if (clock.mode === "tour") {
-      const s = clock.ch === 3 ? cameraAt3(clock.t, clock.mobile) : clock.ch === 2 ? cameraAt2(clock.t, clock.mobile) : cameraAt(clock.t, clock.mobile);
+      const s = clock.ch === 4 ? cameraAt4(clock.t, clock.mobile) : clock.ch === 3 ? cameraAt3(clock.t, clock.mobile) : clock.ch === 2 ? cameraAt2(clock.t, clock.mobile) : cameraAt(clock.t, clock.mobile);
       cam.position.set(s.p[0], s.p[1], s.p[2]);
       tgt.set(s.q[0], s.q[1], s.q[2]);
       cam.lookAt(tgt);
@@ -1020,9 +1022,9 @@ const LOOKS: Record<string, Look> = {
 
 function Scene({ clock, explore }: { clock: UrbanClock; explore: boolean }) {
   const S = useMemo(() => buildStatic(), []);
-  const maria = useMemo(() => (t: number) => (isCh3(clock) ? FAR_POSE() : isCh2(clock) ? mariaPose2(t) : mariaPose(t, clock.touring)), [clock]);
-  const carlos = useMemo(() => (t: number) => (isCh3(clock) ? carlosPose3(t) : isCh2(clock) ? carlosPose2(t) : carlosPose(t)), [clock]);
-  const andres = useMemo(() => (t: number) => (isCh3(clock) ? andresPose(t) : FAR_POSE()), [clock]);
+  const maria = useMemo(() => (t: number) => (isCh4(clock) ? mariaPose4(t) : isCh3(clock) ? FAR_POSE() : isCh2(clock) ? mariaPose2(t) : mariaPose(t, clock.touring)), [clock]);
+  const carlos = useMemo(() => (t: number) => (isCh4(clock) ? carlosPose4(t) : isCh3(clock) ? carlosPose3(t) : isCh2(clock) ? carlosPose2(t) : carlosPose(t)), [clock]);
+  const andres = useMemo(() => (t: number) => (isCh4(clock) ? andresPose4(t) : isCh3(clock) ? andresPose(t) : FAR_POSE()), [clock]);
   const spooferLook = useMemo(() => ({ ...LOOKS.spoofer, photo: mariaPhotoTex() }), []);
   const spoofer = useMemo(() => (t: number) => (isCh3(clock) ? spooferPose(t) : FAR_POSE()), [clock]);
   const [lx, lz] = P.lobbyA;

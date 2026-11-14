@@ -20,7 +20,7 @@ const sv = (s: number, c: string, children: ReactNode, fill = false) => (
     {children}
   </svg>
 );
-const I = {
+export const I = {
   apartment: ({ s = 24, c = "currentColor" }: IP) => sv(s, c, <><rect x="4" y="3" width="10" height="18" rx="1" /><path d="M14 9h5a1 1 0 0 1 1 1v11h-6M7 7h1M10 7h1M7 11h1M10 11h1M7 15h1M10 15h1M17 13h0M17 17h0" /></>),
   mail: ({ s = 20, c = "currentColor" }: IP) => sv(s, c, <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3 7 9 6 9-6" /></>),
   lock: ({ s = 20, c = "currentColor" }: IP) => sv(s, c, <><rect x="5" y="11" width="14" height="10" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></>),
@@ -139,7 +139,7 @@ function DocArt({ back = false, w = 250 }: { back?: boolean; w?: number }) {
 }
 
 /* ---------- Componentes UDS ---------- */
-function Btn({ label, variant = "primary", icon, pressed, loading, disabled }: { label: string; variant?: "primary" | "secondary"; icon?: ReactNode; pressed?: boolean; loading?: boolean; disabled?: boolean }) {
+export function Btn({ label, variant = "primary", icon, pressed, loading, disabled }: { label: string; variant?: "primary" | "secondary"; icon?: ReactNode; pressed?: boolean; loading?: boolean; disabled?: boolean }) {
   return (
     <div className={`ua-btn ua-btn-${variant} ${pressed ? "is-press" : ""} ${disabled ? "is-dis" : ""}`}>
       {loading ? <span className="ua-spin" /> : <>{icon}{label}</>}
@@ -162,10 +162,10 @@ function Input({ label, icon, value, hint, focus }: { label: string; icon: React
   );
 }
 
-function StatusBar({ dark = true }: { dark?: boolean }) {
+export function StatusBar({ dark = true, time = "18:42" }: { dark?: boolean; time?: string }) {
   return (
     <div className={`ua-status ${dark ? "" : "is-light"}`}>
-      <span>18:42</span>
+      <span>{time}</span>
       <span className="ua-status-r">
         <svg width="16" height="11" viewBox="0 0 16 11"><path d="M1 10h2V7H1zM5 10h2V5H5zM9 10h2V3H9zM13 10h2V1h-2z" fill="currentColor" /></svg>
         <svg width="22" height="11" viewBox="0 0 22 11"><rect x=".5" y=".5" width="18" height="10" rx="2.5" fill="none" stroke="currentColor" /><rect x="2" y="2" width="13" height="7" rx="1.2" fill="currentColor" /><rect x="19.5" y="3.5" width="2" height="4" rx="1" fill="currentColor" /></svg>
@@ -174,7 +174,7 @@ function StatusBar({ dark = true }: { dark?: boolean }) {
   );
 }
 
-function AppBar({ title, back, action }: { title: string; back?: boolean; action?: ReactNode }) {
+export function AppBar({ title, back, action }: { title: string; back?: boolean; action?: ReactNode }) {
   return (
     <div className="ua-appbar">
       {back && <span className="ua-appbar-back"><I.back /></span>}

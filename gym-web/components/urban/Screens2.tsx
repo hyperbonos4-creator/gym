@@ -284,7 +284,7 @@ export function GuardPanel({ v, t, compact }: { v: GuardView; t: number; compact
               <li className={`ug-ev ${v.fresh > 0.05 ? "is-new" : ""}`} style={{ ["--f" as any]: v.fresh }}>
                 <span className="ug-ev-ic"><L.shieldCheck s={20} c="#22C55E" /></span>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p className="ug-ev-n">{DEMO.maria}</p>
+                  <p className="ug-ev-n">Residente</p>
                   <p className="ug-ev-d">Identidad verificada · puerta abierta · {GRANT_TIME.h12}</p>
                 </div>
                 <span className="ug-ev-b">CONCEDIDO</span>
